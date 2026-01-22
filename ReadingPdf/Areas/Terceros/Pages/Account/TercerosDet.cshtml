@@ -1,0 +1,2242 @@
+﻿@page "/Terceros/TercerosDet/"
+@model TercerosDetModel
+@{
+    var name = Model.Input.DataTerceros.Name;
+    var namec = Model.Input.DataTerceros.NombreComercial;
+    var clienteident = Model.Input.DataTerceros.IdTercero;
+    var medicoId = Model.Input.Nid;
+
+}
+<style>
+    /* Estilos personalizados para cambiar el tamaño del modal */
+    .modal-xl-custom {
+        max-width: 28%; /* Cambia este valor para ajustar el ancho */
+        height: 90vh; /* Cambia este valor para ajustar la altura */
+    }
+    .modal-content-custom {
+        height: 30%; /* Hace que el contenido ocupe toda la altura disponible */
+    }
+
+    .modal-xl-custom1 {
+        max-width: 40%; /* Cambia este valor para ajustar el ancho */
+        height: 90vh; /* Cambia este valor para ajustar la altura */
+    }
+
+    .modal-content-custom1 {
+        height: 100%; /* Hace que el contenido ocupe toda la altura disponible */
+    }
+
+    .modal-xl-customp {
+        max-width: 40%; /* Cambia este valor para ajustar el ancho */
+        height: 70vh; /* Cambia este valor para ajustar la altura */
+    }
+
+    .modal-content-customp {
+        height: 100%; /* Hace que el contenido ocupe toda la altura disponible */
+    }
+
+    .btn-img {
+        width: 64px; /* Tamaño del botón */
+        height: 64px;
+        padding: 0; /* Elimina el relleno del botón */
+        border: none; /* Opcional: Elimina el borde */
+        background: none; /* Elimina el color de fondo */
+    }
+
+        .btn-img img {
+            width: 100%; /* La imagen ocupará todo el botón */
+            height: 100%;
+        }
+
+    .card-body {
+        -ms-flex: 1 1 auto;
+        flex: 1 1 auto;
+        padding: 2rem;
+    }
+
+    .fixed-height-card-body {
+        height: 352px;
+    }
+
+    .card-bodyp {
+        -ms-flex: 1 1 auto;
+        flex: 1 1 auto;
+        padding: 2rem;
+    }
+
+    .form-controlx {
+        display: block;
+        width: 100%;
+        height: calc(1.5em + .75rem + -5px);
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #e9ecef; /* Color de fondo gris como los campos readonly */
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+        pointer-events: none; /* Evita la edición */
+    }
+
+    .form-controly {
+        display: block;
+        width: 100%;
+        height: calc(1.5em + .75rem + -5px);
+        padding: .275rem .75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+
+    .form-controlz {
+        display: block;
+        width: 100%;
+        height: calc(1.5em + .75rem + -5px);
+        padding: .275rem .75rem;
+        font-family: 'Open Sans Condensed', sans-serif;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #495057;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+
+
+    .form-label-compras {
+        display: inline-block;
+        margin-bottom: .0rem;
+        font-size: 12px;
+        height: 20px;
+        font-family: 'Open Sans Condensed', sans-serif;
+    }
+
+    .select-custom {
+        width: 150px; /* ajusta el ancho */
+        height: 20px;
+        font-size: 12px;
+        font-family: 'Open Sans Condensed', sans-serif;
+    }
+
+    .campo-custom-NroDoc {
+        width: 150px; /* ajusta el ancho */
+        height: 20px;
+        font-size: 12px;
+        font-family: 'Open Sans Condensed', sans-serif;
+    }
+
+    .campo-custom-Fecha {
+        width: 150px; /* ajusta el ancho */
+        height: 20px;
+        font-size: 12px;
+        font-family: 'Open Sans Condensed', sans-serif;
+    }
+
+</style>
+
+<div class="container">
+    <div class="row">
+        <div class="col-9">
+            <h1 class="text-center">Detalles del Tercero</h1>
+        </div>
+
+        @* 		<div class="col-3 d-flex justify-content-end align-items-center gap-2"> *@
+        <div class="col-3">
+            <h1>
+                <!-- Botón Imprimir (inicialmente oculto) -->
+                @* 			<button id="btnImprimirComisiones" class="btn btn-success btn-img d-none" onclick="imprimirReporte()">
+				<img src="/images/print_printer_printing_icon_141937.webp" alt="Imprimir" width="64" height="64">
+			</button> *@
+                <button id="btnImprimirComisiones"
+                        class="btn btn-success btn-img d-none"
+                        data-bs-toggle="modal"
+                        data-bs-target="#accionModal"
+                        data-fecha-corte="@DateTime.Now.AddDays(-9).ToString("yyyy-MM-dd")"
+                        data-id-tercero="@Model.Input.DataTerceros.Nid">
+
+                    <img src="/images/print_printer_printing_icon_141937.webp" alt="Imprimir" width="64" height="64">
+                </button>
+
+
+                <!-- Botón Editar -->
+                <button type="button" class="btn btn-success btn-img" onclick="enviarFormulario()">
+                    <img src="/images/edit_modify_alter_icon_141930.png" alt="Editar" width="64" height="64">
+                </button>
+
+                <!-- Botón Regresar -->
+                <button class="btn btn-success btn-img" onclick="regresar()">
+                    <img src="/images/previous_arrow_left_icon_141936.png" alt="Regresar" width="64" height="64">
+                </button>
+            </h1>
+
+        </div>
+    </div>
+
+
+    <!--------------  TAB GENERAL ----------------------------->
+    @* <form id="enviarotro" method="post" enctype="multipart/form-data"> *@
+    <div class="row">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active"
+                            id="home-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#home"
+                            type="button"
+                            role="tab"
+                            aria-controls="home"
+                            aria-selected="true">
+                        Datos Principales
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link"
+                            id="profile-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#profile"
+                            type="button"
+                            role="tab"
+                            aria-controls="profile"
+                            aria-selected="false">
+                        Direcciones
+                    </button>
+                </li>
+                <li id="tabComisiones" class="nav-item" role="presentation">
+                    <button class="nav-link"
+                            id="comisiones-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#comisiones"
+                            type="button"
+                            role="tab"
+                            aria-controls="comisiones"
+                            aria-selected="false">
+                        Comisiones
+                    </button>
+                </li>
+                <li id="tabEstudios" class="nav-item" role="presentation">
+                    <button class="nav-link"
+                            id="estudios-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#estudios"
+                            type="button"
+                            role="tab"
+                            aria-controls="estudios"
+                            aria-selected="false">
+                        Estudios
+                    </button>
+                </li>
+                <li id="tabCompDoc" class="nav-item" role="presentation">
+                    <button class="nav-link"
+                            id="compdoc-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#compdoc"
+                            type="button"
+                            role="tab"
+                            aria-controls="compdoc"
+                            aria-selected="false">
+                        Documentos de Compras
+                    </button>
+                </li>
+                <li id="tabVehiculos" class="nav-item" role="presentation">
+                    <button class="nav-link"
+                            id="vehiculos-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#vehiculos"
+                            type="button"
+                            role="tab"
+                            aria-controls="vehiculos"
+                            aria-selected="false">
+                        Vehículos
+                    </button>
+                </li>
+                <li id="seguros1" class="nav-item" role="presentation">
+                    <button class="nav-link"
+                            id="seguros-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#seguros"
+                            type="button"
+                            role="tab"
+                            aria-controls="seguros"
+                            aria-selected="false">
+                        Seguros
+                    </button>
+                </li>
+                <li id="prestaciones1" class="nav-item" role="presentation">
+                    <button class="nav-link"
+                            id="prestaciones-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#prestaciones"
+                            type="button"
+                            role="tab"
+                            aria-controls="prestaciones"
+                            aria-selected="false">
+                        Prestaciones
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="myTabContent">
+                <!--------------  TAB DATOS PRINCIPALES ----------------------------->
+                <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 p-0">
+                                    <div class="form-group border border-dark p-3 rounded h-100 d-flex flex-column">
+                                        <h5 class="fw-bold text-center mb-1">Datos General</h5>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="form-group mb-2">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <label for="Input.DataTerceros.IdTipPersona" class="form-label">Tipo Tercero</label>
+                                                            <select id="TipoTercero"
+                                                                    asp-for="Input.DataTerceros.IdTipTercero"
+                                                                    asp-items="@(new SelectList(Model.Input.TipoTerLista, "Value", "Text"))"
+                                                                    class="form-control" disabled>
+                                                                <option value="">-- Seleccionar --</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group mb-2">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <label for="Input.DataTerceros.IdTipPersona" class="form-label">Tipo Persona</label>
+                                                            <select asp-for="Input.DataTerceros.TipoTerceroId" asp-items="@(new SelectList(Model.Input.TipoPerLista, "Value", "Text"))"
+                                                                    class="form-control" disabled>
+                                                                <option value="">-- Seleccionar --</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="form-group mb-2">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <label for="Input.DataTerceros.IdTipDocumento" class="form-label">Tipo de documento</label>
+                                                            <select asp-for="Input.DataTerceros.IdTipDocumento" asp-items="@(new SelectList(Model.Input.TipodocLista, "Value", "Text"))"
+                                                                    class="form-control" disabled>
+                                                                <option value="">-- Seleccionar --</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="form-group mb-2">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <label for="Input.DataTerceros.Nid" class="form-label">Nro. de documento</label>
+                                                            <input type="hidden" id="IdProveedor" value="@clienteident" />
+                                                            <input asp-for="Input.DataTerceros.Nid" placeholder=" Numero Documento" class="form-control"
+                                                                   pattern="[0-9]*" readonly />
+                                                            <span asp-validation-for="Input.DataTerceros.Nid" class="text-danger"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="form-group mb-2">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <label for="Input.DataTerceros.Name" class="form-label">Nombres y Apellidos</label>
+                                                            <input asp-for="Input.DataTerceros.Name" placeholder=" Nombres y Apellidos" class="form-control" oninput="convertirAMayusculas(this)"
+                                                                   readonly />
+                                                            <span asp-validation-for="Input.DataTerceros.Name" class="text-danger"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="form-group mb-2">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <label for="Input.DataTerceros.NombreComercial" class="form-label">Nombre Comercial</label>
+                                                            <input asp-for="Input.DataTerceros.NombreComercial"
+                                                                   placeholder=" Nombre Comercial"
+                                                                   class="form-control"
+                                                                   oninput="convertirAMayusculas(this)"
+                                                                   readonly />
+                                                            <span asp-validation-for="Input.DataTerceros.NombreComercial" class="text-danger"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-2 p-0">
+                                    <div class="form-group border border-dark p-3 rounded h-100 d-flex flex-column">
+                                        <h5 class="fw-bold text-center mb-1">Usa Módulo</h5>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="lista">
+                                                    <ul>
+                                                        <li>
+                                                            <input type="checkbox" disabled asp-for="Input.DataTerceros.TercModHis" id="EsHis" class="form-check-input" />
+                                                            <label asp-for="Input.DataTerceros.TercModHis" class="col control-label">His</label>
+                                                        </li>
+                                                        <li>
+                                                            <input type="checkbox" disabled asp-for="Input.DataTerceros.TercModVenta" class="form-check-input" />
+                                                            <label asp-for="Input.DataTerceros.TercModVenta" class="col control-label">Ventas</label>
+                                                        </li>
+                                                        <li>
+                                                            <input type="checkbox" disabled asp-for="Input.DataTerceros.TercModCompras" class="form-check-input" id="EsComp" />
+                                                            <label asp-for="Input.DataTerceros.TercModCompras" class="col control-label">Compras</label>
+                                                        </li>
+                                                        <li>
+                                                            <input type="checkbox" disabled asp-for="Input.DataTerceros.TercModNomina" class="form-check-input" />
+                                                            <label asp-for="Input.DataTerceros.TercModNomina" class="col control-label">Nómina</label>
+                                                        </li>
+                                                        <li>
+                                                            <input type="checkbox" disabled asp-for="Input.DataTerceros.TerConVehiculo" class="form-check-input" />
+                                                            <label asp-for="Input.DataTerceros.TerConVehiculo" class="col control-label">Park</label>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 p-0">
+                                    <div class="form-group border border-dark p-3 rounded h-100 d-flex flex-column">
+                                        <h5 class="fw-bold text-center mb-1">Comunicaciones</h5>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="form-group mb-2">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <label for="Input.DataTerceros.Phone" class="form-label">Numero Telefono</label>
+                                                            <input asp-for="Input.DataTerceros.Phone" placeholder=" Numero Telefono" class="form-control" readonly />
+                                                            <span asp-validation-for="Input.DataTerceros.Phone" class="text-danger"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="form-group mb-2">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <label for="Input.DataTerceros.Email" class="form-label">Correo electronico</label>
+                                                            <input asp-for="Input.DataTerceros.Email" placeholder=" Email" class="form-control"
+                                                                   oninput="convertirAMinusculas(this)" readonly />
+                                                            <span asp-validation-for="Input.DataTerceros.Email" class="text-danger"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <h5 class="fw-bold text-center mb-1">Contabilidad</h5>
+
+
+
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="form-group mb-2">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <label for="Input.DataTerceros.ClieCodContId" class="form-label custom-label">Cuenta Contable</label>
+                                                            <select disabled asp-for="Input.DataTerceros.TercCodContId"
+                                                                    asp-items="@(new SelectList(Model.Input.cuentasLista, "Value", "Text"))" class="form-control" style="width: 100%">
+                                                                <option value="">-- Seleccionar --</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <form id="enviarotro" asp-area="Terceros" asp-page="TercerosReg" method="post">
+                                                @{
+                                                    var DataCli = JsonConvert.SerializeObject(Model.Input.DataTerceros);
+                                                    var DataDir = JsonConvert.SerializeObject(Model.Input.DataTerceros.DireccionT);
+                                                }
+                                                <input type="hidden" name="DataClient1" value="@DataCli" />
+                                                <input type="hidden" name="DataDirec" value="@DataDir" />
+                                            </form>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--------------  TAB DATOS DIRECCIONES ----------------------------->
+                <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <table class="table table-bordered border-primary" id="direccionesTable"
+                                           align="center" border="1" style=" height:20px; font-size:small;">
+                                        <thead>
+                                            <tr>
+                                                <th width="8px" class="text-center">#</th>
+                                                <th width="100px" class="text-center">Nombre</th>
+                                                <th width="350px" class="text-center">Direccion</th>
+                                                <th width="150px" class="text-center">Ciudad</th>
+                                                @* <th width="8px" class="text-center">Acción</th> *@
+                                            </tr>
+                                        </thead>
+                                        <tbody id="direccionesTableBody">
+                                            <!-- Aquí se agregarán las filas de direcciones dinámicamente -->
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <!-- Espacios en blanco para mantener la alineación -->
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                @* <td></td> *@
+                                            </tr>
+                                            <tr>
+                                                <!-- Subtotales a la derecha -->
+                                                @* <td colspan="4" class="text-right"><strong></strong></td> *@
+                                                @* 													<td>
+														<button type="button"
+																onclick="agregarDireccion1()"
+																class="btn-elimina btn-success">
+															<i class="fas fa-plus"></i>
+														</button>
+													</td> *@
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--------------  TAB DATOS COMISIONES ----------------------------->
+                <div class="tab-pane fade" id="comisiones" role="tabpanel" aria-labelledby="comisiones-tab">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <table class="table table-bordered border-primary" id="tablaPorcentajes"
+                                           align="center" border="1" style=" height:20px; font-size:small;">
+                                        <thead>
+                                            <tr>
+                                                <th width="10px" class="text-center">#</th>
+                                                <th width="10px" class="text-center">Código</th>
+                                                <th width="200px" class="text-center">Nombre</th>
+                                                <th width="40px" class="text-center">Porcentaje</th>
+                                                @* <th width="15px" class="text-center">Acción</th> *@
+                                            </tr>
+                                        </thead>
+                                        <tbody id="porcentajesTableBody">
+                                            <!-- Aquí se agregarán las filas de direcciones dinámicamente -->
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <!-- Espacios en blanco para mantener la alineación -->
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                @* <td></td> *@
+                                            </tr>
+                                            <tr>
+                                                <!-- Subtotales a la derecha -->
+                                                @* 													<td colspan="4" class="text-right"><strong>Agregar Elemento</strong></td>
+													<td>
+														<button id="btnAgregarPorcentajes" type="button"
+																class="btn-elimina btn-success">
+															<i class="fas fa-plus"></i>
+														</button>
+													</td> *@
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--------------  TAB DATOS ESTUDIOS ----------------------------->
+                <div class="tab-pane fade" id="estudios" role="tabpanel" aria-labelledby="estudios-tab">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <table class="table table-bordered border-primary" id="tablaEstudios"
+                                           align="center" border="1" style=" height:20px; font-size:small;">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 3%;" class="text-center">#</th>
+                                                <th style="width: 4%;" class="text-center">Código</th>
+                                                <th style="width: 25%;" class="text-center">Nombre</th>
+                                                <th style="width: 5%;" class="text-center">Orden</th>
+                                                <th style="width: 10%;" class="text-center">Fecha</th>
+                                                <th style="width: 10%;" class="text-center">Fecha Lectura</th>
+                                                <th style="width: 10%;" class="text-center">Valor</th>
+                                                <th style="width: 30%;" class="text-center">Médico</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="estudioTableBody">
+                                            <!-- Aquí se agregarán las filas de direcciones dinámicamente -->
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <!-- Espacios en blanco para mantener la alineación -->
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                            <tr>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @* <!--------------  TAB DOCUMENTOS DE COMPRAS ----------------------------->
+                <div class="tab-pane fade" id="compdoc" role="tabpanel" aria-labelledby="compdoc-tab">
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col">
+                                        <table class="table table-bordered border-primary" id="tablaDirecciones"
+                                               align="center" border="1" style=" height:20px; font-size:small;">
+                                            <thead>
+                                                <tr>
+                                                    <th width="100px" class="text-center">Nro. Documento</th>
+                                                    <th width="100px" class="text-center">Fecha</th>
+                                                    <th width="2000px" class="text-center">Descripción</th>
+                                                    <th width="150px" class="text-center">Valor</th>
+                                                    <th width="150px" class="text-center">Saldo</th>
+                                                    <th width="3px" class="text-center"></th>
+                                                    <th width="3px" class="text-center"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="direccionesTableBody">
+                                                @{
+                                                    decimal total = 0;
+                                                    decimal totalP = 0;
+                                                    int cuenta = Model.Input.Documentos.Count();
+                                                }
+                                                @if (cuenta != 0)
+                                                {
+                                                    @foreach (var documentos in Model.Input.Documentos)
+                                                    {
+                                                        <tr>
+                                                            <td>@documentos.CompNroDoc</td>
+                                                            <td>@Convert.ToDateTime(documentos.CompFecha).ToString("dd/MM/yyyy")</td>
+                                                            <td>@documentos.CompDescripcion</td>
+                                                            <td style="text-align:right">@string.Format("{0:N2}", documentos.VrDocumento)</td>
+                                                            <td style="text-align:right">@string.Format("{0:N2}", documentos.VrDocumento - documentos.PagoMonto)</td>
+                                                            <td>
+                                                                @{
+                                                                    var DataComp = JsonConvert.SerializeObject(documentos);
+                                                                    var DataDet = JsonConvert.SerializeObject(documentos.ComprasDetalle);
+                                                                }
+                                                                <form asp-area="Proveedores" asp-page="DocumentoCompras" method="post">
+                                                                    <input type="hidden" name="dataComprasDoc1" value="@DataComp" />
+                                                                    <input type="hidden" name="ComprasDetalle" value="@DataDet" />
+
+                                                                    <button type="submit" class="btn-elimina btn-success"
+                                                                            @(documentos.PagoMonto > 0 ? "disabled" : "")>
+                                                                        <i class="fa fa-edit"></i>
+                                                                    </button>
+
+                                                                </form>
+
+
+                                                            </td>
+
+                                                            <td>
+                                                                <button type="button"
+                                                                        onclick="agregarPago('@Html.Raw(documentos.VrDocumento)', '@Html.Raw(documentos.IdCompDoc)', '@Html.Raw(documentos.IdProveedor)')"
+                                                                        class="btn-elimina btn-success"
+                                                                        data-toggle="modal"
+                                                                        data-target="#exampleModalLg"
+                                                                        @(documentos.VrDocumento != documentos.PagoMonto ? "" : "disabled")>
+                                                                    <i class="fas fa-coins"></i>
+                                                                </button>
+                                                            </td>
+
+                                                            <!-- Agrega más celdas según sea necesario -->
+                                                        </tr>
+                                                        total += documentos.VrDocumento;
+                                                        totalP += documentos.PagoMonto;
+
+                                                    }
+                                                }
+
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <!-- Espacios en blanco para mantener la alineación -->
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr>
+                                                    <!-- Botón de agregar a la izquierda -->
+                                                    <!-- Subtotales a la derecha -->
+                                                    <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                                                    <td style="text-align:right"><strong>@string.Format("{0:N2}", total)</strong></td>
+                                                    <td style="text-align:right"><strong>@string.Format("{0:N2}", totalP)</strong></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="6" class="text-right"><strong>Agregar Nuevo Documento:</strong></td>
+                                                    <td>
+                                                        <button type="button"
+                                                                onclick="mostrarModalFacturacion(1)"
+                                                                class="btn-elimina btn-success">
+                                                            <i class="fas fa-plus"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> *@
+                <!--------------  TAB INFORMACION  DE SEGUROS ----------------------------->
+                <div class="tab-pane fade" id="seguros" role="tabpanel" aria-labelledby="seguros-tab">
+                    <div class="card col-6 mt-3">
+                        <div class="card-body">
+                            <div class="form-group">
+
+                                <div class="form-group border border-dark p-2 rounded h-100">
+                                    <div class=" row">
+                                        <div class="col">
+                                            <!-- Checkbox Con Seguro -->
+                                            <div class="form-check mb-2">
+                                                <input type="checkbox" asp-for="Input.TerPoliza" id="conSeguro" class="form-check-input" />
+                                                <label asp-for="Input.TerPoliza" class="col control-label" style="font-size: 11px; margin-right: 10px;">Con Seguro</label>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="d-flex align-items-center">
+                                                <label for="Input_Phone" class="form-label mb-0" style="font-size: 11px; margin-right: 10px;">
+                                                    N° Póliza
+                                                </label>
+                                                <input asp-for="Input.TerPoliza"
+                                                       placeholder="Nro. Póliza"
+                                                       class="form-control1 p-1"
+                                                       style="font-size: 11px; width: 100px;"
+                                                       maxlength="15" />
+                                            </div>
+                                            <span asp-validation-for="Input.TerPoliza" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class=" row">
+                                        <div class="col">
+                                            <div class="d-flex align-items-center">
+                                                <label for="Input.IdTipTercero" class="form-label mb-0" style="font-size: 11px; margin-right: 10px;">Dirección</label>
+                                                <select id="TipoTercero"
+                                                        asp-for="Input.IdTipTercero"
+                                                        class="form-control1 p-1" style="font-size: 11px; margin-right: 10px;">
+                                                    <option value="">-- Seleccionar --</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--------------  TAB INFORMACION  DE PRESTACIONES ----------------------------->
+                <div class="tab-pane fade" id="prestaciones" role="tabpanel" aria-labelledby="prestaciones-tab">
+                    <div class="card col-6 mt-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col">
+                                    <table class="table table-bordered border-primary" id="prestacionesTable"
+                                           align="center" border="1" style="font-size: 12px; height: 20px; font-family: 'Open Sans Condensed', sans-serif;">
+                                        <thead>
+                                            <tr>
+                                                <th width="8px" class="text-center">#</th>
+                                                <th width="100px" class="text-center">Código</th>
+                                                <th width="350px" class="text-center">Nombre</th>
+                                                <th width="150px" class="text-center">Plan</th>
+                                                @* <th width="8px" class="text-center">Acción</th> *@
+                                            </tr>
+                                        </thead>
+                                        <tbody id="prestacionesTableBody">
+                                            <!-- Aquí se agregarán las filas de direcciones dinámicamente -->
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <!-- Espacios en blanco para mantener la alineación -->
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                @* <td></td> *@
+                                            </tr>
+                                            <tr>
+                                                <!-- Subtotales a la derecha -->
+                                                @* <td colspan="4" class="text-right"><strong></strong></td> *@
+                                                @* 													<td>
+														<button type="button"
+																onclick="agregarDireccion1()"
+																class="btn-elimina btn-success">
+															<i class="fas fa-plus"></i>
+														</button>
+													</td> *@
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               @*  <!--------------  TAB VEHICULOS  ----------------------------->
+                <div class="tab-pane fade" id="vehiculos" role="tabpanel" aria-labelledby="vehiculos-tab">
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col">
+                                        <table class="table table-bordered border-primary" id="tablaDirecciones"
+                                               align="center" border="1" style=" height:20px; font-size:small;">
+                                            <thead>
+                                                <tr>
+                                                    <th width="100px" class="text-center">Nro. Documento</th>
+                                                    <th width="100px" class="text-center">Fecha</th>
+                                                    <th width="2000px" class="text-center">Descripción</th>
+                                                    <th width="150px" class="text-center">Valor</th>
+                                                    <th width="150px" class="text-center">Saldo</th>
+                                                    <th width="3px" class="text-center"></th>
+                                                    <th width="3px" class="text-center"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="direccionesTableBody">
+                                                @{
+                                                    // decimal total = 0;
+                                                    // decimal totalP = 0;
+                                                    // int cuenta = Model.Input.Documentos.Count();
+                                                }
+                                                @if (cuenta != 0)
+                                                {
+                                                    @foreach (var documentos in Model.Input.Documentos)
+                                                    {
+                                                        <tr>
+                                                            <td>@documentos.CompNroDoc</td>
+                                                            <td>@Convert.ToDateTime(documentos.CompFecha).ToString("dd/MM/yyyy")</td>
+                                                            <td>@documentos.CompDescripcion</td>
+                                                            <td style="text-align:right">@string.Format("{0:N2}", documentos.VrDocumento)</td>
+                                                            <td style="text-align:right">@string.Format("{0:N2}", documentos.VrDocumento - documentos.PagoMonto)</td>
+                                                            <td>
+                                                                @{
+                                                                    var DataComp = JsonConvert.SerializeObject(documentos);
+                                                                    var DataDet = JsonConvert.SerializeObject(documentos.ComprasDetalle);
+                                                                }
+                                                                <form asp-area="Proveedores" asp-page="DocumentoCompras" method="post">
+                                                                    <input type="hidden" name="dataComprasDoc1" value="@DataComp" />
+                                                                    <input type="hidden" name="ComprasDetalle" value="@DataDet" />
+
+                                                                    <button type="submit" class="btn-elimina btn-success"
+                                                                            @(documentos.PagoMonto > 0 ? "disabled" : "")>
+                                                                        <i class="fa fa-edit"></i>
+                                                                    </button>
+
+                                                                </form>
+
+
+                                                            </td>
+
+                                                            <td>
+                                                                <button type="button"
+                                                                        onclick="agregarPago('@Html.Raw(documentos.VrDocumento)', '@Html.Raw(documentos.IdCompDoc)', '@Html.Raw(documentos.IdProveedor)')"
+                                                                        class="btn-elimina btn-success"
+                                                                        data-toggle="modal"
+                                                                        data-target="#exampleModalLg"
+                                                                        @(documentos.VrDocumento != documentos.PagoMonto ? "" : "disabled")>
+                                                                    <i class="fas fa-coins"></i>
+                                                                </button>
+                                                            </td>
+
+                                                            <!-- Agrega más celdas según sea necesario -->
+                                                        </tr>
+                                                        total += documentos.VrDocumento;
+                                                        totalP += documentos.PagoMonto;
+
+                                                    }
+                                                }
+
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <!-- Espacios en blanco para mantener la alineación -->
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr>
+                                                    <!-- Botón de agregar a la izquierda -->
+                                                    <!-- Subtotales a la derecha -->
+                                                    <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                                                    <td style="text-align:right"><strong>@string.Format("{0:N2}", total)</strong></td>
+                                                    <td style="text-align:right"><strong>@string.Format("{0:N2}", totalP)</strong></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="6" class="text-right"><strong>Agregar Nuevo Documento:</strong></td>
+                                                    <td>
+                                                        <button type="button"
+                                                                onclick="mostrarModalVehiculos(1)"
+                                                                class="btn-elimina btn-success">
+                                                            <i class="fas fa-plus"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> *@
+
+                <!--------------  FINAL DE TABS ----------------------------->
+            </div>
+        </div>
+    </div>
+    @* </form> *@
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="accionModal" tabindex="-1" aria-labelledby="accionModalLabel" aria-modal="true" role="dialog">
+    @* <form id="formModal" method="post"> *@
+    <div class="modal-dialog modal-xl-custom">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header">
+                @*   <h5 class="modal-title" id="accionModalLabel">Acción</h5> *@
+
+            </div>
+
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <div class="modal-body">
+                <!-- Aquí va el contenido de la modal -->
+                <form id="formModal" method="get" asp-action="VerReporte3" asp-controller="HisEstudios">
+                    <input type="hidden" name="id" id="terceroIdHidden" />
+                    <div class="col-md-12 fixed-width-border" style="padding: 0px;">
+                        <div class="card text-center">
+                            <div class="card-header">
+                                <div class="input-group mb-3">
+                                    <span class="form-control2">Fec. Desde</span>
+                                    <input name="fechaInicio" type="date" class="form-control2" id="Fec1" />
+
+                                    <span class="form-control2">Fe. Hasta</span>
+                                    <input name="fechaFin" type="date" class="form-control2" id="Fec2" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Aceptar</button>
+                        </div>
+                    </div>
+                </form>
+
+
+
+            </div>
+        </div>
+
+    </div>
+    @* </form> *@
+</div>
+
+<!-- Modal Para Modificar Datos de los movimientos -->
+<div class="modal fade" id="modMovimientoModal" tabindex="-1" aria-labelledby="modMovimientoModalLabel" aria-modal="true" role="dialog">
+    @* <form id="formModal" method="post"> *@
+    <div class="modal-dialog modal-xl-custom">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header">
+                @*   <h5 class="modal-title" id="accionModalLabel">Acción</h5> *@
+
+            </div>
+
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <div class="modal-body">
+                <!-- Aquí va el contenido de la modal -->
+                <form id="formModal" method="get" asp-action="VerReporte3" asp-controller="HisEstudios">
+                    <input type="hidden" name="id" id="terceroIdHidden" />
+                    <div class="col-md-12 fixed-width-border" style="padding: 0px;">
+                        <div class="card text-center">
+                            <div class="card-header">
+                                <div class="input-group mb-3">
+                                    <span class="form-control2">Fec. Desde</span>
+                                    <input name="fechaInicio" type="date" class="form-control2" id="Fec1" />
+
+                                    <span class="form-control2">Fe. Hasta</span>
+                                    <input name="fechaFin" type="date" class="form-control2" id="Fec2" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Aceptar</button>
+                        </div>
+                    </div>
+                </form>
+
+
+
+            </div>
+        </div>
+
+    </div>
+    @* </form> *@
+</div>
+
+<!-- Modal Para Agregar Compras -->
+<div class="modal fade" id="ModalFacturacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl" style="max-width: 70%; margin-top: 20px;">
+        <div class="modal-content">
+            <div class="container-fluid pb-2">
+                <div class="d-flex justify-content-between align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2 flex-grow-1">
+                        <!-- Paciente encontrado -->
+                        <div id="pacienteResultado" class="ms-3 text-dark small fw-bold" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            <!-- Aquí se mostrará el nombre del paciente -->
+                        </div>
+                        <div id="numeroResultado" class="ms-3 text-dark small fw-bold" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            <!-- Aquí se mostrará el nombre del paciente -->
+                        </div>
+                        <!-- Aquí se guarda el ID del paciente seleccionado -->
+                        <input type="hidden" id="IdTercero" name="IdTercero" value="" />
+                    </div>
+
+                    <!-- Botón guardar alineado a la derecha -->
+                    <button id="btnGuardarFactura" class="btn btn-success btn-sm" onclick="enviarFactura1()">
+                        💾 Guardar
+                    </button>
+                    <button onclick="guardarOModificarCompra()">Guardar o Actualizar</button>
+                </div>
+            </div>
+            <!-- Cuerpo del modal -->
+@*             <div class="modal-body p-1" style="max-height: 600px; overflow-y: auto;">
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <div class="border border-dark p-2 rounded" style="height: 600px; display: flex; flex-direction: column;">
+                            <!-- Encabezado + Campo de fecha en la misma línea -->
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <div class="d-flex align-items-center">
+                                    <h6 class="fw-bold mb-0" style="font-size: 12px;">Compras:</h6>
+
+                                </div>
+                            </div>
+                            <!-- Contenido de las pestañas -->
+                            <div class="tab-content mt-1" style="flex: 1; overflow: hidden;">
+                                <!-- TAB: Actual -->
+                                <div class="tab-pane fade show active h-100" id="tab-actual" role="tabpanel" aria-labelledby="tab-actual-tab">
+                                    <!-- Tabla con encabezado fijo -->
+                                    <div class="container">
+                                        <style>
+                                            .tabla-precios {
+                                                font-size: 12px;
+                                                font-family: 'Open Sans Condensed', sans-serif;
+                                                line-height: 20px;
+                                            }
+
+
+                                            .form-label-compras {
+                                                font-weight: bold;
+                                            }
+
+                                            .campo-custom-NroDoc,
+                                            .campo-custom-Fecha,
+                                            .select-custom {
+                                                width: 100%;
+                                            }
+                                        </style>
+
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-4">
+                                                <label for="Input_ComprasDoc_IdTipDocCompras" class="form-label-compras">Tipo Documento</label>
+                                                <select class="form-select select-custom"
+                                                        asp-for="Input.ComprasDoc.IdTipDocCompras"
+                                                        asp-items="@(new SelectList(Model.Input.tipodocCompLista, "Value", "Text"))">
+                                                    <option value="">-- Seleccionar --</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <label for="Input_ComprasDoc_CompNroDoc" class="form-label-compras">Nro. de documento</label>
+                                                <input asp-for="Input.ComprasDoc.CompNroDoc"
+                                                       class="form-control campo-custom-NroDoc"
+                                                       placeholder="Número Documento"
+                                                       oninput="convertirAMayusculas(this)" />
+                                                <span asp-validation-for="Input.ComprasDoc.CompNroDoc" class="text-danger"></span>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <label for="Input_ComprasDoc_CompFecha" class="form-label-compras">Fecha</label>
+                                                <input asp-for="Input.ComprasDoc.CompFecha"
+                                                       class="form-control campo-custom-Fecha"
+                                                       placeholder="Fecha Documento"
+                                                       id="compfecha" />
+                                                <span asp-validation-for="Input.ComprasDoc.CompFecha" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-12">
+                                                <label for="Input.ComprasDoc.CompDescripcion" class="form-label-compras">Descripción</label>
+                                                <input asp-for="Input.ComprasDoc.CompDescripcion"
+                                                       placeholder="CompDescripcion"
+                                                       class="form-control campo-custom-NroDoc"
+                                                       style="width: 100%"
+                                                       oninput="convertirAMayusculas(this)"
+                                                       onblur="verificarValoresAgregados(this)" />
+                                                <span asp-validation-for="Input.ComprasDoc.CompDescripcion" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <hr class="my-2"> <!-- Separador horizontal -->
+
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col" style="padding: inherit;">
+                                                <div id="tablaPreciosContainer1" style="overflow-y: auto; max-height: 550px;">
+                                                    <!-- ... tabla ... -->
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col" style="padding: inherit;">
+                                                <div id="tablaPreciosContainer1" style="overflow-y: auto; max-height: 550px;">
+                                                    <table class="table table-bordered border-primary table-sm tabla-precios" id="tablaPrecios" align="center" style="font-size: 12px; height: 20px; font-family: 'Open Sans Condensed', sans-serif;">
+                                                        <thead>
+                                                            <tr>
+                                                                <th style="width: 1%;">#</th>
+                                                                <th style="width: 50%;">Tipo / Nombre</th>
+                                                                <th style="width: 10%;">Cant</th>
+                                                                <th style="width: 15%;">Precio</th>
+                                                                <th style="width: 15%;">Total</th>
+                                                                <th style="width: 1%;"></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="articulosTableBodyModal">
+                                                            <!-- Aquí se agregarán las filas dinámicamente -->
+                                                        </tbody>
+                                                        <tfoot>
+                                                            <!-- Fila de totales -->
+                                                            <tr>
+                                                                <td colspan="4" style="text-align: right; "><strong>Total:</strong></td>
+                                                                <td id="totalDocument" style="text-align: right; font-size: 12px; height: 20px; font-family: 'Open Sans Condensed', sans-serif;  font-weight: bold;">$0.00</td>
+                                                                <td></td>
+                                                            </tr>
+
+                                                            <!-- Botón agregar -->
+                                                            <tr>
+                                                                <td colspan="5" style="text-align: right;"><strong>Agregar Ítems:</strong></td>
+                                                                <td>
+                                                                    <button type="button"
+                                                                            id="btnAgregarProductos"
+                                                                            class="btn-elimina btn-success">
+                                                                        <i class="fas fa-plus"></i>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        </tfoot>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+
+                                    <!-- TAB: Cliente -->
+                                    <div class="tab-pane fade h-100" id="tab-cliente" role="tabpanel" aria-labelledby="tab-cliente-tab">
+
+
+                                        <!-- TAB: Seguro -->
+                                        <div class="tab-pane fade h-100" id="tab-seguro" role="tabpanel" aria-labelledby="tab-seguro-tab">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <!-- GEstion de Cobros o Pagos -->
+                    <div class="col-md-5">
+                        <div class="border border-dark p-2 rounded" style="height: 600px; display: flex; flex-direction: column;">
+
+                            <!-- Encabezado + Campo de fecha en la misma línea -->
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <div class="d-flex align-items-center">
+                                    <h6 class="fw-bold mb-0" style="font-size: 12px;">Gestión de Cobros </h6>
+
+                                </div>
+                            </div>
+
+                            <div class="col-md-12 fixed-width-border" style="padding: 0px;">
+                                <div class="card text-center">
+                                    <div class="card-header">
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-12">
+                                                <label for="Input_ComprasDoc_IdTipDocCompras" class="form-label-compras">Forma de Pago</label>
+                                                <select class="form-select select-custom"
+                                                        asp-for="Input.ComprasDoc.TesForPagId"
+                                                        asp-items="@(new SelectList(Model.Input.formapagoLista, "Value", "Text"))">
+                                                    <option value="">-- Seleccionar --</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-body fixed-height-card-body">
+
+                                        <div class="row">
+                                            <div class="col" style="padding: inherit;">
+                                                <div id="tablaTipoPagoContainer" style="overflow-y: auto; max-height: 500px;">
+                                                    <table class="table table-bordered border-primary" id="tablaTipoPago" align="center" style="font-size: small; font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                        <thead>
+                                                            <tr>
+                                                                <th width="2%" class="text-center" style="font-size: smaller;">#</th>
+                                                                <th width="50%" class="text-center" style="font-size: smaller;">Cuenta</th>
+                                                                <th width="20%" class="text-center" style="font-size: smaller;">Valor Pago</th>
+                                                                <th width="1%"></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="tipopagoTableBody"></tbody>
+                                                        <tfoot>
+                                                            <tr>
+                                                                <td colspan="2" class="text-right"><strong>Total Pago:</strong></td>
+                                                                <td id="totalPagos1x" class="text-right" style="font-size: smaller;">0,00</td>
+                                                                <td>
+                                                                    <button type="button"
+                                                                            onclick="agregarTipoPago()"
+                                                                            class="btn-elimina btn-success">
+                                                                        <i class="fas fa-plus"></i>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        </tfoot>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> *@
+        </div>
+    </div>
+</div>
+
+
+@* <!-- Modal Para Agregar Vehiculos -->
+<div class="modal fade" id="ModalVehiculos" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl" style="max-width: 70%; margin-top: 20px;">
+        <div class="modal-content">
+            <div class="container-fluid pb-2">
+                <div class="d-flex justify-content-between align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2 flex-grow-1">
+                        <!-- Paciente encontrado -->
+                        <div id="numeroResultado" class="ms-3 text-dark small fw-bold" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            <!-- Aquí se mostrará el nombre del paciente -->
+                        </div>
+                        <!-- Aquí se guarda el ID del paciente seleccionado -->
+                        <input type="hidden" id="IdTercero" name="IdTercero" value="" />
+                    </div>
+
+                    <!-- Botón guardar alineado a la derecha -->
+                    <button onclick="guardarOModificarVehiculo()">Guardar o Actualizar</button>
+                </div>
+            </div>
+            <!-- Cuerpo del modal -->
+            <div class="modal-body p-1" style="max-height: 600px; overflow-y: auto;">
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <div class="border border-dark p-2 rounded" style="height: 600px; display: flex; flex-direction: column;">
+                            <!-- Encabezado + Campo de fecha en la misma línea -->
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <div class="d-flex align-items-center">
+                                    <h6 class="fw-bold mb-0" style="font-size: 12px;">Vehículos:</h6>
+                                    
+                                </div>
+                            </div>
+                            <!-- Contenido de las pestañas -->
+                            <div class="tab-content mt-1" style="flex: 1; overflow: hidden;">
+                                <!-- TAB: Actual -->
+                                <div class="tab-pane fade show active h-100" id="tab-actual" role="tabpanel" aria-labelledby="tab-actual-tab">
+                                    <!-- Tabla con encabezado fijo -->
+                                    <div class="container">
+                                        <style>
+                                            .tabla-precios {
+                                                font-size: 12px;
+                                                font-family: 'Open Sans Condensed', sans-serif;
+                                                line-height: 20px;
+                                            }
+
+
+                                            .form-label-compras {
+                                                font-weight: bold;
+                                            }
+
+                                            .campo-custom-NroDoc,
+                                            .campo-custom-Fecha,
+                                            .select-custom {
+                                                width: 100%;
+                                            }
+                                        </style>
+
+                                        <div class="row g-3 align-items-end">
+
+                                            <div class="col-md-4">
+                                                <label for="Input_ComprasDoc_CompNroDoc" class="form-label-compras">Nro. de Placa</label>
+                                                <input asp-for="Input.ComprasDoc.CompNroDoc"
+                                                       class="form-control campo-custom-NroDoc"
+                                                       placeholder="Número Documento"
+                                                       oninput="convertirAMayusculas(this)" />
+                                                <span asp-validation-for="Input.ComprasDoc.CompNroDoc" class="text-danger"></span>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="Input_ComprasDoc_IdTipDocCompras" class="form-label-compras">Tipo Documento</label>
+                                                <select class="form-select select-custom"
+                                                        asp-for="Input.ComprasDoc.IdTipDocCompras"
+                                                        asp-items="@(new SelectList(Model.Input.tipodocCompLista, "Value", "Text"))">
+                                                    <option value="">-- Seleccionar --</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <label for="Input_ComprasDoc_CompNroDoc" class="form-label-compras">Nro. de Placa</label>
+                                                <input asp-for="Input.ComprasDoc.CompNroDoc"
+                                                       class="form-control campo-custom-NroDoc"
+                                                       placeholder="Número Documento"
+                                                       oninput="convertirAMayusculas(this)" />
+                                                <span asp-validation-for="Input.ComprasDoc.CompNroDoc" class="text-danger"></span>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <label for="Input_ComprasDoc_CompFecha" class="form-label-compras">Fecha</label>
+                                                <input asp-for="Input.ComprasDoc.CompFecha"
+                                                       class="form-control campo-custom-Fecha"
+                                                       placeholder="Fecha Documento"
+                                                       id="compfecha" />
+                                                <span asp-validation-for="Input.ComprasDoc.CompFecha" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-12">
+                                                <label for="Input.ComprasDoc.CompDescripcion" class="form-label-compras">Descripción</label>
+                                                <input asp-for="Input.ComprasDoc.CompDescripcion"
+                                                       placeholder="CompDescripcion"
+                                                       class="form-control campo-custom-NroDoc"
+                                                       style="width: 100%"
+                                                       oninput="convertirAMayusculas(this)"
+                                                       onblur="verificarValoresAgregados(this)" />
+                                                <span asp-validation-for="Input.ComprasDoc.CompDescripcion" class="text-danger"></span>
+                                            </div>
+                                        </div>
+
+                                        <hr class="my-4"> <!-- Separador horizontal -->
+
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col" style="padding: inherit;">
+                                                <div id="tablaPreciosContainer1" style="overflow-y: auto; max-height: 550px;">
+                                                    <!-- ... tabla ... -->
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col" style="padding: inherit;">
+                                                <div id="tablaPreciosContainer1" style="overflow-y: auto; max-height: 550px;">
+                                                    <table class="table table-bordered border-primary table-sm tabla-precios" id="tablaPrecios" align="center" style="font-size: 12px; height: 20px; font-family: 'Open Sans Condensed', sans-serif;">
+                                                        <thead>
+                                                            <tr>
+                                                                <th style="width: 1%;">#</th>
+                                                                <th style="width: 50%;">Tipo / Nombre</th>
+                                                                <th style="width: 10%;">Cant</th>
+                                                                <th style="width: 15%;">Precio</th>
+                                                                <th style="width: 15%;">Total</th>
+                                                                <th style="width: 1%;"></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="articulosTableBodyModal">
+                                                            <!-- Aquí se agregarán las filas dinámicamente -->
+                                                        </tbody>
+                                                        <tfoot>
+                                                            <!-- Fila de totales -->
+                                                            <tr>
+                                                                <td colspan="4" style="text-align: right; "><strong>Total:</strong></td>
+                                                                <td id="totalDocument" style="text-align: right; font-size: 12px; height: 20px; font-family: 'Open Sans Condensed', sans-serif;  font-weight: bold;">$0.00</td>
+                                                                <td></td>
+                                                            </tr>
+
+                                                            <!-- Botón agregar -->
+                                                            <tr>
+                                                                <td colspan="5" style="text-align: right;"><strong>Agregar Ítems:</strong></td>
+                                                                <td>
+                                                                    <button type="button"
+                                                                            id="btnAgregarVehiculos"
+                                                                            class="btn-elimina btn-success">
+                                                                        <i class="fas fa-plus"></i>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        </tfoot>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+
+                                    <!-- TAB: Cliente -->
+                                    <div class="tab-pane fade h-100" id="tab-cliente" role="tabpanel" aria-labelledby="tab-cliente-tab">
+
+
+                                        <!-- TAB: Seguro -->
+                                        <div class="tab-pane fade h-100" id="tab-seguro" role="tabpanel" aria-labelledby="tab-seguro-tab">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <!-- GEstion de Cobros o Pagos -->
+                    <div class="col-md-5">
+                        <div class="border border-dark p-2 rounded" style="height: 600px; display: flex; flex-direction: column;">
+
+                            <!-- Encabezado + Campo de fecha en la misma línea -->
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <div class="d-flex align-items-center">
+                                    <h6 class="fw-bold mb-0" style="font-size: 12px;">Gestión de Cobros </h6>
+
+                                </div>
+                            </div>
+
+                            <div class="col-md-12 fixed-width-border" style="padding: 0px;">
+                                <div class="card text-center">
+                                    <div class="card-header">
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-12">
+                                                <label for="Input_ComprasDoc_IdTipDocCompras" class="form-label-compras">Forma de Pago</label>
+                                                <select class="form-select select-custom"
+                                                        asp-for="Input.ComprasDoc.TesForPagId"
+                                                        asp-items="@(new SelectList(Model.Input.formapagoLista, "Value", "Text"))">
+                                                    <option value="">-- Seleccionar --</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-body fixed-height-card-body">
+
+                                        <div class="row">
+                                            <div class="col" style="padding: inherit;">
+                                                <div id="tablaTipoPagoContainer" style="overflow-y: auto; max-height: 500px;">
+                                                    <table class="table table-bordered border-primary" id="tablaTipoPago" align="center" style="font-size: small; font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                        <thead>
+                                                            <tr>
+                                                                <th width="2%" class="text-center" style="font-size: smaller;">#</th>
+                                                                <th width="50%" class="text-center" style="font-size: smaller;">Cuenta</th>
+                                                                <th width="20%" class="text-center" style="font-size: smaller;">Valor Pago</th>
+                                                                <th width="1%"></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="tipopagoTableBody"></tbody>
+                                                        <tfoot>
+                                                            <tr>
+                                                                <td colspan="2" class="text-right"><strong>Total Pago:</strong></td>
+                                                                <td id="totalPagos1x" class="text-right" style="font-size: smaller;">0,00</td>
+                                                                <td>
+                                                                    <button type="button"
+                                                                            onclick="agregarTipoPago()"
+                                                                            class="btn-elimina btn-success">
+                                                                        <i class="fas fa-plus"></i>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        </tfoot>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+ *@
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/AgregarPagos.js"></script>
+<script src="~/js/CommonProcess.js" asp-append-version="true"></script>
+<script src="~/js/AgregarPorcentajes.js"></script>
+<script src="~/js/AgregarEstudios.js"></script>
+<script src="~/js/AgregarProductos.js" asp-append-version="true"></script>
+<script src="~/js/ControlPest.js" asp-append-version="true"></script>
+<script src="~/js/VehiculoEnvioDto.js" asp-append-version="true"></script>
+<script src="~/js/AgregarVehiculos.js" asp-append-version="true"></script>
+
+
+<script>
+    window.listaEstudiosx = @Html.Raw(JsonConvert.SerializeObject(Model.Input.listaEstudios))
+    window.listaMedicos = @Html.Raw(JsonConvert.SerializeObject(Model.Input.listaMedicos))
+    window.articulosLista1 = @Html.Raw(JsonConvert.SerializeObject(Model.Input.articulosLista))
+</script>
+
+@section Scripts
+{
+    <script>
+                          window.onload = function(){
+                                  var i = 0;
+                                  var listaDirecciones = JSON.parse('@Html.Raw(Json.Serialize(Model.Input.DataTerceros.DireccionT))');
+
+
+                                  var indices = Object.keys(listaDirecciones);
+                                  const frutas = listaDirecciones;
+                                  frutas.forEach(function (Direccion, indice) {
+                                       agregarDireccion1();
+
+
+                                      var hiddenDirecId = "HiddenDirection" + indice;
+                                      var dirDescripId = "DirDescrip" + indice;
+                                      var dirDireccionId = "Direccion" + indice;
+                                      var dirCodCiudadId = "CodCiudad" + indice;
+
+                                      document.getElementById(dirDescripId).value = Direccion.dirDescrip;
+                                      document.getElementById(dirDireccionId).value = Direccion.direccion;
+                                      document.getElementById(dirCodCiudadId).value = Direccion.codCiudad;
+
+                                                  const escondido = document.getElementById(hiddenDirecId);
+                                                  if(escondido) {
+                                                      escondido.value = Direccion.idDirection;
+                                                  } else {
+                                                      console.error("Elemento no encontrado: " + hiddenDirecId);
+                                                  }
+
+                                      // // Agregar el valor al campo oculto
+                                      document.getElementById(hiddenDirecId).value = Direccion.idDirection;
+
+
+
+                                      var dirDescripValue = document.getElementById(dirDescripId).value;
+                                      var direccionValue = document.getElementById(dirDireccionId).value;
+                                      var codCiudadValue = document.getElementById(dirCodCiudadId).value;
+                                      var hiddDirectionValue = document.getElementById(hiddenDirecId).value;
+
+                                      // Crear un objeto con los valores de la dirección
+
+
+                                      var nuevaDireccion = {
+                                          DirDescrip: Direccion.dirDescrip,
+                                          Direccion: Direccion.direccion,
+                                          CodCiudad: Direccion.codCiudad,
+                                          IdDirection: Direccion.idDirection
+                                      };
+
+                                  });
+
+                                  window.Activo = false;
+
+
+                              //     //********************************************************************************************************** */
+                              //                 var r = 0;
+                              //     var listaComisiones = JSON.parse('Html.Raw(Json.Serialize(Model.Input.DataTerceros.Comisiones))');
+
+
+                              //     var indices = Object.keys(listaComisiones);
+                              //     const comi = listaComisiones;
+                              //     comi.forEach(function (Comision, indice) {
+                              //          agregarPorcentajes();
+                              //         var hiddenComisId = "HiddenComisiones" + indice;
+                              //         var comiCodigoId = "Codigo" + indice;
+                              //         var comiNombreId = "Nombre" + indice;
+                              //         var comiPorcentajeId = "VrPorcentaje" + indice;
+
+
+                              //         document.getElementById(comiCodigoId).value = Comision.hisComisCodigo;
+                              //         document.getElementById(comiNombreId).value = Comision.hisComisNombre;
+
+
+
+
+                              //                          let ComisionCarga =  Comision.hisComisPorcentaje;//.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(/,/g, '.') || 0;
+                              //                             // 				 console.log("ComisionCarga", ComisionCarga.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(/,/g, '.') || 0);
+
+
+
+                              // const comision = parseFloat(
+                              //   ComisionCarga ?? "0"
+                              //     .replace(/[^\d,.-]/g, '')  // Quita cualquier carácter no numérico (salvo , . -)
+                              //     .replace(/\./g, '')        // Quita puntos de miles
+                              //     .replace(/,/g, '.')        // Reemplaza la coma decimal por punto
+                              // ) || 0;
+
+
+
+                              // document.getElementById(comiPorcentajeId).value = comision.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                              //                     const escondido = document.getElementById(hiddenComisId);
+                              //                     if(escondido) {
+                              //                         escondido.value = Comision.hisComisionId;
+                              //                     } else {
+                              //                         console.error("Elemento no encontrado: " + hiddenComisId);
+                              //                     }
+
+                              //         // // Agregar el valor al campo oculto
+                              //         // document.getElementById(hiddenDirecId).value = Direccion.idDirection;
+
+                              //         var comiCodigoValue = document.getElementById(comiCodigoId).value;
+                              //         var comiNombreValue = document.getElementById(comiNombreId).value;
+                              //         var comiPorcentajeValue = document.getElementById(comiPorcentajeId).value;
+                              //         // var hiddDirectionValue = document.getElementById(hiddenDirecId).value;
+
+                              //         // Crear un objeto con los valores de la dirección
+
+
+                              //         var nuevaComision = {
+                              //             comiCodigo: Comision.hisComisCodigo,
+                              //             comiNombre: Comision.hisComisNombre,
+                              //             comiPorcentaje: Comision.hisComisPorcentaje,
+                              //             // IdDirection: Direccion.idDirection
+                              //         };
+
+                              //     });
+                                  // //********************************************************************************************************** */
+                                  // var listaEstudios = JSON.parse('Html.Raw(Json.Serialize(Model.Input.DataTerceros.Movimientos))');
+                                  // var indices = Object.keys(listaEstudios);
+                                  // const estud = listaEstudios;
+
+                                  // console.log("Movimientos a Procesar",estud);
+
+                                  // estud.forEach(function (Movimientos, indice) {
+                                  //  agregarMovimientos();
+                                  //  var moviCodigoId = "Codigo" + indice;
+                                  //  document.getElementById(moviCodigoId).value = Movimientos.terMovCodigo;
+
+                                  //  var estudioId = "Estudios" + indice;
+                                  //  var moviNombreId = "Nombre" + indice;
+
+                                  //  if(Activo){
+                                  //      // document.getElementById(`search1Input${indice}`).value = Movimientos.nombreEstudio;
+                                  //  }else{
+                                  //        document.getElementById(moviNombreId).value = Movimientos.nombreEstudio;
+                                  //  }
+
+                                  //     var CodOrdId = "CodOrd" + indice;
+                                  //     document.getElementById(CodOrdId).value = Movimientos.terMoTErMovCodOrd;
+
+
+                                  //     var moviFechaEstId = "FechaEst" + indice;
+                                  //     document.getElementById(moviFechaEstId).value = Movimientos.terMovFecEstudio?.split('T')[0];
+
+                                  //     var moviFechaLecId = "FechaLec" + indice;
+                                  //     document.getElementById(moviFechaLecId).value = Movimientos.terMovFecLectura?.split('T')[0];
+
+                                  //     var moviVrEstudioId = "VrEstudio" + indice;
+                                  //     document.getElementById(moviVrEstudioId).value = Movimientos.terMovPago;
+
+                                  //     let VrEstudioCarga =  Movimientos.terMovPago;
+
+                                  //      const valorestudio = parseFloat(
+                                  //        VrEstudioCarga ?? "0"
+                                  //         .replace(/[^\d,.-]/g, '')  // Quita cualquier carácter no numérico (salvo , . -)
+                                  //         .replace(/\./g, '')        // Quita puntos de miles
+                                  //         .replace(/,/g, '.')        // Reemplaza la coma decimal por punto
+                                  //      ) || 0;
+
+                                  //      document.getElementById(moviVrEstudioId).value = valorestudio.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+
+                                  //      var medicosListId = "Medicos" + indice;
+                                  //     document.getElementById(`searchInput${indice}`).value = Movimientos.nombreMedico;
+                                  //     document.getElementById(medicosListId).value = Movimientos.terMovMedLee;
+
+
+
+
+                                  //     var hiddenMoviId = "HiddenMovimientos" + indice;
+                                  //     var hiddenFechaPagId = "HiddenFechaPag" + indice;
+                                  //     var hiddenCedulad = "HiddenCedula" + indice;
+
+
+
+                                  //     // 			const escondido = document.getElementById(hiddenMoviId);
+                                  //     // 			if(escondido) {
+                                  //     // 				escondido.value = Movimientos.terMovId;
+                                  //     // 			} else {
+                                  //     // 				console.error("Elemento no encontrado: " + hiddenMoviId);
+                                  //     // 			}
+
+                                  // });
+
+                                  //*****************************   AGREGAR DOCUMENTOS DE COMPRAS  ******************************************* */
+
+
+
+
+                              }
+
+                                      var direccionIndex = 0;
+                              function agregarDireccion1() {
+
+                                  // console.log("Estoy en la Funcion");
+
+                                  var tableBody = document.getElementById("direccionesTableBody");
+                                      var newRow = tableBody.insertRow(-1); // Insert a new row at the end of the table.
+
+                                      // Create cells for the new row.
+                                      var cellIndex = newRow.insertCell(0);
+                                      var cellDirDescrip = newRow.insertCell(1);
+                                      var cellDireccion = newRow.insertCell(2);
+                                      var cellCodCiudad = newRow.insertCell(3); // Cell for the delete button.
+                                      // var cellEliminar = newRow.insertCell(4); // Cell for the delete button.
+                                      // Generate unique IDs for input fields and delete button.
+                                      var dirDescripId = "DirDescrip" + direccionIndex;
+                                      var direccionId = "Direccion" + direccionIndex;
+                                      var ciudadSelectId = "CodCiudad" + direccionIndex;
+                                      // var deleteButtonId = "deleteButton" + direccionIndex;
+                                      var hiddenDirectionId = "HiddenDirection" + direccionIndex;
+
+                                      // agregarCamposOcultos(newRow, direccionIndex);
+
+                                      // Fill the cells with input fields, labels, and delete buttons.
+                                      cellIndex.innerHTML = direccionIndex + 1;
+
+                                      cellDirDescrip.innerHTML = `<input type="text" id="${dirDescripId}" name="Direccion[${direccionIndex}].DirDescrip" class="form-control1"
+                                                                                                                      oninput="convertirAMayusculas(this)"/>`;
+
+                                      cellDireccion.innerHTML = `<input type="text" id="${direccionId}" name="Direccion[${direccionIndex}].Direccion" class="form-control1"
+                                                                                                              oninput="convertirAMayusculas(this)"/>`;
+
+                                      // Create a dropdown for the city.
+                                      var ciudadDropdownHTML = `
+                                       <select id="${ciudadSelectId}"
+                                       name="Direccion[${direccionIndex}].CodCiudad"
+                                           class="form-control1">
+                                          <option value="">-- Seleccionar --</option>
+
+                              @foreach (var item in Model.Input.CiudadLista)
+                              {
+                                                               <option value="@item.Value">@item.Text</option>
+                              }
+                                          </select>`;
+                                          cellCodCiudad.innerHTML = ciudadDropdownHTML;
+
+
+                                      // cellEliminar.innerHTML = `
+                                      // <button type="button" id="${deleteButtonId}"
+                                      // 	onclick="eliminarDireccion(${direccionIndex})"
+                                      // 	class="btn-elimina btn-danger">
+                                      // 	<i class="fas fa-times"></i>
+                                      // </button>`;
+
+
+                                                      newRow.innerHTML += `
+                                      <input
+                                          type="hidden"
+                                          id="${hiddenDirectionId}"
+                                          name="Direccion[${direccionIndex}].IdDirection"
+                                           />`;
+
+
+                                          direccionIndex++;
+
+                              }
+
+                                      //************************************** VEHICULOS REGISTRADOS ********************************* */
+                                          var listaVehiculos = JSON.parse('Html.Raw(Json.Serialize(Model.Input.DataTerceros.TVehiculosT))');
+                                                  var indices = Object.keys(listaVehiculos);
+                                                  const vehic = listaVehiculos;
+
+                                                  console.log("Vehiculos a Procesar",vehic);
+
+                                                  vehic.forEach(function (Vehiculos, indice) {
+                                           agregarVehiculos();
+                                           // var moviCodigoId = "Codigo" + indice;
+                                           // document.getElementById(moviCodigoId).value = Movimientos.terMovCodigo;
+
+                                           // var estudioId = "Estudios" + indice;
+                                           // var moviNombreId = "Nombre" + indice;
+
+                                           // if(Activo){
+                                           //     // document.getElementById(`search1Input${indice}`).value = Movimientos.nombreEstudio;
+                                           // }else{
+                                           //       document.getElementById(moviNombreId).value = Movimientos.nombreEstudio;
+                                           // }
+
+                                           //    var CodOrdId = "CodOrd" + indice;
+                                           //    document.getElementById(CodOrdId).value = Movimientos.terMoTErMovCodOrd;
+
+
+                                           //    var moviFechaEstId = "FechaEst" + indice;
+                                           //    document.getElementById(moviFechaEstId).value = Movimientos.terMovFecEstudio?.split('T')[0];
+
+                                           //    var moviFechaLecId = "FechaLec" + indice;
+                                           //    document.getElementById(moviFechaLecId).value = Movimientos.terMovFecLectura?.split('T')[0];
+
+                                           //    var moviVrEstudioId = "VrEstudio" + indice;
+                                           //    document.getElementById(moviVrEstudioId).value = Movimientos.terMovPago;
+
+                                           //    let VrEstudioCarga =  Movimientos.terMovPago;
+
+                                           //     const valorestudio = parseFloat(
+                                           //       VrEstudioCarga ?? "0"
+                                           //        .replace(/[^\d,.-]/g, '')  // Quita cualquier carácter no numérico (salvo , . -)
+                                           //        .replace(/\./g, '')        // Quita puntos de miles
+                                           //        .replace(/,/g, '.')        // Reemplaza la coma decimal por punto
+                                           //     ) || 0;
+
+                                           //     document.getElementById(moviVrEstudioId).value = valorestudio.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+
+                                           //     var medicosListId = "Medicos" + indice;
+                                           //    document.getElementById(`searchInput${indice}`).value = Movimientos.nombreMedico;
+                                           //    document.getElementById(medicosListId).value = Movimientos.terMovMedLee;
+
+
+
+
+                                           //    var hiddenMoviId = "HiddenMovimientos" + indice;
+                                           //    var hiddenFechaPagId = "HiddenFechaPag" + indice;
+                                           //    var hiddenCedulad = "HiddenCedula" + indice;
+
+
+
+                                              // 			const escondido = document.getElementById(hiddenMoviId);
+                                              // 			if(escondido) {
+                                              // 				escondido.value = Movimientos.terMovId;
+                                              // 			} else {
+                                              // 				console.error("Elemento no encontrado: " + hiddenMoviId);
+                                              // 			}
+
+                                          });
+
+
+
+                              function eliminarDireccion(index) {
+                                  var tableBody = document.getElementById("direccionesTableBody");
+                                  tableBody.deleteRow(index);
+
+                                  direccionIndex--; // decrementamos porque quitamos una fila
+
+                                  var rows = tableBody.getElementsByTagName("tr");
+
+
+
+                                  for (var i = 0; i < rows.length; i++) {
+                                      var row = rows[i];
+
+
+
+                                      row.getElementsByTagName("td")[0].textContent = i + 1;
+
+                              const loco = row.getElementsByTagName("td")[0].textContent = i + 1;
+
+
+
+
+                                      // Reasignar correctamente los IDs y Names
+                                      var dirDescripInput = row.querySelector('input[name^="Direccion["][name$="].DirDescrip"]');
+
+                                      var direccionInput = row.querySelector('input[name^="Direccion["][name$="].Direccion"]');
+                                      var codCiudadSelect = row.querySelector('select[name^="Direccion["][name$="].CodCiudad"]');
+                                      var hiddenInput = row.querySelector('input[type="hidden"][name^="Direccion["][name$="].IdDirection"]');
+                                      var deleteButton = row.querySelector('button');
+
+                                      if (dirDescripInput) {
+
+                                          dirDescripInput.name = `Direccion[${i}].DirDescrip`;
+                                          dirDescripInput.id = `DirDescrip${i}`;
+                                      }
+                                      if (direccionInput) {
+                                          direccionInput.name = `Direccion[${i}].Direccion`;
+                                          direccionInput.id = `Direccion${i}`;
+                                      }
+                                      if (codCiudadSelect) {
+                                          codCiudadSelect.name = `Direccion[${i}].CodCiudad`;
+                                          codCiudadSelect.id = `CodCiudad${i}`;
+                                      }
+                                      if (hiddenInput) {
+                                          hiddenInput.name = `Direccion[${i}].IdDirection`;
+                                          hiddenInput.id = `HiddenDirection${i}`;
+                                      }
+                                      if (deleteButton) {
+                                          deleteButton.setAttribute('onclick', `eliminarDireccion(${i})`);
+                                      }
+                                  }
+                              }
+
+
+
+
+
+                                  function regresar() {
+                                  window.location.href = '@Url.Action("Terceros", "Terceros", new { area = "Terceros" })';
+
+                              }
+                                      function enviarFormulario() {
+                                  document.getElementById('enviarotro').submit();
+                              }
+                                  // window.tipoPagoLista = Html.Raw(Json.Serialize(Model.Input.tipopagoLista));
+
+                              document.addEventListener('DOMContentLoaded', function () {
+                                  const imprimirBtn = document.getElementById("btnImprimirComisiones");
+
+                                  document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(function (tabBtn) {
+                                      tabBtn.addEventListener('shown.bs.tab', function (event) {
+                                          const targetId = event.target.getAttribute("data-bs-target");
+
+                                          if (targetId === "#comisiones") {
+                                              imprimirBtn.classList.remove("d-none"); // Mostrar
+                                          } else {
+                                              imprimirBtn.classList.add("d-none"); // Ocultar
+                                          }
+                                      });
+                                  });
+                              });
+
+
+                              document.addEventListener("DOMContentLoaded", () => {
+                                  var modal = document.getElementById("accionModal");
+
+                                  modal.addEventListener("show.bs.modal", function (event) {
+                                      var button = event.relatedTarget;
+                                      var idTercero = button.getAttribute("data-id-tercero");
+                                      document.getElementById("terceroIdHidden").value = idTercero;
+                                  });
+                              });
+
+
+                                      const today = new Date();
+                              const formattedDate = today.toISOString().split('T')[0];
+                              $('#fechaServicio, #pagofecha, #Fec1, #Fec2').val(formattedDate);
+
+                    //*****************************   FUNCION PARA MOSTRAR MODAL DE COMPRAS  ******************************************* */
+                              function mostrarModalFacturacion(idMesa) {
+                                  debugger;
+
+
+                                  // // Establece el valor del campo oculto
+                                  // document.getElementById("mesaId").value = idMesa;
+
+                              //     // Si quieres mostrar en el modal, algún texto del paciente/mesa
+                              // document.getElementById("pacienteResultado").innerHTML = `<h2 class="mb-0" style="font-size: 1.5rem;">Mesa: ${idMesa}</h2>`
+
+                              //  const NroTransacc = document.getElementById("correlativoMesa").value;
+                              // document.getElementById("numeroResultado").innerHTML = `<h2 class="mb-0" style="font-size: 1.5rem;">Transacción:  ${NroTransacc}</h2>`
+
+
+                              // Cargar datos de facturación, paciente, etc., si es necesario con AJAX
+
+                                  // Mostrar el modal
+                                  const modal = new bootstrap.Modal(document.getElementById('ModalFacturacion'));
+                                  modal.show();
+                              }
+
+                                                          //*****************************   FUNCION PARA MOSTRAR MODAL DE VEHCIULOS  ******************************************* */
+                                      function mostrarModalVehiculos(idMesa) {
+                                          debugger;
+
+
+                                          // // Establece el valor del campo oculto
+                                          // document.getElementById("mesaId").value = idMesa;
+
+                                      //     // Si quieres mostrar en el modal, algún texto del paciente/mesa
+                                      // document.getElementById("pacienteResultado").innerHTML = `<h2 class="mb-0" style="font-size: 1.5rem;">Mesa: ${idMesa}</h2>`
+
+                                      //  const NroTransacc = document.getElementById("correlativoMesa").value;
+                                      // document.getElementById("numeroResultado").innerHTML = `<h2 class="mb-0" style="font-size: 1.5rem;">Transacción:  ${NroTransacc}</h2>`
+
+
+                                      // Cargar datos de facturación, paciente, etc., si es necesario con AJAX
+
+                                          // Mostrar el modal
+                                                  const modal = new bootstrap.Modal(document.getElementById('ModalVehiculos'));
+                                          modal.show();
+                                      }
+
+                                      //*****************************   FUNCION PARA AGREGAR LOS PAGOS  ******************************************* */
+
+                                    var tipopagosIndex = 0;
+                                    function agregarTipoPago() {
+                                        let today = new Date();
+                                        let dd = String(today.getDate()).padStart(2, '0');
+                                        let mm = String(today.getMonth() + 1).padStart(2, '0');
+                                        let yyyy = today.getFullYear();
+                                        today = yyyy + '-' + mm + '-' + dd;
+
+                                        var tableBody1 = document.getElementById("tipopagoTableBody");
+                                        var newRow = tableBody1.insertRow(-1);
+
+
+
+
+                                        // Añadir celdas a la nueva fila
+                                        let cellIndex = newRow.insertCell(0);
+                                        let cellCuenta = newRow.insertCell(1);
+                                        let cellVrPago = newRow.insertCell(2);
+                                        let cellEliminar = newRow.insertCell(3);
+
+                                        let cuentaId = "DocCompPagDetCtaId" + tipopagosIndex;
+                                        let vrpagoId = "VrPago" + tipopagosIndex;
+
+
+
+                                        // Definir ID y nombre de los campos ocultos
+                                        let hiddenIncrementoId = "HiddenIncremento" + tipopagosIndex;
+                                        let hiddenFechaId = "HiddenFecha" + tipopagosIndex;
+                                        let hiddenDescripId = "HiddenDescrip" + tipopagosIndex;
+
+                                        let deleteButton1Id = "deleteButton" + tipopagosIndex;
+
+                                        // Asignar contenido a las celdas
+                                        cellIndex.innerHTML = tipopagosIndex + 1;
+
+
+                                        var pagosDropdownHTML = `
+                                                    <select id="${cuentaId}"
+                                                    style="font-size: small; font-family: 'Arial Narrow';"
+                                                    name="PagosDetalle[${tipopagosIndex}].VentaDocPagDetCtaId"
+                                                    onchange="actualizarValor(this, ${tipopagosIndex})"
+                                                    class="form-control1">
+                                                    <option value="">-- Seleccionar --</option>
+                                                                        @foreach (var item in Model.Input.tipopagoLista)
+                                                                                {
+                                                                                            <option value="@item.Value">@item.Text</option>
+                                                                                }
+                                                    </select>`;
+                                        cellCuenta.innerHTML = pagosDropdownHTML;
+
+
+
+
+                                        cellVrPago.innerHTML = `<input type="text" id="${vrpagoId}"
+                                                style="font-size: small; font-family: 'Arial Narrow';"
+                                                name="PagosDetalle[${tipopagosIndex}].DocVentaPagDetVrPago"
+                                                value="0.00"
+                                                oninput="esperarFormatoSeparadores1(this)"
+                                                onblur="actualizarTotalP()"
+                                                class="form-control1 text-right" />`;
+
+                                        cellEliminar.innerHTML = `
+                                            <button type="button" id="${deleteButton1Id}"
+                                                onclick="eliminarPagos1(${tipopagosIndex})"
+                                                class="btn-elimina btn-danger">
+                                                <i class="fas fa-times"></i>
+                                            </button>`;
+
+
+
+                                        newRow.innerHTML += `<input type="hidden" id="${hiddenIncrementoId}" name="PagosDetalle[${tipopagosIndex}].DocVentaPagDetAumento" value="true" />`;
+                                        newRow.innerHTML += `<input type="hidden" id="${hiddenDescripId}" name="PagosDetalle[${tipopagosIndex}].DocVentaDetNombre" value="PARA GIARDAR DATOS" />`;
+                                        newRow.innerHTML += `<input type="hidden" id="${hiddenFechaId}" name="PagosDetalle[${tipopagosIndex}].VentaDocPagDetFecha" value="${today}" />`;
+                                        // newRow.innerHTML += `<input type="hidden" id="${hiddenFechaId}" name="PagosDetalle[${tipopagosIndex}].VentaDocPagDetFecha" />`;
+
+                                        tipopagosIndex++;
+                                        // console.log("Elementos Total", tipopagosIndex)
+                                    }
+            //*****************************   FUNCION PARA AGREGAR LINEA DE ARTICULOS SI NO HAY NADA EN LA TABLA  ******************************************* */
+                                    function verificarValoresAgregados() {
+                                const tbody = document.getElementById("articulosTableBodyModal");
+
+
+                                // Verifica si el tbody está vacío
+                                if (tbody.children.length === 0) {
+
+                                    // Aquí puedes realizar alguna acción adicional si lo deseas
+                                    agregarProductos();
+
+                                } else {
+                                    console.log("Hay valores agregados.");
+                                }
+                            }
+
+//*****************************   FUNCION PARA AGREGAR TOMAR EL VALOR DEL DOCUMENTO PARA AGILIZAR LA CARGA DEL VALOR A PAGAR  ******************************************* */
+         function actualizarValor(elemento, index) {
+                    const valorDocumentoElem = document.getElementById("totalDocument");
+            if (!valorDocumentoElem) return;
+
+            const numero = parseFloat(valorDocumentoElem.innerText.replace(/[^\d.-]/g, '').replace(/,/g, '.'));
+            if (!isNaN(numero)) {
+                const input = document.getElementById(`VrPago${index}`);
+                if (input) {
+                    input.value = numero.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+            }
+actualizarTotalP();
+        }
+
+
+
+                // //*****************************   FUNCION PARA AGREGAR TOMAR EL VALOR DEL DOCUMENTO PARA AGILIZAR LA CARGA DEL VALOR A PAGAR  ******************************************* */
+                // document.getElementById('guardarNuevoPaciente').addEventListener('click', async function () {
+                //     const nombre = document.getElementById('nuevoNombre').value.trim();
+                //     const cedula = document.getElementById('nuevoCedula').value.trim();
+                //     const email = document.getElementById('nuevoEmail').value.trim();
+                //     const telefono = document.getElementById('nuevoTelefono').value.trim();
+
+                //     if (!nombre || !cedula) {
+                //         Swal.fire('Error', 'Por favor llena todos los campos obligatorios.', 'error');
+                //         return;
+                //     }
+
+                //             const direccion = {
+                //     DirDescrip: "PRINCIPAL",
+                //     Direccion: document.getElementById('nuevoDireccion').value,
+                //     CodCiudad: "1"
+                // };
+
+                // const data = {
+                //     Nid: cedula,
+                //     Name: nombre,
+                //     NombreComercial: "NO APLICA",
+                //     Email: email,
+                //     Phone: telefono,
+                //     IdTipDocumento: 2,
+                //     IdTipTercero: 43,
+                //     TipoTerceroId: 39,
+                //     Credit: true,
+                //     TercModHis: true,
+                //     TercModNomina: false,
+                //     TercModVenta: false,
+                //     TercModCompras: false,
+                //     TercCodContId: "20",
+                //     Direccion: [direccion], // ✅ Enviar lista
+                //     Comisiones: []
+                // };
+
+
+                //     // const data = {
+                //     //     Nid: cedula,
+                //     //     Name: nombre,
+                //     //     NombreComercial: "NO APLICA",               // puedes ajustar si necesitas
+                //     //     Email: email,
+                //     //     Phone: telefono,
+                //     //     IdTipDocumento: 2,
+                //     //     IdTipTercero: 43,
+                //     //     TipoTerceroId: 39,
+                //     //     Credit: false,
+                //     //     TercModHis: true,
+                //     //     TercModNomina: false,
+                //     //     TercModVenta: false,
+                //     //     TercModCompras: false,
+                //     //     TercCodContId: "20"
+
+                //     // };
+
+                //     try {
+                //         console.log("DATA ENVIADA:", JSON.stringify(data, null, 2));
+
+                //         const response = await fetch('/Terceros/Terceros/GuardarPaciente', {
+                //             method: 'POST',
+                //             headers: {
+                //                 'Content-Type': 'application/json'
+                //             },
+                //             body: JSON.stringify(data)
+                //         });
+
+                //         const result = await response.json();
+
+                // if (result.success) {
+                //     $('#modalNuevoPaciente').modal('hide');
+                //     document.getElementById('pacienteResultado').innerText = `✔️ ${nombre} (${cedula})`;
+
+                //     // 🔁 Ejecutar búsqueda de nuevo
+                //     document.getElementById('btnBuscarPaciente').click();
+                // }
+
+                //  else {
+                //             Swal.fire('Error', result.message || 'No se pudo guardar el paciente.', 'error');
+                //         }
+                //     } catch (error) {
+                //         Swal.fire('Error', 'Error de comunicación con el servidor.', 'error');
+                //         console.error('Error al guardar paciente:', error);
+                //     }
+                // });
+
+
+
+    </script>
+
+    <partial name="_ValidationScriptsPartial" />
+}
+
+
+

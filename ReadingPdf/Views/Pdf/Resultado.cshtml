@@ -1,0 +1,23 @@
+﻿@model PdfDataModel
+
+<h2>Resultado</h2>
+<h4>Texto extraído:</h4>
+<pre>@Model.TextoExtraido</pre>
+
+<h4>Montos encontrados:</h4>
+<ul>
+    @foreach (var monto in Model.Montos)
+    {
+        <li>@monto</li>
+    }
+</ul>
+
+<h4>Fechas encontradas:</h4>
+<ul>
+    @foreach (var fecha in Model.Fechas)
+    {
+        <li>@fecha</li>
+    }
+</ul>
+
+<p>Archivo Excel generado en <code>/wwwroot/datos.xlsx</code></p>

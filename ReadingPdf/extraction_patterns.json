@@ -1,0 +1,1927 @@
+﻿[
+  {
+    "Id": 1,
+    "BankId": 1,
+    "Pattern": "(For)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T13:58:53.354561Z"
+  },
+  {
+    "Id": 2,
+    "BankId": 1,
+    "Pattern": "(LAIMG\\ LLC\\r\\nJOSE)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T14:00:15.8596641Z"
+  },
+  {
+    "Id": 3,
+    "BankId": 1,
+    "Pattern": "(MOBILE\\ PAYMENT)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T14:00:18.9948788Z"
+  },
+  {
+    "Id": 4,
+    "BankId": 1,
+    "Pattern": "(VTS\\ MIAMI\\ TAXI\\ MIAMI\\ FL)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T14:00:20.7160929Z"
+  },
+  {
+    "Id": 5,
+    "BankId": 1,
+    "Pattern": "(Uber\\ Trip)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T14:00:29.059577Z"
+  },
+  {
+    "Id": 6,
+    "BankId": 1,
+    "Pattern": "(HAMPTON\\ INN\\ BY\\ HILTON\\ FT)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T14:00:31.8981123Z"
+  },
+  {
+    "Id": 7,
+    "BankId": 1,
+    "Pattern": "(GRUPO\\ UNDICI)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T14:00:34.0905434Z"
+  },
+  {
+    "Id": 8,
+    "BankId": 1,
+    "Pattern": "(Account\\ Ending)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T14:00:41.1936336Z"
+  },
+  {
+    "Id": 9,
+    "BankId": 1,
+    "Pattern": "(WWW\\.EVENTRIC\\.COM\\ CHICAGO\\ IL)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T14:00:44.6362486Z"
+  },
+  {
+    "Id": 10,
+    "BankId": 1,
+    "Pattern": "(?:TO:)\\s+(Carrier)",
+    "Description": "Auto-generated from keyword 'TO:'",
+    "CreatedAt": "2025-11-25T14:00:50.857781Z"
+  },
+  {
+    "Id": 11,
+    "BankId": 1,
+    "Pattern": "(Interest\\ Charge)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T14:00:58.4484427Z"
+  },
+  {
+    "Id": 12,
+    "BankId": 1,
+    "Pattern": "(Late\\ Payment\\ Warning)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:33.2547124Z"
+  },
+  {
+    "Id": 13,
+    "BankId": 1,
+    "Pattern": "(ONLINE\\ PAYMENT)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:34.239366Z"
+  },
+  {
+    "Id": 14,
+    "BankId": 1,
+    "Pattern": "(MONSERRATE\\ RESTAURANT)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:34.6456529Z"
+  },
+  {
+    "Id": 15,
+    "BankId": 1,
+    "Pattern": "(BURGER\\ KING\\ DORAL\\ FL)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:35.0266261Z"
+  },
+  {
+    "Id": 16,
+    "BankId": 1,
+    "Pattern": "(EXXONMOBIL)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:35.437568Z"
+  },
+  {
+    "Id": 17,
+    "BankId": 1,
+    "Pattern": "(EL\\ VALLE\\ DE\\ VINALES\\ Miami)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:35.8528104Z"
+  },
+  {
+    "Id": 18,
+    "BankId": 1,
+    "Pattern": "(SALON\\ CANTON\\ RESTAURANT)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:36.2564397Z"
+  },
+  {
+    "Id": 19,
+    "BankId": 1,
+    "Pattern": "(YETI\\ COOLERS)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:36.6557519Z"
+  },
+  {
+    "Id": 20,
+    "BankId": 1,
+    "Pattern": "(AMAZON\\ MARKETPLACE\\ NA\\ PA\\ AMZN\\.COM)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:37.0515894Z"
+  },
+  {
+    "Id": 21,
+    "BankId": 1,
+    "Pattern": "(TST)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:37.4514159Z"
+  },
+  {
+    "Id": 22,
+    "BankId": 1,
+    "Pattern": "(TWIN\\ PEAKS)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:37.8680098Z"
+  },
+  {
+    "Id": 23,
+    "BankId": 1,
+    "Pattern": "(Amazon\\ Prime\\ Amazon\\.com\\ WA\\r\\nSUBSCRIPTION)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:38.2677062Z"
+  },
+  {
+    "Id": 24,
+    "BankId": 1,
+    "Pattern": "(MATSURI)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:38.8368115Z"
+  },
+  {
+    "Id": 25,
+    "BankId": 1,
+    "Pattern": "(UBER\\ EATS)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:39.9615709Z"
+  },
+  {
+    "Id": 26,
+    "BankId": 1,
+    "Pattern": "(COMCAST\\ CABLE\\ COMM)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:40.5406882Z"
+  },
+  {
+    "Id": 27,
+    "BankId": 1,
+    "Pattern": "(KING\\ OCEAN\\ SERVICES\\ LI\\ MIAMI)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:40.9337129Z"
+  },
+  {
+    "Id": 28,
+    "BankId": 1,
+    "Pattern": "(ADOBE\\ Adobe\\ Systems\\ SAN\\ JOSE)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:41.3610396Z"
+  },
+  {
+    "Id": 29,
+    "BankId": 1,
+    "Pattern": "(DHL\\ EXPRESS\\ USA\\ INC\\ VIRT)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:42.6742127Z"
+  },
+  {
+    "Id": 30,
+    "BankId": 1,
+    "Pattern": "(UBER\\ ONE)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:43.6196421Z"
+  },
+  {
+    "Id": 31,
+    "BankId": 1,
+    "Pattern": "(CHIPOTLE)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:44.1309794Z"
+  },
+  {
+    "Id": 32,
+    "BankId": 1,
+    "Pattern": "(ADTSECURITY\\ MYADT\\.COM)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:44.5226246Z"
+  },
+  {
+    "Id": 33,
+    "BankId": 1,
+    "Pattern": "(SUBWAY)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:09:45.1093067Z"
+  },
+  {
+    "Id": 34,
+    "BankId": 1,
+    "Pattern": "(JOSE)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:55:47.2232316Z"
+  },
+  {
+    "Id": 35,
+    "BankId": 1,
+    "Pattern": "(JULIO\\ BRICENO\\ ANNUAL\\ MEMBERSHIP\\ FEE)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:55:49.5070756Z"
+  },
+  {
+    "Id": 36,
+    "BankId": 1,
+    "Pattern": "(JUAN\\ ROURA\\ ANNUAL\\ MEMBERSHIP\\ FEE)",
+    "Description": "Auto-generated from capitalized sequence",
+    "CreatedAt": "2025-11-25T15:55:50.4496503Z"
+  },
+  {
+    "Id": 37,
+    "BankId": 1,
+    "Pattern": "(Fecha\\tEmpresa\\tDescripción\\tMonto\\tCuenta\\tTipo\\ Documento\\n12/13/2024\\t\\tNext\\ Closing\\ Date\\ Account\\ Ending\\ 9-23005\\ Customer\\ Care:\\ 1-800-492-8468\\ TTY:\\ Use\\ Relay\\ 711\\ Website:\\ americanexpress\\.com\\ Payment\\ Coupon\\ Do\\ not\\ staple\\ or\\ use\\ paper\\ clips\\ Pay\\ by\\ Computer\\ americanexpress\\.com/\\ business\\ Pay\\ by\\ Phone\\ 1-800-472-9297\\ Account\\ Ending9-23005\\ Enter\\ 15\\ digit\\ account\\ \\#\\ on\\ all\\ payments\\.\\ Make\\ check\\ payable\\ to\\ American\\ Express\\.\\ OMAR\\ E\\ QUEVEDOPACKFORWARD\\ CORP2048\\ NW\\ 135TH\\ AVEMIAMI\\ FL\\ 33182-1929\\ Payment\\ Due\\ Date\\ Amount\\ Due\\t\\$13,065\\.58\\tSubcontracted\\ Services\\t\\n1/7/2025\\t\\tLate\\ Payment\\ Warning:If\\ we\\ do\\ not\\ receive\\ your\\ payment\\ by\\ the\\ Payment\\ Due\\ Date\\ of,\\ you\\ may\\ have\\ to\\ pay\\ a\\ late\\ fee\\ of\\t\\$39\\.00\\tSales\\t\\n11/30/2024\\t\\t74,716\\ For\\ up\\ to\\ date\\ point\\ balance\\ and\\ full\\ program\\ details,\\ visit membershiprewards\\.com\\ Account\\ Summary\\ Previous\\ Balance\\ Payments/Credits\\ New\\ Charges\\ Fees\\t\\$23,194\\.78\\tSubcontracted\\ Services\\t\\n12/13/2024\\t\\tAccount\\ Ending\\ 9-23005\\ Customer\\ Care\\ &\\ Billing\\ Inquiries\\ International\\ Collect\\ Express\\ Cash\\ Large\\ Print\\ &\\ Braille\\ Statements\\ 1-800-492-8468\\ 1-623-492-7719\\ 1-800-CASH-NOW\\ 1-800-492-8468\\ Hearing\\ Impaired\\ Online\\ chat\\ atamericanexpress\\.com\\ or\\ useRelay\\ dial\\ 711\\ and1-800-492-8468\\ Website:\\ americanexpress\\.com\\ Customer\\ Care\\ &\\ Billing\\ Inquiries\\ P\\.O\\.\\ BOX\\ 981535\\ EL\\ PASO,\\ TX\\ 79998-1535\\ Payments\\ PO\\ BOX\\ 6031\\ CAROL\\ STREAM\\ IL\\ 60197-6031\\ Payments\\ and\\ Credits\\ Summary\\ Total\\ Payments\\ -\\t\\$23,399\\.27\\tSales\\t\\n12/4/2024\\t\\tONLINE\\ PAYMENT\\ -\\ THANK\\ YOU\\ -\\t\\$23,399\\.27\\tSales\\t\\n11/12/2024\\t\\tMONSERRATE\\ RESTAURANT\\ 0000\\ DORAL\\ FL\\ 305-436-0803\\t\\$36\\.78\\tCost\\ of\\ Good\\ Sold\\t\\n11/13/2024\\t\\tBURGER\\ KING\\ DORAL\\ FL\\ 305-834-1387\\t\\$26\\.61\\tGino\\ de\\ Abreu\\ Equity\\t\\n11/14/2024\\t\\tEXXONMOBIL\\ 9758\\ DORAL\\ FL\\ 305-715-9977\\t\\$62\\.00\\tSales\\t\\n11/15/2024\\t\\tEL\\ VALLE\\ DE\\ VINALES\\ Miami\\ FL\\ squareup\\.com/receipts\\t\\$102\\.00\\tSales\\t\\n11/15/2024\\t\\tSALON\\ CANTON\\ RESTAURANT\\ 06888002146811\\ DORAL\\ FL\\ 387934\\ 33172\\t\\$70\\.00\\tSales\\t\\n11/17/2024\\t\\tYETI\\ COOLERS,\\ LLC\\ WILMINGTON\\ DE\\ GENERAL\\ MERCHANDISE\\t\\$214\\.00\\tSales\\t\\n11/17/2024\\t\\tAMAZON\\ MARKETPLACE\\ NA\\ PA\\ AMZN\\.COM/BILL\\ WA\\ MERCHANDISE\\t\\$1,043\\.82\\tSales\\t\\n11/18/2024\\t\\tTST\\*\\ BASILICO\\ RISTORANTE2\\ 00205577\\ DORAL\\ FL\\ RESTAURANT\\t\\$146\\.62\\tGino\\ de\\ Abreu\\ Equity\\t\\n11/19/2024\\t\\tTWIN\\ PEAKS\\ -\\ DORAL\\ 8700\\ NW\\ 18TH\\ TE\\ DORAL\\ FL\\ 3053564066\\t\\$120\\.36\\tGino\\ de\\ Abreu\\ Equity\\t\\n11/20/2024\\t\\tAmazon\\ Prime\\ Amazon\\.com\\ WA\\ SUBSCRIPTION\\t\\$140\\.10\\tDues\\ and\\ subscriptions\\t\\n11/20/2024\\t\\tTST\\*\\ A\\ FUEGO\\ LENTO\\ 300656068\\ DORAL\\ FL\\ 7866372993\\t\\$168\\.05\\tGino\\ de\\ Abreu\\ Equity\\t\\n11/20/2024\\t\\tMATSURI\\ 545500001757475\\ 877-8144102\\ FL\\ TOMOKOGOTO3@GMAIL\\.COM\\t\\$220\\.80\\tSales\\t\\n11/21/2024\\t\\tTST\\*\\ BASILICO\\ RISTORANTE2\\ 00205577\\ DORAL\\ FL\\ RESTAURANT\\t\\$219\\.35\\tGino\\ de\\ Abreu\\ Equity\\t\\n11/22/2024\\t\\tEL\\ VALLE\\ DE\\ VINALES\\ Miami\\ FL\\ squareup\\.com/receipts\\t\\$86\\.00\\tSales\\t\\n11/22/2024\\t\\tTST\\*\\ BASILICO\\ RISTORANTE2\\ 00205577\\ DORAL\\ FL\\ RESTAURANT\\t\\$203\\.89\\tGino\\ de\\ Abreu\\ Equity\\t\\n11/22/2024\\t\\tAMAZON\\ MARKETPLACE\\ NA\\ PA\\ AMZN\\.COM/BILL\\ WA\\ MERCHANDISE\\t\\$18\\.36\\tSales\\t\\n11/23/2024\\t\\tUBER\\ EATS\\ help\\.uber\\.com\\ CA\\ AKODCPUJ\\ 94103\\t\\$42\\.77\\tMeals\\t\\n11/23/2024\\t\\tEXXONMOBIL\\ 4226\\ MIAMI\\ FL\\ 305-436-9100\\t\\$63\\.81\\tSales\\t\\n11/23/2024\\t\\tCOMCAST\\ CABLE\\ COMM\\ 800-COMCAST\\ FL\\ CABLE\\ SVCS\\t\\$246\\.83\\tSales\\t\\n11/25/2024\\t\\tKING\\ OCEAN\\ SERVICES\\ LI\\ MIAMI\\ FL\\ 305-591-7595\\t\\$8,460\\.00\\tCost\\ of\\ Good\\ Sold\\t\\n11/26/2024\\t\\tADOBE\\ Adobe\\ Systems\\ SAN\\ JOSE\\ CA\\ ADOBE\\.LY/ENUS\\t\\$19\\.99\\tSales\\t\\n11/26/2024\\t\\tTST\\*\\ PARRILLADA\\ FAMILIAR\\ 00054053\\ DORAL\\ FL\\ RESTAURANT\\t\\$146\\.16\\tMeals\\t\\n11/27/2024\\t\\tEL\\ VALLE\\ DE\\ VINALES\\ Miami\\ FL\\ squareup\\.com/receipts\\t\\$63\\.00\\tSales\\t\\n11/27/2024\\t\\tTST\\*\\ BASILICO\\ RISTORANTE2\\ 00205577\\ DORAL\\ FL\\ RESTAURANT\\t\\$184\\.69\\tGino\\ de\\ Abreu\\ Equity\\t\\n11/30/2024\\t\\tUBER\\ EATS\\ help\\.uber\\.com\\ CA\\ TOHC2SVV\\ 94103\\t\\$98\\.50\\tMeals\\t\\n12/4/2024\\t\\tAMAZON\\ MARKETPLACE\\ NA\\ PA\\ AMZN\\.COM/BILL\\ WA\\ MERCHANDISE\\t\\$56\\.88\\tSales\\t\\n12/4/2024\\t\\tDHL\\ EXPRESS\\ USA\\ INC\\ VIRT\\ WESTON\\ FL\\ 800-722-0081\\t\\$62\\.35\\tFreight\\ Services\\t\\n12/5/2024\\t\\tTST\\*\\ FRANCISCA\\ CHARCOAL\\ C\\ 00021115\\ DORAL\\ FL\\ RESTAURANT\\t\\$188\\.06\\tSales\\t\\n12/6/2024\\t\\tEL\\ VALLE\\ DE\\ VINALES\\ Miami\\ FL\\ squareup\\.com/receipts\\t\\$112\\.00\\tSales\\t\\n12/6/2024\\t\\tTST\\*\\ BASILICO\\ RISTORANTE2\\ 00205577\\ DORAL\\ FL\\ RESTAURANT\\t\\$244\\.26\\tGino\\ de\\ Abreu\\ Equity\\t\\n12/7/2024\\t\\tUBER\\ ONE\\ help\\.uber\\.com\\ CA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:20:36.5334064Z"
+  },
+  {
+    "Id": 38,
+    "BankId": 1,
+    "Pattern": "(UBER\\ ONE\\ help\\.uber\\.com\\ CA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:20:41.6365747Z"
+  },
+  {
+    "Id": 39,
+    "BankId": 1,
+    "Pattern": "(FRANCISCA\\ CHARCOAL)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:20:50.3403251Z"
+  },
+  {
+    "Id": 40,
+    "BankId": 1,
+    "Pattern": "(AMAZON\\ MARKETPLACE)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:21:08.6721606Z"
+  },
+  {
+    "Id": 41,
+    "BankId": 1,
+    "Pattern": "(UBER\\ EATS\\ help\\.uber\\.com)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:21:14.2772987Z"
+  },
+  {
+    "Id": 42,
+    "BankId": 1,
+    "Pattern": "(BASILICO\\ RISTORANTE2)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:21:18.6840318Z"
+  },
+  {
+    "Id": 43,
+    "BankId": 1,
+    "Pattern": "(BURGER\\ KING\\ DORAL)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:21:43.8758188Z"
+  },
+  {
+    "Id": 44,
+    "BankId": 1,
+    "Pattern": "(EL\\ VALLE\\ DE\\ VINALES)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:24:52.6506746Z"
+  },
+  {
+    "Id": 45,
+    "BankId": 1,
+    "Pattern": "(A\\ FUEGO\\ LENTO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:25:09.5746112Z"
+  },
+  {
+    "Id": 46,
+    "BankId": 1,
+    "Pattern": "(EL\\ VALLE\\ DE\\ VINALE)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:25:35.6661563Z"
+  },
+  {
+    "Id": 47,
+    "BankId": 1,
+    "Pattern": "(Ending\\ 9-23005)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:29:39.6260853Z"
+  },
+  {
+    "Id": 48,
+    "BankId": 1,
+    "Pattern": "(YETI\\ COOLERS,\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:30:16.2348847Z"
+  },
+  {
+    "Id": 49,
+    "BankId": 1,
+    "Pattern": "(AMAZON\\ MARKETPLACE\\ NA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:31:20.1464431Z"
+  },
+  {
+    "Id": 50,
+    "BankId": 1,
+    "Pattern": "(SUBWAY\\ 41\\ &\\ TNPKE,\\ INC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:32:29.7105146Z"
+  },
+  {
+    "Id": 51,
+    "BankId": 1,
+    "Pattern": "(SHULAS\\ BURGER\\ BAR)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:33:46.9555407Z"
+  },
+  {
+    "Id": 52,
+    "BankId": 1,
+    "Pattern": "(THE\\ HOME\\ DEPOT)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:37:29.9032943Z"
+  },
+  {
+    "Id": 53,
+    "BankId": 1,
+    "Pattern": "(WIX\\.COM)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:38:18.2436395Z"
+  },
+  {
+    "Id": 54,
+    "BankId": 1,
+    "Pattern": "(BRASAS-LEHIGH\\ ACRES)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:38:38.2508297Z"
+  },
+  {
+    "Id": 55,
+    "BankId": 1,
+    "Pattern": "(KING\\ OCEAN\\ SERVICES\\ LI)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:38:57.3987957Z"
+  },
+  {
+    "Id": 56,
+    "BankId": 1,
+    "Pattern": "(AAPEX/SEMA\\ SHOW\\ REGI\\ DIAMOND\\ BAR\\ CA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:39:14.2334409Z"
+  },
+  {
+    "Id": 57,
+    "BankId": 1,
+    "Pattern": "(JULIO\\ BRICENO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:40:48.996517Z"
+  },
+  {
+    "Id": 58,
+    "BankId": 1,
+    "Pattern": "(JUAN\\ ROURA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:40:52.461419Z"
+  },
+  {
+    "Id": 59,
+    "BankId": 1,
+    "Pattern": "(JOSE\\ R\\ TORRES)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:40:56.6114103Z"
+  },
+  {
+    "Id": 60,
+    "BankId": 1,
+    "Pattern": "(KING\\ OCEAN\\ SERVICES)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:45:34.3249851Z"
+  },
+  {
+    "Id": 61,
+    "BankId": 1,
+    "Pattern": "(DHL\\ EXPRESS\\ USA\\ INC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:45:44.8368812Z"
+  },
+  {
+    "Id": 62,
+    "BankId": 1,
+    "Pattern": "(UBER\\ EATS\\ help\\.uber\\.com\\ CA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:46:24.9585076Z"
+  },
+  {
+    "Id": 63,
+    "BankId": 1,
+    "Pattern": "(PARRILLADA\\ FAMILIAR)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:47:05.2306924Z"
+  },
+  {
+    "Id": 64,
+    "BankId": 1,
+    "Pattern": "(UBER\\ ONE\\ help\\.uber\\.com)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:58:39.063943Z"
+  },
+  {
+    "Id": 65,
+    "BankId": 1,
+    "Pattern": "(Amazon\\ Prime\\ Amazon\\.com)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T16:59:36.2270095Z"
+  },
+  {
+    "Id": 66,
+    "BankId": 1,
+    "Pattern": "(PEPITOS)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:02:08.3675664Z"
+  },
+  {
+    "Id": 67,
+    "BankId": 1,
+    "Pattern": "(CITY\\ OF\\ SWEETWATER\\ BUILD)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:02:21.9348657Z"
+  },
+  {
+    "Id": 68,
+    "BankId": 1,
+    "Pattern": "(,\\ INC\\.\\ SUNRISE\\ FL\\ 23001\\ 333226)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:02:35.2800192Z"
+  },
+  {
+    "Id": 69,
+    "BankId": 1,
+    "Pattern": "(ATLANTIC\\ PACIFIC\\ TARIFFS,\\ INC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:02:40.8476801Z"
+  },
+  {
+    "Id": 70,
+    "BankId": 1,
+    "Pattern": "(MARATHON\\ PETRO203208)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:03:32.842757Z"
+  },
+  {
+    "Id": 71,
+    "BankId": 1,
+    "Pattern": "(ATLANTIC\\ PACIFIC\\ TARIFFS,\\ INC\\.)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:03:39.8533883Z"
+  },
+  {
+    "Id": 72,
+    "BankId": 1,
+    "Pattern": "(ALLIANZ\\ TRAVEL\\ INS)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:03:52.2017358Z"
+  },
+  {
+    "Id": 73,
+    "BankId": 1,
+    "Pattern": "(DR\\ G\\ THERAPY\\ USA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:08:50.1347019Z"
+  },
+  {
+    "Id": 74,
+    "BankId": 1,
+    "Pattern": "(SPEEDWAY)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:08:57.897789Z"
+  },
+  {
+    "Id": 75,
+    "BankId": 1,
+    "Pattern": "(SAM'S\\ CLUB\\ MIRAMAR)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:09:18.2369988Z"
+  },
+  {
+    "Id": 76,
+    "BankId": 1,
+    "Pattern": "(CHIPOTLE\\ MIAMI)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:09:27.8323265Z"
+  },
+  {
+    "Id": 77,
+    "BankId": 1,
+    "Pattern": "(LA\\ TAM\\ FREIGHT)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:09:34.4457186Z"
+  },
+  {
+    "Id": 78,
+    "BankId": 1,
+    "Pattern": "(CLEAR\\ \\*CLEARME\\.COM)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:09:46.9804504Z"
+  },
+  {
+    "Id": 79,
+    "BankId": 1,
+    "Pattern": "(GOOGLE\\*GSUITE\\ ENVIOSPF\\.COM\\ GOOGLE\\ INC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:09:59.3972641Z"
+  },
+  {
+    "Id": 80,
+    "BankId": 1,
+    "Pattern": "(PARADISE\\ COFFEE)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:10:10.8396571Z"
+  },
+  {
+    "Id": 81,
+    "BankId": 1,
+    "Pattern": "(SUBWAY\\ &\\ TNPKE,\\ INC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:12:22.5116095Z"
+  },
+  {
+    "Id": 82,
+    "BankId": 7,
+    "Pattern": "(HEVER\\ CHACON)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:15:10.327691Z"
+  },
+  {
+    "Id": 83,
+    "BankId": 7,
+    "Pattern": "(PROBOX\\ LOGISTICS,\\ INC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:15:17.966699Z"
+  },
+  {
+    "Id": 84,
+    "BankId": 7,
+    "Pattern": "(DELSY\\ ANDERSON)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:15:25.6069226Z"
+  },
+  {
+    "Id": 85,
+    "BankId": 7,
+    "Pattern": "(DAVID\\ TEIXEIRA\\ BRAZAO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:15:30.1435691Z"
+  },
+  {
+    "Id": 86,
+    "BankId": 7,
+    "Pattern": "(LUIS\\ MACARIO\\ CRUZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:15:34.8318045Z"
+  },
+  {
+    "Id": 87,
+    "BankId": 7,
+    "Pattern": "(POMELOS\\ TO\\ GO\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:15:53.1210852Z"
+  },
+  {
+    "Id": 88,
+    "BankId": 7,
+    "Pattern": "(CAFE\\ SAMBAL\\ CA\\ CORP)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:16:15.5762262Z"
+  },
+  {
+    "Id": 89,
+    "BankId": 7,
+    "Pattern": "(LTC\\ GLOBAL\\ LOGISTICS\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:19:24.6401858Z"
+  },
+  {
+    "Id": 90,
+    "BankId": 7,
+    "Pattern": "(ALIADA\\ ASSET\\ MANAGEMENT\\ CA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:19:30.6448754Z"
+  },
+  {
+    "Id": 91,
+    "BankId": 7,
+    "Pattern": "(HUGO\\ ANTONIO\\ GAMBOA\\ CASTILLO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:19:36.194526Z"
+  },
+  {
+    "Id": 92,
+    "BankId": 7,
+    "Pattern": "(AUTO\\ FENIX\\ PARTS\\ SERVICE\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:19:41.8211082Z"
+  },
+  {
+    "Id": 93,
+    "BankId": 7,
+    "Pattern": "(VICENTE)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:19:52.9068716Z"
+  },
+  {
+    "Id": 94,
+    "BankId": 7,
+    "Pattern": "(VICENTE\\ LLATAS\\ SALVADO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:19:56.2110832Z"
+  },
+  {
+    "Id": 95,
+    "BankId": 7,
+    "Pattern": "(CARLOS\\ LEONARDO\\ ALBERTI\\ RODRIGUEZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:20:41.9025241Z"
+  },
+  {
+    "Id": 96,
+    "BankId": 7,
+    "Pattern": "(CARLOS\\ ALBERTI)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:20:45.5625496Z"
+  },
+  {
+    "Id": 97,
+    "BankId": 7,
+    "Pattern": "(ANDREA\\ GUTIERREZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:26:07.4241016Z"
+  },
+  {
+    "Id": 98,
+    "BankId": 7,
+    "Pattern": "(HANS\\ PETERSEN)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:31:16.8781927Z"
+  },
+  {
+    "Id": 99,
+    "BankId": 7,
+    "Pattern": "(MIREANYELI\\ PIMENTEL\\ NUNEZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:31:29.0309599Z"
+  },
+  {
+    "Id": 100,
+    "BankId": 7,
+    "Pattern": "(LIAM\\ RODRIGUEZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:34:50.3128836Z"
+  },
+  {
+    "Id": 101,
+    "BankId": 7,
+    "Pattern": "(SEBASTIAN\\ BARI)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:35:04.474543Z"
+  },
+  {
+    "Id": 102,
+    "BankId": 7,
+    "Pattern": "(MIGUEL\\ BOCCO\\ CORDERO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:36:17.9416154Z"
+  },
+  {
+    "Id": 103,
+    "BankId": 7,
+    "Pattern": "(STEFANO\\ MANGIONE)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:36:36.4875422Z"
+  },
+  {
+    "Id": 104,
+    "BankId": 7,
+    "Pattern": "(JESUS\\ HERNANDEZ\\ JIMENEZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:38:55.5628434Z"
+  },
+  {
+    "Id": 105,
+    "BankId": 7,
+    "Pattern": "(PADRON\\ EXPRESS\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:39:12.224286Z"
+  },
+  {
+    "Id": 106,
+    "BankId": 7,
+    "Pattern": "(GUSTO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:39:52.55846Z"
+  },
+  {
+    "Id": 107,
+    "BankId": 7,
+    "Pattern": "(OMAR\\ GARCIA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:40:38.3537906Z"
+  },
+  {
+    "Id": 108,
+    "BankId": 7,
+    "Pattern": "(Mirian\\ Roman)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:41:05.1214438Z"
+  },
+  {
+    "Id": 109,
+    "BankId": 7,
+    "Pattern": "(MARIO\\ CAPUCCI)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:41:14.9249585Z"
+  },
+  {
+    "Id": 110,
+    "BankId": 7,
+    "Pattern": "(EL\\ EXPRESO\\ II\\ INC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:41:21.3811266Z"
+  },
+  {
+    "Id": 111,
+    "BankId": 1,
+    "Pattern": "(MARATHON)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:43:31.3145067Z"
+  },
+  {
+    "Id": 112,
+    "BankId": 1,
+    "Pattern": "(CHEVRON)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:44:16.555941Z"
+  },
+  {
+    "Id": 113,
+    "BankId": 1,
+    "Pattern": "(IN\\ \\*360\\ CONTENT\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:45:09.6430581Z"
+  },
+  {
+    "Id": 114,
+    "BankId": 1,
+    "Pattern": "(SAM'S\\ CLUB)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:46:17.3357056Z"
+  },
+  {
+    "Id": 115,
+    "BankId": 1,
+    "Pattern": "(K-KEL\\ INC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T17:57:42.2860719Z"
+  },
+  {
+    "Id": 116,
+    "BankId": 1,
+    "Pattern": "(Uber\\ Trip\\ help\\.uber\\.com)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T18:00:39.1603609Z"
+  },
+  {
+    "Id": 117,
+    "BankId": 1,
+    "Pattern": "(AMAZON\\ MARKETPLAC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T18:01:23.6681539Z"
+  },
+  {
+    "Id": 118,
+    "BankId": 1,
+    "Pattern": "(FL\\ 305-715-9977\\t\\$62\\.00\\tSales\\t\\n11/15/2024\\t\\tEL\\ VALLE\\ DE\\ VINALES\\ Miami\\ FL\\ squareup\\.com/receipts\\t\\$102\\.00\\tSales\\t\\n11/15/2024\\t\\tSALON\\ CANTON\\ RESTAURANT\\ 06888002146811\\ DORAL\\ FL\\ 387934\\ 33172\\t\\$70\\.00\\tSales\\t\\n11/17/2024\\t\\tYETI\\ COOLERS,\\ LL)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T19:18:24.8922742Z"
+  },
+  {
+    "Id": 119,
+    "BankId": 7,
+    "Pattern": "(GRUPO\\ ZQ\\ 2020\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T19:24:32.6896668Z"
+  },
+  {
+    "Id": 120,
+    "BankId": 7,
+    "Pattern": "(GERMAIN\\ MORALES)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T19:24:42.9700788Z"
+  },
+  {
+    "Id": 121,
+    "BankId": 7,
+    "Pattern": "(DAVID\\ VIEIRA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T19:25:34.0819122Z"
+  },
+  {
+    "Id": 122,
+    "BankId": 7,
+    "Pattern": "(TONYZALES\\ SHOP\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T19:32:58.6496848Z"
+  },
+  {
+    "Id": 123,
+    "BankId": 2,
+    "Pattern": "(Rickenbacker\\ Marin)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T19:33:35.9941341Z"
+  },
+  {
+    "Id": 124,
+    "BankId": 2,
+    "Pattern": "(arin)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T19:33:41.5146879Z"
+  },
+  {
+    "Id": 125,
+    "BankId": 2,
+    "Pattern": "(Rickenbacker\\ Marina)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T19:33:44.5462899Z"
+  },
+  {
+    "Id": 126,
+    "BankId": 2,
+    "Pattern": "(RICKENBACK)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T19:35:34.770242Z"
+  },
+  {
+    "Id": 127,
+    "BankId": 2,
+    "Pattern": "(Rickenbacker)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T19:44:12.1300857Z"
+  },
+  {
+    "Id": 128,
+    "BankId": 7,
+    "Pattern": "(SIMONE\\ MAGNONI)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T19:45:29.6126005Z"
+  },
+  {
+    "Id": 129,
+    "BankId": 7,
+    "Pattern": "(AMENODORO\\ SEQUERA\\ MOLINA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T19:50:36.317781Z"
+  },
+  {
+    "Id": 130,
+    "BankId": 7,
+    "Pattern": "(MARIA\\ ZUBILLAGA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T19:57:59.3673274Z"
+  },
+  {
+    "Id": 131,
+    "BankId": 7,
+    "Pattern": "(EL\\ CINE\\ 2021\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:03:27.8972786Z"
+  },
+  {
+    "Id": 132,
+    "BankId": 7,
+    "Pattern": "(MARIANA\\ ROA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:03:34.75418Z"
+  },
+  {
+    "Id": 133,
+    "BankId": 7,
+    "Pattern": "(FURORE\\ REST)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:03:39.2065051Z"
+  },
+  {
+    "Id": 134,
+    "BankId": 7,
+    "Pattern": "(ALBERTO\\ BARNOLA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:03:49.3039748Z"
+  },
+  {
+    "Id": 135,
+    "BankId": 7,
+    "Pattern": "(LEONARDO\\ JIMENEZ\\ PEREZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:08:19.3475002Z"
+  },
+  {
+    "Id": 136,
+    "BankId": 7,
+    "Pattern": "(Leonardo\\ Alejandro\\ Jimenez\\ Perez)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:08:25.2818463Z"
+  },
+  {
+    "Id": 137,
+    "BankId": 7,
+    "Pattern": "(JESS\\ AND\\ OR\\ MASSILU)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:08:41.7714626Z"
+  },
+  {
+    "Id": 138,
+    "BankId": 7,
+    "Pattern": "(JOAQUIN\\ MENDES)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:08:45.6283326Z"
+  },
+  {
+    "Id": 139,
+    "BankId": 7,
+    "Pattern": "(MARIA\\ ARIAS)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:09:07.0692494Z"
+  },
+  {
+    "Id": 140,
+    "BankId": 7,
+    "Pattern": "(Romell\\ Pacheco)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:09:18.3554814Z"
+  },
+  {
+    "Id": 141,
+    "BankId": 7,
+    "Pattern": "(ISRAEL\\ PEREZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:09:26.1776902Z"
+  },
+  {
+    "Id": 142,
+    "BankId": 7,
+    "Pattern": "(RUSBEL\\ QUINTERO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:09:34.3227872Z"
+  },
+  {
+    "Id": 143,
+    "BankId": 7,
+    "Pattern": "(Mariela\\ Marsiccobretre)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:09:42.0741891Z"
+  },
+  {
+    "Id": 144,
+    "BankId": 7,
+    "Pattern": "(World\\ Transportation\\ Services)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:09:54.7147075Z"
+  },
+  {
+    "Id": 145,
+    "BankId": 7,
+    "Pattern": "(ALFREDO\\ G\\ GRACIA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:11:47.6853159Z"
+  },
+  {
+    "Id": 146,
+    "BankId": 7,
+    "Pattern": "(ANA\\ TRUAX)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:11:53.1323718Z"
+  },
+  {
+    "Id": 147,
+    "BankId": 7,
+    "Pattern": "(BETTINA\\ RIVAS)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:12:01.3387347Z"
+  },
+  {
+    "Id": 148,
+    "BankId": 7,
+    "Pattern": "(ERM)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:12:06.5248225Z"
+  },
+  {
+    "Id": 149,
+    "BankId": 7,
+    "Pattern": "(GERMAN\\ RODRIGUEZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:12:08.9641997Z"
+  },
+  {
+    "Id": 150,
+    "BankId": 7,
+    "Pattern": "(ALEJANDRO\\ PAZ\\ AFRICANO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:15:30.0063299Z"
+  },
+  {
+    "Id": 151,
+    "BankId": 7,
+    "Pattern": "(RAFAEL\\ ANTONIO\\ SEGOVIA\\ GONZALEZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:17:03.4401373Z"
+  },
+  {
+    "Id": 152,
+    "BankId": 7,
+    "Pattern": "(ALIADA\\ ASSET\\ MANAGEMENT)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:25:31.704765Z"
+  },
+  {
+    "Id": 153,
+    "BankId": 7,
+    "Pattern": "(MIREANYELI\\ CLIENTE)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:26:07.0504436Z"
+  },
+  {
+    "Id": 154,
+    "BankId": 7,
+    "Pattern": "(ANA\\ MARIA\\ VILLEGAS)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:27:12.7898659Z"
+  },
+  {
+    "Id": 155,
+    "BankId": 7,
+    "Pattern": "(NA\\ TRUAX)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:27:17.5843322Z"
+  },
+  {
+    "Id": 156,
+    "BankId": 4,
+    "Pattern": "(GETZABEL\\ VILLALOBOS)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:31:07.7548023Z"
+  },
+  {
+    "Id": 157,
+    "BankId": 4,
+    "Pattern": "(KENNY\\ CAR\\ WASH)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:31:12.5782861Z"
+  },
+  {
+    "Id": 158,
+    "BankId": 4,
+    "Pattern": "(PRESSEX\\ LOGISTICS\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:31:25.9706249Z"
+  },
+  {
+    "Id": 159,
+    "BankId": 4,
+    "Pattern": "(ROSA\\ JALINA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:31:35.0816118Z"
+  },
+  {
+    "Id": 160,
+    "BankId": 4,
+    "Pattern": "(MMANSO\\ DELIVERY\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:33:10.0775251Z"
+  },
+  {
+    "Id": 161,
+    "BankId": 4,
+    "Pattern": "(MONDRAGON\\ AIR\\ CONDITIONER\\ INC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:33:19.0429702Z"
+  },
+  {
+    "Id": 162,
+    "BankId": 4,
+    "Pattern": "(OEME\\ BERRY\\ CORP)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:33:26.6466784Z"
+  },
+  {
+    "Id": 163,
+    "BankId": 4,
+    "Pattern": "(MAFARRO\\ CREATIONS\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:33:31.3060628Z"
+  },
+  {
+    "Id": 164,
+    "BankId": 4,
+    "Pattern": "(LAURA\\ FERNANDEZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:33:36.4587362Z"
+  },
+  {
+    "Id": 165,
+    "BankId": 4,
+    "Pattern": "(ALDANO\\ GROUP\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:33:48.707878Z"
+  },
+  {
+    "Id": 166,
+    "BankId": 4,
+    "Pattern": "(AMR\\ PRODUCTIONS\\ INC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:33:51.4757992Z"
+  },
+  {
+    "Id": 167,
+    "BankId": 4,
+    "Pattern": "(GASTON\\ REY)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:33:56.2346321Z"
+  },
+  {
+    "Id": 168,
+    "BankId": 4,
+    "Pattern": "(GERALD\\ CENTENO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:34:00.315897Z"
+  },
+  {
+    "Id": 169,
+    "BankId": 4,
+    "Pattern": "(BLUE\\ PINE\\ SERVICES\\ CORP)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:36:45.934766Z"
+  },
+  {
+    "Id": 170,
+    "BankId": 4,
+    "Pattern": "(CAROLINA\\ CARTAGENA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:36:51.7010599Z"
+  },
+  {
+    "Id": 171,
+    "BankId": 4,
+    "Pattern": "(UBER\\ EATS\\ HELP\\.UBER\\.COM)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:39:21.0393406Z"
+  },
+  {
+    "Id": 172,
+    "BankId": 4,
+    "Pattern": "(UBER\\*\\ EATS\\ HTTPSWWW\\.UBER)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:39:36.9050161Z"
+  },
+  {
+    "Id": 173,
+    "BankId": 4,
+    "Pattern": "(SHELL)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:40:03.5126057Z"
+  },
+  {
+    "Id": 174,
+    "BankId": 4,
+    "Pattern": "(MANTA\\ AQP)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:40:14.6645341Z"
+  },
+  {
+    "Id": 175,
+    "BankId": 4,
+    "Pattern": "(UBER\\ EATS)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:40:27.6085644Z"
+  },
+  {
+    "Id": 176,
+    "BankId": 4,
+    "Pattern": "(CHEVRON)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:43:32.6288048Z"
+  },
+  {
+    "Id": 177,
+    "BankId": 4,
+    "Pattern": "(EL\\ RANCHERITO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:44:39.5309105Z"
+  },
+  {
+    "Id": 178,
+    "BankId": 4,
+    "Pattern": "(FLORA\\ PLANT\\ KITCHEN)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:44:50.2858205Z"
+  },
+  {
+    "Id": 179,
+    "BankId": 4,
+    "Pattern": "(UBER\\ \\*TRIP\\ HELP\\.UBER\\.COM)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:45:07.6994115Z"
+  },
+  {
+    "Id": 180,
+    "BankId": 4,
+    "Pattern": "(UBER\\ TRIP\\ HELP\\.UBER\\.COM)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:45:38.2915326Z"
+  },
+  {
+    "Id": 181,
+    "BankId": 4,
+    "Pattern": "(AIRBNB)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T21:47:00.5963817Z"
+  },
+  {
+    "Id": 182,
+    "BankId": 4,
+    "Pattern": "(EVELYN\\ HOTEL)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-25T23:59:50.8515809Z"
+  },
+  {
+    "Id": 183,
+    "BankId": 4,
+    "Pattern": "(MARATHON)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T00:00:04.5551235Z"
+  },
+  {
+    "Id": 184,
+    "BankId": 1,
+    "Pattern": "(POTL)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T01:22:24.7566636Z"
+  },
+  {
+    "Id": 185,
+    "BankId": 1,
+    "Pattern": "(CLEARME\\.COM)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T12:41:54.6978403Z"
+  },
+  {
+    "Id": 186,
+    "BankId": 1,
+    "Pattern": "(KING\\ OCEAN\\ SERVICES\\ L)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T13:28:26.3673802Z"
+  },
+  {
+    "Id": 187,
+    "BankId": 1,
+    "Pattern": "(UBER\\ EATS\\ HELP\\ UBER\\ COM)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T13:29:24.3766008Z"
+  },
+  {
+    "Id": 188,
+    "BankId": 1,
+    "Pattern": "(ALLIANZ\\ TRAVEL)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T13:42:03.9287373Z"
+  },
+  {
+    "Id": 189,
+    "BankId": 1,
+    "Pattern": "(360\\ CONTENT)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T13:42:17.9126887Z"
+  },
+  {
+    "Id": 190,
+    "BankId": 1,
+    "Pattern": "(GOOGLE)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T13:44:03.1773591Z"
+  },
+  {
+    "Id": 191,
+    "BankId": 1,
+    "Pattern": "(UBER\\ ONE\\ HELP\\ UBER\\ COM)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T13:46:26.9714911Z"
+  },
+  {
+    "Id": 192,
+    "BankId": 1,
+    "Pattern": "(HOLIDAY\\ INN)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T13:54:35.7076044Z"
+  },
+  {
+    "Id": 193,
+    "BankId": 1,
+    "Pattern": "(HOLIDY\\ INN)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T13:54:54.3393509Z"
+  },
+  {
+    "Id": 194,
+    "BankId": 1,
+    "Pattern": "(SPOTIFY)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T13:55:40.6495738Z"
+  },
+  {
+    "Id": 195,
+    "BankId": 1,
+    "Pattern": "(AEROMEXICO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:37:55.161201Z"
+  },
+  {
+    "Id": 196,
+    "BankId": 1,
+    "Pattern": "(EXPEDIA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:37:59.7478649Z"
+  },
+  {
+    "Id": 197,
+    "BankId": 4,
+    "Pattern": "(CUESTA\\ PADAUI\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:43:10.1376713Z"
+  },
+  {
+    "Id": 198,
+    "BankId": 4,
+    "Pattern": "(PUBLIX\\ SUPER)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:44:32.1907705Z"
+  },
+  {
+    "Id": 199,
+    "BankId": 4,
+    "Pattern": "(ANGELA\\ MARA\\ PEREZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:44:43.8518212Z"
+  },
+  {
+    "Id": 200,
+    "BankId": 7,
+    "Pattern": "(1316)",
+    "Description": "Auto-generated from ALL CAPS segment",
+    "CreatedAt": "2025-11-26T15:47:00.7910188Z"
+  },
+  {
+    "Id": 201,
+    "BankId": 7,
+    "Pattern": "(ANILU)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:50:00.6528692Z"
+  },
+  {
+    "Id": 202,
+    "BankId": 7,
+    "Pattern": "(CELESTE\\ MANGANELLI)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:50:17.3803995Z"
+  },
+  {
+    "Id": 203,
+    "BankId": 7,
+    "Pattern": "(FEDERICO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:50:24.235841Z"
+  },
+  {
+    "Id": 204,
+    "BankId": 7,
+    "Pattern": "(GLADELMIS\\ MARTINEZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:50:34.645073Z"
+  },
+  {
+    "Id": 205,
+    "BankId": 7,
+    "Pattern": "(ISABELLA\\ MORREO\\ GOMEZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:50:42.3714577Z"
+  },
+  {
+    "Id": 206,
+    "BankId": 7,
+    "Pattern": "(MARIO\\ NODA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:50:51.8523335Z"
+  },
+  {
+    "Id": 207,
+    "BankId": 7,
+    "Pattern": "(SANDRA\\ ANTELLO-SUAREZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:51:03.3744427Z"
+  },
+  {
+    "Id": 208,
+    "BankId": 7,
+    "Pattern": "(SANDRA\\ ANTELLO\\ SUAREZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:51:03.414327Z"
+  },
+  {
+    "Id": 209,
+    "BankId": 7,
+    "Pattern": "(LUCY'S\\ OVEN\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:54:29.9624511Z"
+  },
+  {
+    "Id": 210,
+    "BankId": 7,
+    "Pattern": "(CAMERO\\ &\\ COMPANY)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:59:26.9277377Z"
+  },
+  {
+    "Id": 211,
+    "BankId": 7,
+    "Pattern": "(CAMERO\\ COMPANY)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T15:59:27.0716926Z"
+  },
+  {
+    "Id": 212,
+    "BankId": 7,
+    "Pattern": "(DENIZA\\ RIVAS)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T16:00:12.0062771Z"
+  },
+  {
+    "Id": 213,
+    "BankId": 7,
+    "Pattern": "(ZULAY\\ BALMASEDA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T16:00:39.2094303Z"
+  },
+  {
+    "Id": 214,
+    "BankId": 7,
+    "Pattern": "(CLAUDIA\\ CISNEROS\\ FONTANAL)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T16:28:05.4036072Z"
+  },
+  {
+    "Id": 215,
+    "BankId": 7,
+    "Pattern": "(AEROCAMIONES\\ DE\\ VENEZUELA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T16:28:18.4988889Z"
+  },
+  {
+    "Id": 216,
+    "BankId": 7,
+    "Pattern": "(ANA\\ GOMEZFONTANALS)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T16:28:50.115767Z"
+  },
+  {
+    "Id": 217,
+    "BankId": 7,
+    "Pattern": "(ANA\\ GOMEZ)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T16:30:52.3555068Z"
+  },
+  {
+    "Id": 218,
+    "BankId": 7,
+    "Pattern": "(KATERINA\\ THERMIOTIS)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T16:31:32.5481123Z"
+  },
+  {
+    "Id": 219,
+    "BankId": 7,
+    "Pattern": "(ANDRES\\ RIVERA\\ NAVA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T16:32:11.9601199Z"
+  },
+  {
+    "Id": 220,
+    "BankId": 7,
+    "Pattern": "(ARMENIO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T16:32:21.7407617Z"
+  },
+  {
+    "Id": 221,
+    "BankId": 7,
+    "Pattern": "(ARTKITEKT\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T16:32:32.1637805Z"
+  },
+  {
+    "Id": 222,
+    "BankId": 7,
+    "Pattern": "(EVELYN\\ PINEDA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T16:32:43.3076697Z"
+  },
+  {
+    "Id": 223,
+    "BankId": 7,
+    "Pattern": "(UNITED\\ STARS\\ SOCCER\\ ACADEMY\\ INC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T16:35:15.6868065Z"
+  },
+  {
+    "Id": 224,
+    "BankId": 7,
+    "Pattern": "(BKOFAMERICA\\ ATM)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T19:24:09.4991158Z"
+  },
+  {
+    "Id": 225,
+    "BankId": 2,
+    "Pattern": "(LIFE\\ STORAGE)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T19:29:51.9407485Z"
+  },
+  {
+    "Id": 226,
+    "BankId": 2,
+    "Pattern": "(MANDOLIN\\ AEGEAN\\ BISTRO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T19:30:00.4165991Z"
+  },
+  {
+    "Id": 227,
+    "BankId": 2,
+    "Pattern": "(POLLO\\ TROPICAL)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T19:30:23.5326952Z"
+  },
+  {
+    "Id": 228,
+    "BankId": 2,
+    "Pattern": "(PUNTO\\ CRIOLLO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T19:30:28.3775484Z"
+  },
+  {
+    "Id": 229,
+    "BankId": 2,
+    "Pattern": "(FEDEX\\ OFFIC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T20:40:19.7498172Z"
+  },
+  {
+    "Id": 230,
+    "BankId": 7,
+    "Pattern": "(SUBCONTRACTED\\ SERVICES)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T22:55:01.9372224Z"
+  },
+  {
+    "Id": 231,
+    "BankId": 7,
+    "Pattern": "(SUBCONTRACTED\\ SERVICE)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T22:55:09.9132221Z"
+  },
+  {
+    "Id": 232,
+    "BankId": 7,
+    "Pattern": "(SERVICES)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T22:55:11.1026588Z"
+  },
+  {
+    "Id": 233,
+    "BankId": 7,
+    "Pattern": "(DIEGO\\ MARTINEZ\\ BARRIOS)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T23:00:07.2745959Z"
+  },
+  {
+    "Id": 234,
+    "BankId": 7,
+    "Pattern": "(1478)",
+    "Description": "Auto-generated from ALL CAPS segment",
+    "CreatedAt": "2025-11-26T23:23:47.5928603Z"
+  },
+  {
+    "Id": 235,
+    "BankId": 7,
+    "Pattern": "(1479)",
+    "Description": "Auto-generated from ALL CAPS segment",
+    "CreatedAt": "2025-11-26T23:23:48.0211054Z"
+  },
+  {
+    "Id": 236,
+    "BankId": 7,
+    "Pattern": "(1480)",
+    "Description": "Auto-generated from ALL CAPS segment",
+    "CreatedAt": "2025-11-26T23:25:33.1612726Z"
+  },
+  {
+    "Id": 237,
+    "BankId": 7,
+    "Pattern": "(1295)",
+    "Description": "Auto-generated from ALL CAPS segment",
+    "CreatedAt": "2025-11-26T23:27:11.9305446Z"
+  },
+  {
+    "Id": 238,
+    "BankId": 7,
+    "Pattern": "(ROBERTO\\ HERNANDEZ\\ ANAYA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T23:31:33.7515226Z"
+  },
+  {
+    "Id": 239,
+    "BankId": 7,
+    "Pattern": "(EMILIA\\ CORREA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-11-26T23:32:00.81833Z"
+  },
+  {
+    "Id": 240,
+    "BankId": 3,
+    "Pattern": "(APPFOLIO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-02T13:33:03.6366729Z"
+  },
+  {
+    "Id": 241,
+    "BankId": 3,
+    "Pattern": "(CLOVER\\ APP)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-02T13:33:19.5749224Z"
+  },
+  {
+    "Id": 242,
+    "BankId": 3,
+    "Pattern": "(PACKFORW)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-02T13:33:56.895433Z"
+  },
+  {
+    "Id": 243,
+    "BankId": 1,
+    "Pattern": "(AMAZON\\.COM)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-02T15:53:35.7575896Z"
+  },
+  {
+    "Id": 244,
+    "BankId": 1,
+    "Pattern": "(AMAZON\\ COM)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-02T15:53:35.9858148Z"
+  },
+  {
+    "Id": 245,
+    "BankId": 9,
+    "Pattern": "(RAPPI)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-03T13:35:42.3354567Z"
+  },
+  {
+    "Id": 246,
+    "BankId": 7,
+    "Pattern": "(COMIENZAENUSA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-03T20:21:57.4500513Z"
+  },
+  {
+    "Id": 247,
+    "BankId": 7,
+    "Pattern": "(AMAZON\\ PRIME)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-03T20:22:05.6214517Z"
+  },
+  {
+    "Id": 248,
+    "BankId": 7,
+    "Pattern": "(ANTONIO\\ EMMI)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-03T20:22:22.0755088Z"
+  },
+  {
+    "Id": 249,
+    "BankId": 4,
+    "Pattern": "(UBER\\ ONE)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-08T16:42:43.7285143Z"
+  },
+  {
+    "Id": 250,
+    "BankId": 3,
+    "Pattern": "(ACH\\ DEBIT\\ APPFOLIO,\\ INC\\.\\ F\\ WEB\\ PMTS\\ 60YKS4\\ JAN\\ 02)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-10T20:54:50.7408179Z"
+  },
+  {
+    "Id": 251,
+    "BankId": 3,
+    "Pattern": "(ACH\\ DEBIT\\ APPFOLIO,\\ INC\\.\\ F\\ WEB\\ PMTS\\ 60YKS4\\ JA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-10T20:54:57.6803176Z"
+  },
+  {
+    "Id": 252,
+    "BankId": 3,
+    "Pattern": "(ACH\\ DEBIT\\ APPFOLIO,\\ INC\\.\\ F\\ WEB\\ PMTS\\ 60)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-10T20:54:59.8593743Z"
+  },
+  {
+    "Id": 253,
+    "BankId": 3,
+    "Pattern": "(ELECTRONIC\\ CREDIT\\ BANKCARD-8776)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-10T21:15:04.665537Z"
+  },
+  {
+    "Id": 254,
+    "BankId": 3,
+    "Pattern": "(ELECTRONIC\\ CREDIT\\ BANKCARD\\ 8776)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-10T21:15:04.8260694Z"
+  },
+  {
+    "Id": 255,
+    "BankId": 3,
+    "Pattern": "(ELECTRONIC\\ CREDIT\\ VENMO\\ CASHOUT\\ 1039323480036\\ JAN\\ 02)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-10T21:16:09.4289622Z"
+  },
+  {
+    "Id": 256,
+    "BankId": 3,
+    "Pattern": "(ACH\\ DEBIT\\ VOLT\\ MERC\\ 0145)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-10T21:55:15.5914726Z"
+  },
+  {
+    "Id": 257,
+    "BankId": 3,
+    "Pattern": "(ACH\\ DEBIT\\ VOLT\\ MER)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-10T21:55:21.0983522Z"
+  },
+  {
+    "Id": 258,
+    "BankId": 3,
+    "Pattern": "(MER)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-10T21:55:24.8732573Z"
+  },
+  {
+    "Id": 259,
+    "BankId": 3,
+    "Pattern": "(AMERICAN\\ EXPRESS)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-11T12:13:06.6341771Z"
+  },
+  {
+    "Id": 260,
+    "BankId": 3,
+    "Pattern": "(COMMERCIAL\\ PROPE)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-11T12:14:10.0519913Z"
+  },
+  {
+    "Id": 261,
+    "BankId": 3,
+    "Pattern": "(GUILLE\\ RMO\\ CONDE)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-11T12:14:19.3882026Z"
+  },
+  {
+    "Id": 262,
+    "BankId": 7,
+    "Pattern": "(1297)",
+    "Description": "Auto-generated from ALL CAPS segment",
+    "CreatedAt": "2025-12-11T15:39:38.9821996Z"
+  },
+  {
+    "Id": 263,
+    "BankId": 7,
+    "Pattern": "(1298)",
+    "Description": "Auto-generated from ALL CAPS segment",
+    "CreatedAt": "2025-12-11T15:44:36.7711637Z"
+  },
+  {
+    "Id": 264,
+    "BankId": 7,
+    "Pattern": "(RICARDO\\ GOETA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-11T15:53:41.9747532Z"
+  },
+  {
+    "Id": 265,
+    "BankId": 7,
+    "Pattern": "(RUBEN\\ DARIO\\ AVILA\\ BARROS)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-11T15:53:52.3105694Z"
+  },
+  {
+    "Id": 266,
+    "BankId": 7,
+    "Pattern": "(SISLO\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-11T15:54:04.43325Z"
+  },
+  {
+    "Id": 267,
+    "BankId": 7,
+    "Pattern": "(SKY44\\ CORP)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-11T15:54:10.6830242Z"
+  },
+  {
+    "Id": 268,
+    "BankId": 7,
+    "Pattern": "(GGO\\ INVESTMENTS\\ LLC)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-11T15:54:26.7658722Z"
+  },
+  {
+    "Id": 269,
+    "BankId": 7,
+    "Pattern": "(WILLIAM\\ NARVAEZ\\ RUEDA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-11T15:55:06.8773345Z"
+  },
+  {
+    "Id": 270,
+    "BankId": 4,
+    "Pattern": "(HOTEL\\ AEROPUERTO)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-12T15:41:37.7885559Z"
+  },
+  {
+    "Id": 271,
+    "BankId": 1,
+    "Pattern": "(BRANDSMART\\ USA)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-15T16:21:02.623254Z"
+  },
+  {
+    "Id": 272,
+    "BankId": 1,
+    "Pattern": "(COST\\ OF\\ GOOD\\ SOLD)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-15T16:21:30.9589075Z"
+  },
+  {
+    "Id": 273,
+    "BankId": 1,
+    "Pattern": "(GOOD)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-15T16:21:32.4860707Z"
+  },
+  {
+    "Id": 274,
+    "BankId": 1,
+    "Pattern": "(BRAN)",
+    "Description": "User-selected: learned exact match",
+    "CreatedAt": "2025-12-15T16:21:41.8130629Z"
+  },
+  {
+    "Id": 275,
+    "BankId": 7,
+    "Pattern": "(1063)",
+    "Description": "Auto-generated from ALL CAPS segment",
+    "CreatedAt": "2025-12-22T16:38:44.718905Z"
+  }
+]

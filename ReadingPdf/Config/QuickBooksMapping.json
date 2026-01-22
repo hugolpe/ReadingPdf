@@ -1,0 +1,12 @@
+{
+  "BankAccount": "Bank Of America",
+  "Map": {
+    "Subcontracted Services": "Subcontracted Services",
+    "Sales": "Zelle payment",
+    "Zelle payment": "Sales",
+    "Payroll Fees": "Payroll Expenses",
+    "Fuel": "Gasoline Expense",
+    "Office Supplies": "Office Supplies",
+    "Uncategorized Expense": "Ask My Accountant"
+  }
+}

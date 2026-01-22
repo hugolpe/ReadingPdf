@@ -1,0 +1,11 @@
+{
+  "BankAccount": "Bank Of America",
+  "Map": {
+    "Advertising Expense": "Advertising",
+    "Merchant Fees": "Merchant Service Charges",
+    "Payroll Fees": "Payroll Expenses",
+    "Fuel": "Gasoline Expense",
+    "Office Supplies": "Office Supplies",
+    "Uncategorized Expense": "Ask My Accountant"
+  }
+}

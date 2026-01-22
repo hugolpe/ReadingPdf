@@ -1,0 +1,31 @@
+@model IEnumerable<ReadingPdf.Models.EmpresaReconocida>
+
+<h2>Empresas reconocidas (@(Model?.Count() ?? 0))</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Texto Original</th>
+            <th>Fecha Registro</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            var i = 1;
+        }
+        @foreach (var e in Model ?? Enumerable.Empty<ReadingPdf.Models.EmpresaReconocida>())
+        {
+            <tr>
+                <td>@i</td>
+                <td>@e.TextoOriginal</td>
+                <td>@e.FechaRegistro.ToString("yyyy-MM-dd HH:mm")</td>
+            </tr>
+            i++;
+        }
+    </tbody>
+</table>
+
+<p>
+    <a asp-controller="PdfNew" asp-action="Index" class="btn btn-secondary">Volver</a>
+</p>

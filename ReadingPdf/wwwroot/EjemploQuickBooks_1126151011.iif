@@ -1,0 +1,28 @@
+;-----------------------------------------------------------------------------
+;
+;*** YOUR IIF FILE COULDN'T BE IMPORTED ***   
+;
+;Some of your records have errors.
+;
+;1. Search for the errors by typing "[ERROR]" to see only the failed records.
+;
+;2. Fix the errors and try to import the file again
+;
+;-----------------------------------------------------------------------------
+;
+;
+!TRNS	TRNSTYPE	DATE	ACCNT	AMOUNT	NAME	MEMO
+!SPL	TRNSTYPE	DATE	ACCNT	AMOUNT	NAME	MEMO
+!ENDTRNS
+; [ERROR] JRNL is an invalid value for field TRNSTYPE. [15106] 
+TRNS	JRNL	03/01/2025	Bank of America - Checking	-45.20		BASILICO RISTORANTE MIAMI FL
+SPL	JRNL	03/01/2025	Advertising	45.20		BASILICO RISTORANTE MIAMI FL
+ENDTRNS
+; [ERROR] JRNL is an invalid value for field TRNSTYPE. [15106] 
+TRNS	JRNL	03/02/2025	Bank of America - Checking	-12.95		STRIPE MERCHANT FEE
+SPL	JRNL	03/02/2025	Merchant Service Charges	12.95		STRIPE MERCHANT FEE
+ENDTRNS
+; [ERROR] JRNL is an invalid value for field TRNSTYPE. [15106] 
+TRNS	JRNL	03/03/2025	Bank of America - Checking	150.00		ZELLE PAYMENT JOHN DOE
+SPL	JRNL	03/03/2025	Sales Income	-150.00		ZELLE PAYMENT JOHN DOE
+ENDTRNS

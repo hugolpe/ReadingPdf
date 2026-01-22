@@ -1,0 +1,20 @@
+;-----------------------------------------------------------------------------
+;
+;*** YOUR IIF FILE COULDN'T BE IMPORTED ***   
+;
+;Some of your records have errors.
+;
+;1. Search for the errors by typing "[ERROR]" to see only the failed records.
+;
+;2. Fix the errors and try to import the file again
+;
+;-----------------------------------------------------------------------------
+;
+;
+!TRNS	TRNSTYPE	DATE	ACCNT	AMOUNT	NAME	MEMO	
+!SPL	TRNSTYPE	DATE	ACCNT	AMOUNT	NAME	MEMO	
+!ENDTRNS
+; [ERROR] [Ask My Accountant] The Account does not exist in Quickbooks [11288] 
+TRNS	GENERAL JOURNAL	01/13/2025	Bank Of America	-30.63		EXXON PARADISE MIAMI FL	
+SPL	GENERAL JOURNAL	01/13/2025	Ask My Accountant	30.63		EXXON PARADISE MIAMI FL	
+ENDTRNS

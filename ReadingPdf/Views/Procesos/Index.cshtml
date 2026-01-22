@@ -1,0 +1,89 @@
+﻿@model IEnumerable<ReadingPdf.Models.Proceso>
+
+@{
+    ViewData["Title"] = "Procesos guardados";
+}
+
+<h2 class="mb-3">📂 Procesos guardados</h2>
+
+<div class="mb-3">
+    <a href="/PdfNew" class="btn btn-outline-secondary">
+        ⬅ Volver
+    </a>
+</div>
+
+<table class="table table-hover table-sm align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Nombre</th>
+            <th>Banco</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th class="text-end">Movimientos</th>
+            <th class="text-end">Saldo inicial</th>
+            <th>Cuenta QB</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            var estadoClass =
+            p.Estado == "Cerrado" ? "badge bg-secondary" :
+            p.Estado == "Exportado" ? "badge bg-success" :
+            "badge bg-primary";
+
+            <tr>
+                <td>
+                    <strong>@p.Nombre</strong><br />
+                    <small class="text-muted">@p.Id</small>
+                </td>
+
+                <td>@p.Banco</td>
+
+                <td>@p.FechaCreacion.ToString("yyyy-MM-dd HH:mm")</td>
+
+                <td>
+                    <span class="@estadoClass">@p.Estado</span>
+                </td>
+
+                <td class="text-end">
+                    @(p.Movimientos?.Count ?? 0)
+                </td>
+
+                <td class="text-end">
+                    @(p.SaldoInicial.HasValue? p.SaldoInicial.Value.ToString("C") : "-")
+                </td>
+
+                <td>
+                    <small>@p.CuentaQBSeleccionada</small>
+                </td>
+
+                <td class="text-center">
+                    <a href="/PdfNew/ReabrirProceso?id=@p.Id"
+                       class="btn btn-sm btn-primary"
+                       title="Reabrir proceso">
+                        ▶ Reabrir
+                    </a>
+
+                    @if (p.Estado != "Cerrado")
+                    {
+                        <a href="/Procesos/Cerrar?id=@p.Id"
+                           class="btn btn-sm btn-outline-danger ms-1"
+                           title="Cerrar proceso"
+                           onclick="return confirm('¿Cerrar este proceso?');">
+                            🔒 Cerrar
+                        </a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No hay procesos guardados todavía.
+    </div>
+}

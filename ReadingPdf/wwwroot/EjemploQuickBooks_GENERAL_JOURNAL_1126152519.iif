@@ -1,0 +1,455 @@
+;-----------------------------------------------------------------------------
+;
+;*** YOUR IIF FILE COULDN'T BE IMPORTED ***   
+;
+;Some of your records have errors.
+;
+;1. Search for the errors by typing "[ERROR]" to see only the failed records.
+;
+;2. Fix the errors and try to import the file again
+;
+;-----------------------------------------------------------------------------
+;
+;
+!TRNS	TRNSTYPE	DATE	ACCNT	AMOUNT	NAME	MEMO	
+!SPL	TRNSTYPE	DATE	ACCNT	AMOUNT	NAME	MEMO	
+!ENDTRNS
+; [ERROR] [Business Expenses Charges] The Account does not exist in Quickbooks [11288] 
+TRNS	GENERAL JOURNAL	03/02/2025	G8 Checking Chase #9627	-12.95		STRIPE MERCHANT FEE	
+SPL	GENERAL JOURNAL	03/02/2025	Business Expenses Charges	12.95		STRIPE MERCHANT FEE	
+ENDTRNS
+
+
+
+3/29/2024	
+.A check mark below indicates the requirement(s) you have met to qualify for the Monthly Fee waiver on the account.+ in new net purchases on a linked Business debit card has not been met,000+ combined average monthly balance in linked business accounts has been metBecome a member of Preferred Rewards for Business has been metFor information on how to open a new product, link an existing service to your account, or about Preferred Rewards for Business pleasecall
+. A check mark below indicates the requirement(s) you have met to qualify for the Monthly Fee waiver on the account. $250+ in new net purchases on a linked Business debit card has not been met $5,000+ combined average monthly balance in linked business accounts has been met Become a member of Preferred Rewards for Business has been met For information on how to open a new product, link an existing service to your account, or about Preferred Rewards for Business please call		$1.88	Bank Fees	
+4/12/2024	
+AMERICAN EXPRESS DES:ACH PMT ID:M2600 INDN:Packforward Corp CO ID:1133133497CCD
+AMERICAN EXPRESS DES:ACH PMT ID:M2600 INDN:Packforward Corp CO ID:1133133497 CCD	$12,315.00		Sales	
+4/1/2024	
+AMERICAN EXPRESS DES:ACH PMT ID:M7736 INDN:Packforward Corp CO ID:1133133497CCD
+AMERICAN EXPRESS DES:ACH PMT ID:M7736 INDN:Packforward Corp CO ID:1133133497 CCD	$500.00		Sales	
+4/5/2024	
+AMERICAN EXPRESS DES:ACH PMT ID:M9822 INDN:Packforward Corp CO ID:1133133497CCD
+AMERICAN EXPRESS DES:ACH PMT ID:M9822 INDN:Packforward Corp CO ID:1133133497 CCD	$22,000.00		Sales	
+4/8/2024	
+BANK OF AMERICA CREDIT CARD Bill Payment
+BANK OF AMERICA CREDIT CARD Bill Payment	$1,000.00		Sales	
+4/12/2024	
+Bank of America Credit Card Bill Payment
+Bank of America Credit Card Bill Payment	$1,000.00		Sales	
+4/15/2024	
+SUBCONTRACTED SERVICES
+BKOFAMERICA ATM 04/13 #000006766 WITHDRWL INTERNATIONAL PARK MIAMI FL	$300.00		Subcontracted Services	
+4/19/2024	
+BKOFAMERICA ATM
+BKOFAMERICA ATM 04/19 #000003356 WITHDRWL DORAL CENTER DORAL FL	$300.00		Subcontracted Services	
+4/26/2024	
+BKOFAMERICA ATM
+BKOFAMERICA ATM 04/26 #000004544 WITHDRWL INTERNATIONAL PARK MIAMI FL	$340.00		Subcontracted Services	
+4/10/2024	
+GUSTO
+GUSTO DES:CND 123590 ID:6semk0rh953 INDN:PACKFORWARD CORP CO ID:1453942850 CCD	$720.00		Subcontracted Services	
+4/17/2024	
+GUSTO
+GUSTO DES:CND 339191 ID:6semk0tnkdl INDN:PACKFORWARD CORP CO ID:1453942850 CCD	$720.00		Subcontracted Services	
+4/24/2024	
+GUSTO
+GUSTO DES:CND 508575 ID:6semk0vcq6m INDN:PACKFORWARD CORP CO ID:1453942850 CCD	$792.00		Subcontracted Services	
+4/3/2024	
+GUSTO
+GUSTO DES:CND 819504 ID:6semk0pq4tl INDN:PACKFORWARD CORP CO ID:1453942850 CCD	$720.00		Subcontracted Services	
+4/2/2024	
+GUSTO
+GUSTO DES:FEE 790421 ID:6semk0p1vjv INDN:PACKFORWARD CORP CO ID:9138864007 CCD	$52.00		Payroll Fees	
+4/11/2024	
+GUSTO
+GUSTO DES:NET 140704 ID:6semk0rea31 INDN:PACKFORWARD CORP CO ID:1453942850 CCD	$1,212.15		Payroll Liabilities	
+4/18/2024	
+GUSTO
+GUSTO DES:NET 362752 ID:6semk0ti6nn INDN:PACKFORWARD CORP CO ID:1453942850 CCD	$1,212.15		Payroll Liabilities	
+4/25/2024	
+GUSTO
+GUSTO DES:NET 526885 ID:6semk0v9ka2 INDN:PACKFORWARD CORP CO ID:1453942850 CCD	$1,212.15		Payroll Liabilities	
+4/4/2024	
+GUSTO
+GUSTO DES:NET 834628 ID:6semk0pl98b INDN:PACKFORWARD CORP CO ID:1453942850 CCD	$1,212.15		Payroll Liabilities	
+4/11/2024	
+GUSTO
+GUSTO DES:TAX 141276 ID:6semk0rea32 INDN:PACKFORWARD CORP CO ID:1453942850 CCD	$402.60		Payroll Tax Liabilities	
+4/18/2024	
+GUSTO
+GUSTO DES:TAX 362775 ID:6semk0ti6no INDN:PACKFORWARD CORP CO ID:1453942850 CCD	$402.60		Payroll Tax Liabilities	
+4/25/2024	
+GUSTO
+GUSTO DES:TAX 526917 ID:6semk0v9ka3 INDN:PACKFORWARD CORP CO ID:1453942850 CCD	$402.60		Payroll Tax Liabilities	
+4/4/2024	
+GUSTO
+GUSTO DES:TAX 834627 ID:6semk0pl98c INDN:PACKFORWARD CORP CO ID:1453942850 CCD	$402.60		Payroll Tax Liabilities	
+4/12/2024	
+Online Banking Transfer Conf# aj1fqoyx4; MARTAINER, INC.
+Online Banking Transfer Conf# aj1fqoyx4; MARTAINER, INC.	$1,800.00		Custom Services	
+4/8/2024	
+Online Banking Transfer Conf# bcu49g5nr; PEREIRA, ISIDRO
+Online Banking Transfer Conf# bcu49g5nr; PEREIRA, ISIDRO		$634.00	Sales	
+4/19/2024	
+Online Banking Transfer Conf# bxnurcxaq; QUEVEDO
+Online Banking Transfer Conf# bxnurcxaq; QUEVEDO	$2,000.00		Omar Quevedo	
+4/24/2024	
+Online Banking Transfer Conf# clpgj59ai; DE PINTO, DANIELA
+Online Banking Transfer Conf# clpgj59ai; DE PINTO, DANIELA		$222.32	Sales	
+4/26/2024	
+Online Banking Transfer Conf# cu2atpkmn; DE ABREU GONCALVES
+Online Banking Transfer Conf# cu2atpkmn; DE ABREU GONCALVES	$2,000.00		Gino de Abreu	
+4/26/2024	
+Online Banking Transfer Conf# drn0deu0e; QUEVEDO
+Online Banking Transfer Conf# drn0deu0e; QUEVEDO	$2,000.00		Omar Quevedo	
+4/19/2024	
+Online Banking Transfer Conf# dv1gdn4oo; DE ABREU GONCALVES
+Online Banking Transfer Conf# dv1gdn4oo; DE ABREU GONCALVES	$2,000.00		Gino de Abreu	
+4/5/2024	
+Online Banking Transfer Conf# dvx6ovv7k; DE ABREU GONCALVES
+Online Banking Transfer Conf# dvx6ovv7k; DE ABREU GONCALVES	$2,000.00		Gino de Abreu	
+4/5/2024	
+Online Banking Transfer Conf# ea9m6ep40; QUEVEDO
+Online Banking Transfer Conf# ea9m6ep40; QUEVEDO	$2,000.00		Omar Quevedo	
+4/12/2024	
+Online Banking Transfer Conf# gs36p6l9l; QUEVEDO
+Online Banking Transfer Conf# gs36p6l9l; QUEVEDO	$2,000.00		Omar Quevedo	
+4/12/2024	
+Online Banking Transfer Conf# huv3ihomn; DE ABREU GONCALVES
+Online Banking Transfer Conf# huv3ihomn; DE ABREU GONCALVES	$2,000.00		Gino de Abreu	
+4/5/2024	
+Online Banking Transfer Conf# lkf2xjpnk; POMELOS TO GO LLC, POMELOS TO GO LLC
+Online Banking Transfer Conf# lkf2xjpnk; POMELOS TO GO LLC, POMELOS TO GO LLC		$4,000.00	Sales	
+4/11/2024	
+Online Banking Transfer Conf# lzzhmm4bw; LP CARIBE CORP, LP CARIBE CORP
+Online Banking Transfer Conf# lzzhmm4bw; LP CARIBE CORP, LP CARIBE CORP		$2,755.00	Sales	
+4/29/2024	
+Online Banking Transfer Conf# mf7p90soz; SALSAS VENEZOLANAS USA LLC, SALSAS VENEZ
+Online Banking Transfer Conf# mf7p90soz; SALSAS VENEZOLANAS USA LLC, SALSAS VENEZ		$1,733.40	Sales	
+4/19/2024	
+Online Banking Transfer Conf# p7lj9ji02; POMELOS TO GO LLC, POMELOS TO GO LLC
+Online Banking Transfer Conf# p7lj9ji02; POMELOS TO GO LLC, POMELOS TO GO LLC		$5,000.00	Sales	
+4/1/2024	
+Online Banking Transfer Conf# rhmqy82y4; LP CARIBE CORP, LP CARIBE CORP
+Online Banking Transfer Conf# rhmqy82y4; LP CARIBE CORP, LP CARIBE CORP		$5,000.00	Sales	
+4/25/2024	
+Online Banking Transfer Conf# y18vw41v7; DE SOUSA, FLAVIO
+Online Banking Transfer Conf# y18vw41v7; DE SOUSA, FLAVIO		$77.40	Sales	
+4/5/2024	
+Prfd Rwds for Bus-Wire Fee Waiver of
+Prfd Rwds for Bus-Wire Fee Waiver of $15			Bank Fees	
+4/5/2024	
+WIRE TYPE:WIRE IN DATE: TIME:1633 ET TRN:2024040500492766SEQ:OPF255015418/001018 ORIG:DISTRIBUIDORA YOMOCAM ID:1000016606 SNDBK:AMERANT BANK, N.A. ID:067010509 PMT DET:240 961016370080357677/684/685/686/722
+WIRE TYPE:WIRE IN DATE: 240405 TIME:1633 ET TRN:2024040500492766 SEQ:OPF255015418/001018 ORIG:DISTRIBUIDORA YOMOCAM CA ID:1000016606 SND BK:AMERANT BANK, N.A. ID:067010509 PMT DET:240 961016370080357677/684/685/686/722		$21,945.64	Sales	
+4/23/2024	
+Zelle payment from ADRIANA ABELEDO for "Adriana Arean"; Conf# xs9bkli1t
+Zelle payment from ADRIANA ABELEDO for "Adriana Arean"; Conf# xs9bkli1t		$10.00	Sales	
+4/12/2024	
+Zelle payment from AGUA CONTROL LLC for "WR AND 57857"; Conf# q1i4t3k09
+Zelle payment from AGUA CONTROL LLC for "WR 57276 AND 57857"; Conf# q1i4t3k09		$879.12	Sales	
+4/30/2024	
+Zelle payment from AITOR MACAZAGA for "Aitor De Rotaeche"; Conf# nkvxt1uk3
+Zelle payment from AITOR MACAZAGA for "Aitor De Rotaeche"; Conf# nkvxt1uk3		$30.00	Sales	
+4/11/2024	
+Zelle payment from AITOR MACAZAGA for "Aitor De Rotaeche"; Conf# tiufci3s4
+Zelle payment from AITOR MACAZAGA for "Aitor De Rotaeche"; Conf# tiufci3s4		$138.50	Sales	
+4/18/2024	
+ALFREDO G GRACIA
+Zelle payment from ALFREDO G GRACIA for "Pago Invoice 58598"; Conf# 99afojj01		$26.50	Sales	
+4/15/2024	
+NA TRUAX
+Zelle payment from ANA TRUAX for "INV 56580 OTTO HERNANDEZ"; Conf# 99afjie6q		$20.00	Sales	
+4/24/2024	
+NA TRUAX
+Zelle payment from ANA TRUAX for "INV 56921 OTTO HERNANDEZ"; Conf# 99afz1qho		$20.00	Sales	
+4/4/2024	
+Zelle payment from ANDREA GUTIERREZ Conf# bvxgz12tu
+Zelle payment from ANDREA GUTIERREZ Conf# bvxgz12tu		$986.43	Sales	
+4/19/2024	
+Zelle payment from ANTONIO SPORTIELLO CRUZ Conf# qy23wknwt
+Zelle payment from ANTONIO SPORTIELLO CRUZ Conf# qy23wknwt		$40.00	Sales	
+4/12/2024	
+Zelle payment from ASHLY PRIETO Conf# qb83g1g5d
+Zelle payment from ASHLY PRIETO Conf# qb83g1g5d		$40.00	Sales	
+4/16/2024	
+Zelle payment from BETTINA RIVAS Conf# T0S5MGYBR
+Zelle payment from BETTINA RIVAS Conf# T0S5MGYBR		$0.44	Sales	
+4/15/2024	
+Zelle payment from BIOSAPIENS USA LLC Conf# 99afj2118
+Zelle payment from BIOSAPIENS USA LLC Conf# 99afj2118		$830.09	Sales	
+4/15/2024	
+Zelle payment from BIOSAPIENS USA LLC Conf# 99afj7gry
+Zelle payment from BIOSAPIENS USA LLC Conf# 99afj7gry		$650.09	Sales	
+4/22/2024	
+Zelle payment from CAI HOLLWEG for "Invoice 56535"; Conf# vjq7lm062
+Zelle payment from CAI HOLLWEG for "Invoice 56535"; Conf# vjq7lm062		$271.60	Sales	
+4/23/2024	
+Zelle payment from CARLOS BASO Conf# e5le035kg
+Zelle payment from CARLOS BASO Conf# e5le035kg		$40.00	Sales	
+4/15/2024	
+FEDERICO
+Zelle payment from CARLOS FEDERICO MONTEVERDE SISO Conf# 99afjbrol		$40.00	Sales	
+4/1/2024	
+Zelle payment from DAVID TEIXEIRA BRAZAO Conf# tet0lkaje
+Zelle payment from DAVID TEIXEIRA BRAZAO Conf# tet0lkaje		$83.50	Sales	
+4/23/2024	
+Zelle payment from DGLS INVESTMENTS LLC Conf# epdnoj0z0
+Zelle payment from DGLS INVESTMENTS LLC Conf# epdnoj0z0		$346.00	Sales	
+4/29/2024	
+Zelle payment from DIEGO MARTINEZ BARRIOS Conf# T0S6PH4T8
+Zelle payment from DIEGO MARTINEZ BARRIOS Conf# T0S6PH4T8		$40.00	Sales	
+4/22/2024	
+Zelle payment from EL CINE LLC Conf# x06rqvedn
+Zelle payment from EL CINE 2021 LLC Conf# x06rqvedn		$1,244.97	Sales	
+4/9/2024	
+Zelle payment from EL CINE LLC Conf# yh8lkbv3v
+Zelle payment from EL CINE 2021 LLC Conf# yh8lkbv3v		$2,931.99	Sales	
+4/18/2024	
+Zelle payment from EL CINE RESTAURANT, CORP Conf# jkebhoacp
+Zelle payment from EL CINE RESTAURANT, CORP Conf# jkebhoacp		$1,095.19	Sales	
+4/22/2024	
+Zelle payment from EL CINE RESTAURANT, CORP Conf# nuqpjpa0t
+Zelle payment from EL CINE RESTAURANT, CORP Conf# nuqpjpa0t		$1,244.97	Sales	
+4/2/2024	
+Zelle payment from EMILIA CORREA Conf# AA0KLJ42m
+Zelle payment from EMILIA CORREA Conf# AA0KLJ42m		$545.15	Sales	
+4/30/2024	
+Zelle payment from Enrico Friso for "envio Enrico Friso"; Conf# 0IM116KHP
+Zelle payment from Enrico Friso for "envio Enrico Friso"; Conf# 0IM116KHP		$408.24	Sales	
+4/22/2024	
+Zelle payment from FURORE REST, CORP Conf# u28x84pug
+Zelle payment from FURORE REST, CORP Conf# u28x84pug		$1,244.97	Sales	
+4/9/2024	
+Zelle payment from FURORE REST, CORP Conf# v6k6ttbxm
+Zelle payment from FURORE REST, CORP Conf# v6k6ttbxm		$2,664.27	Sales	
+4/18/2024	
+Zelle payment from GIORGIO ALVANO Conf# y69fu21d4
+Zelle payment from GIORGIO ALVANO Conf# y69fu21d4		$211.60	Sales	
+4/11/2024	
+Zelle payment from HANS PETERSEN for "PAYMENT INVOICE 56522"; Conf# mrcf1ljod
+Zelle payment from HANS PETERSEN for "PAYMENT INVOICE 56522"; Conf# mrcf1ljod		$720.09	Sales	
+4/24/2024	
+Zelle payment from HANS PETERSEN for "PAYMENT INVOICE 56803"; Conf# pszcpd4lm
+Zelle payment from HANS PETERSEN for "PAYMENT INVOICE 56803"; Conf# pszcpd4lm		$1,199.88	Sales	
+4/8/2024	
+Zelle payment from Henry Martinez Conf# 9N3C60YE8
+Zelle payment from Henry Martinez Conf# 9N3C60YE8		$131.70	Sales	
+4/8/2024	
+Zelle payment from JESUS E MARIN GONZALEZ for "JesusM"; Conf# 99af6bd6l
+Zelle payment from JESUS E MARIN GONZALEZ for "JesusM"; Conf# 99af6bd6l		$65.00	Sales	
+4/26/2024	
+Zelle payment from JESUS SOTO MENDEZ for "Pago de Jesus Soto"; Conf# T0S6G9RLP
+Zelle payment from JESUS SOTO MENDEZ for "Pago de Jesus Soto"; Conf# T0S6G9RLP		$40.00	Sales	
+4/3/2024	
+Zelle payment from JESUS SOTO MENDEZ for "Pago Factura Jesus Soto"; Conf#T0S4HZCVQ
+Zelle payment from JESUS SOTO MENDEZ for "Pago Factura 55873 Jesus Soto"; Conf# T0S4HZCVQ		$449.40	Sales	
+4/5/2024	
+Zelle payment from JORGE ROMERO VIVAS for "packforward invoice 56210"; Conf# nl9ce99oo
+Zelle payment from JORGE ROMERO VIVAS for "packforward invoice 56210"; Conf# nl9ce99oo		$40.00	Sales	
+4/18/2024	
+Zelle payment from Jose Ramon Gomez Perez for "Invoice Jose Gomez"; Conf#
+Zelle payment from Jose Ramon Gomez Perez for "Invoice 56840 Jose Gomez"; Conf# 229020562		$124.20	Sales	
+4/12/2024	
+Zelle payment from JOSE SANCHEZ for "Jose Luis Sanchez"; Conf# b55tt1z7u
+Zelle payment from JOSE SANCHEZ for "Jose Luis Sanchez"; Conf# b55tt1z7u		$100.80	Sales	
+4/16/2024	
+Zelle payment from JUAN CARLOS LOPEZ BETANCOR Conf# 06BT1ZRK7
+Zelle payment from JUAN CARLOS LOPEZ BETANCOR Conf# 06BT1ZRK7		$114.95	Sales	
+4/18/2024	
+Zelle payment from JUDITH QUEVEDO Conf# 0ILPGLFC8
+Zelle payment from JUDITH QUEVEDO Conf# 0ILPGLFC8		$440.20	Sales	
+4/24/2024	
+Zelle payment from KATHERINE PALACIOS MIRANDA Conf# olnmovbx0
+Zelle payment from KATHERINE PALACIOS MIRANDA Conf# olnmovbx0		$2,000.00	Sales	
+4/26/2024	
+Zelle payment from KATHERINE PALACIOS MIRANDA Conf# p37e8o0le
+Zelle payment from KATHERINE PALACIOS MIRANDA Conf# p37e8o0le		$1,000.00	Sales	
+4/15/2024	
+Zelle payment from LEOPOLDO HERNANDEZ MENDEZ Conf# wqdwf75yw
+Zelle payment from LEOPOLDO HERNANDEZ MENDEZ Conf# wqdwf75yw		$168.05	Sales	
+4/23/2024	
+Zelle payment from LILIAN MENDEZ DE HERNANDEZ Conf# 99afykkgl
+Zelle payment from LILIAN MENDEZ DE HERNANDEZ Conf# 99afykkgl		$1,000.00	Sales	
+4/24/2024	
+Zelle payment from LILIAN MENDEZ DE HERNANDEZ Conf# 99afz61cj
+Zelle payment from LILIAN MENDEZ DE HERNANDEZ Conf# 99afz61cj		$1,000.00	Sales	
+4/5/2024	
+Zelle payment from LINA CLAVIER Conf# wd2jlz651
+Zelle payment from LINA CLAVIER Conf# wd2jlz651		$434.84	Sales	
+4/2/2024	
+Zelle payment from LUIS MORALES Conf# e2eak7c7j
+Zelle payment from LUIS MORALES Conf# e2eak7c7j		$50.00	Sales	
+4/10/2024	
+Zelle payment from LUIS ROZADOS REY Conf# qszc5wkr5
+Zelle payment from LUIS ROZADOS REY Conf# qszc5wkr5		$40.00	Sales	
+4/17/2024	
+Zelle payment from MARCELLO BATTISTINI Conf# o0qc1y1sb
+Zelle payment from MARCELLO BATTISTINI Conf# o0qc1y1sb		$390.00	Sales	
+4/25/2024	
+Zelle payment from MARIA ARIAS Conf# qrmetgwyq
+Zelle payment from MARIA ARIAS Conf# qrmetgwyq		$100.80	Sales	
+4/18/2024	
+Zelle payment from MARIANA ROA for "invoice and 56938"; Conf# T0S5S8JRK
+Zelle payment from MARIANA ROA for "invoice 56940 and 56938"; Conf# T0S5S8JRK		$30.00	Sales	
+4/26/2024	
+Zelle payment from MARIANA ROA for "invoice 57294"; Conf# T0S6G5PC6
+Zelle payment from MARIANA ROA for "invoice 57294"; Conf# T0S6G5PC6		$30.00	Sales	
+4/18/2024	
+Zelle payment from MARIO CAPUCCI for "m ventura"; Conf# csts8x2nu
+Zelle payment from MARIO CAPUCCI for "m ventura"; Conf# csts8x2nu		$56.70	Sales	
+4/11/2024	
+Zelle payment from MARIO CAPUCCI for "pago Mario ventura"; Conf# ez5maswgp
+Zelle payment from MARIO CAPUCCI for "pago Mario ventura"; Conf# ez5maswgp		$40.00	Sales	
+4/2/2024	
+Zelle payment from MIGUEL HERRERA PARRA for "58163"; Conf# ujdd6nk7a
+Zelle payment from MIGUEL HERRERA PARRA for "58163"; Conf# ujdd6nk7a		$40.00	Sales	
+4/26/2024	
+Zelle payment from MIGUEL HERRERA PARRA for "Guias y 58246"; Conf# xyfa5vm77
+Zelle payment from MIGUEL HERRERA PARRA for "Guias 58620 y 58246"; Conf# xyfa5vm77		$115.80	Sales	
+4/10/2024	
+Zelle payment from OLGA KARAM for "Balance due"; Conf# a8iws8cqz
+Zelle payment from OLGA KARAM for "Balance due"; Conf# a8iws8cqz		$30.00	Sales	
+4/24/2024	
+Zelle payment from PADRON EXPRESS LLC Conf# m1tjn39gr
+Zelle payment from PADRON EXPRESS LLC Conf# m1tjn39gr		$978.00	Sales	
+4/29/2024	
+Zelle payment from PADRON EXPRESS LLC Conf# on1zhlzef
+Zelle payment from PADRON EXPRESS LLC Conf# on1zhlzef		$370.93	Sales	
+4/8/2024	
+Zelle payment from PADRON EXPRESS LLC Conf# su1ywpsvz
+Zelle payment from PADRON EXPRESS LLC Conf# su1ywpsvz		$715.75	Sales	
+4/17/2024	
+Zelle payment from PADRON EXPRESS LLC Conf# t4dihyp42
+Zelle payment from PADRON EXPRESS LLC Conf# t4dihyp42		$59.00	Sales	
+4/22/2024	
+Zelle payment from PADRON EXPRESS LLC Conf# w5o5pobc0
+Zelle payment from PADRON EXPRESS LLC Conf# w5o5pobc0		$2,853.00	Sales	
+4/22/2024	
+Zelle payment from PADRON EXPRESS LLC Conf# w84wjrt7o
+Zelle payment from PADRON EXPRESS LLC Conf# w84wjrt7o		$953.00	Sales	
+4/23/2024	
+Zelle payment from PADRON EXPRESS LLC Conf# w8qj8juq3
+Zelle payment from PADRON EXPRESS LLC Conf# w8qj8juq3		$173.09	Sales	
+4/8/2024	
+Zelle payment from PADRON EXPRESS LLC Conf# y9dy07jzz
+Zelle payment from PADRON EXPRESS LLC Conf# y9dy07jzz		$165.00	Sales	
+4/3/2024	
+Zelle payment from PADRON EXPRESS LLC Conf# z1b9o5tx9
+Zelle payment from PADRON EXPRESS LLC Conf# z1b9o5tx9		$596.00	Sales	
+4/25/2024	
+Zelle payment from PADRON EXPRESS LLC Conf# zryxwsxhx
+Zelle payment from PADRON EXPRESS LLC Conf# zryxwsxhx		$133.00	Sales	
+4/23/2024	
+Zelle payment from PROBOX LOGISTICS, INC Conf# bhkxtrs78
+Zelle payment from PROBOX LOGISTICS, INC Conf# bhkxtrs78		$3,763.63	Sales	
+4/8/2024	
+Zelle payment from PROBOX LOGISTICS, INC Conf# fsa1n0qo8
+Zelle payment from PROBOX LOGISTICS, INC Conf# fsa1n0qo8		$2,712.08	Sales	
+4/8/2024	
+Zelle payment from RAMON NAVARRO Conf# T0S4YYF39
+Zelle payment from RAMON NAVARRO Conf# T0S4YYF39		$98.40	Sales	
+4/1/2024	
+Zelle payment from ROBERTO HERNANDEZ ANAYA Conf# 99aer01hr
+Zelle payment from ROBERTO HERNANDEZ ANAYA Conf# 99aer01hr		$2,200.00	Sales	
+4/26/2024	
+Zelle payment from SALVADOR JAVIER SANTOPIETRO SALGADO for "Envios Varios Santopietro";Conf# 01B618R4L
+Zelle payment from SALVADOR JAVIER SANTOPIETRO SALGADO for "Envios Varios Santopietro"; Conf# 01B618R4L		$119.50	Sales	
+4/15/2024	
+Zelle payment from SANDRA SOTO for "Pago de Sandra Roye"; Conf# nfi12hpwk
+Zelle payment from SANDRA SOTO for "Pago de Sandra Roye"; Conf# nfi12hpwk		$97.20	Sales	
+4/24/2024	
+Zelle payment from SEBASTIAN BARI for "pago flete"; Conf# T0S69K6PV
+Zelle payment from SEBASTIAN BARI for "pago flete"; Conf# T0S69K6PV		$275.35	Sales	
+4/11/2024	
+Zelle payment from SEBASTIAN BARI for "pago honorarios"; Conf# T0S56SL3T
+Zelle payment from SEBASTIAN BARI for "pago honorarios"; Conf# T0S56SL3T		$204.60	Sales	
+4/22/2024	
+Zelle payment from SKY44, CORP Conf# kjq804ufo
+Zelle payment from SKY44, CORP Conf# kjq804ufo		$1,905.41	Sales	
+4/22/2024	
+Zelle payment from SKY44, CORP Conf# qt6vq3frm
+Zelle payment from SKY44, CORP Conf# qt6vq3frm		$1,244.97	Sales	
+4/2/2024	
+Zelle payment from Taller Elemental de Creatividad LLC for "Factura 56264"; Conf# 99aeug1vb
+Zelle payment from Taller Elemental de Creatividad LLC for "Factura 56264"; Conf# 99aeug1vb		$302.00	Sales	
+4/18/2024	
+Zelle payment from VICENTE LLATAS SALVADOR for "invoice
+Zelle payment from VICENTE LLATAS SALVADOR for "invoice		$56,882.92	Sales	
+4/9/2024	
+Zelle payment from VICENTE LLATAS SALVADOR for "invoice y Layla Macc Adan";Conf# 99af7n9v3
+Zelle payment from VICENTE LLATAS SALVADOR for "invoice 56548 y 56567 Layla Macc Adan"; Conf# 99af7n9v3		$119.40	Sales	
+4/16/2024	
+Zelle payment from YARITZA M RODRIGUEZ Conf# AA0KXN97o
+Zelle payment from YARITZA M RODRIGUEZ Conf# AA0KXN97o		$515.00	Sales	
+4/4/2024	
+Zelle payment from YASMIN RODRIGUEZ for "yasmin velasquez"; Conf# se1totzxi
+Zelle payment from YASMIN RODRIGUEZ for "yasmin velasquez"; Conf# se1totzxi		$40.00	Sales	
+4/22/2024	
+Zelle payment to ARTURO MARTINEZ Conf# a7leirvw4
+Zelle payment to ARTURO MARTINEZ Conf# a7leirvw4	$1,634.00		Sales	
+4/19/2024	
+Zelle payment to Daniel Transporte Camion Conf# b7ii62rmk
+Zelle payment to Daniel Transporte Camion Conf# b7ii62rmk	$565.00		Subcontracted Services	
+4/26/2024	
+Zelle payment to Daniel Transporte Camion Conf# bqryk6ee3
+Zelle payment to Daniel Transporte Camion Conf# bqryk6ee3	$581.00		Subcontracted Services	
+4/5/2024	
+Zelle payment to Daniel Transporte Camion Conf# brrt20yto
+Zelle payment to Daniel Transporte Camion Conf# brrt20yto	$400.00		Subcontracted Services	
+4/19/2024	
+Zelle payment to Daniel Transporte Camion Conf# czf2qszhs
+Zelle payment to Daniel Transporte Camion Conf# czf2qszhs	$370.00		Subcontracted Services	
+4/3/2024	
+Zelle payment to GEOMAIRA Conf# aeqpjtlsr
+Zelle payment to GEOMAIRA Conf# aeqpjtlsr	$240.00		Meals	
+4/26/2024	
+Zelle payment to GEOMAIRA Conf# e8h6qfalf
+Zelle payment to GEOMAIRA Conf# e8h6qfalf	$45.00		Meals	
+4/24/2024	
+Zelle payment to GERARDO PISANO for "Devolucion"; Conf# acf9odqv1
+Zelle payment to GERARDO PISANO for "Devolucion"; Conf# acf9odqv1	$326.70		Sales	
+4/26/2024	
+Zelle payment to GINO DE Conf# acmuxndx4
+Zelle payment to GINO DE Conf# acmuxndx4	$1,898.37		Cost of Good Sold	
+4/26/2024	
+Zelle payment to ISRAEL PEREZ Conf# bh3j4oe4r
+Zelle payment to ISRAEL PEREZ Conf# bh3j4oe4r	$25.00		Custom Services	
+4/5/2024	
+Zelle payment to ISRAEL PEREZ Conf# byfrczq2r
+Zelle payment to ISRAEL PEREZ Conf# byfrczq2r	$50.00		Custom Services	
+4/19/2024	
+Zelle payment to ISRAEL PEREZ Conf# hgsga8ksw
+Zelle payment to ISRAEL PEREZ Conf# hgsga8ksw	$50.00		Custom Services	
+4/19/2024	
+SERVICES
+Zelle payment to JLR QUALITY SERVICES CORP Conf# ahv89ef1d	$65.00		Repair and Maintenance Service	
+4/5/2024	
+SERVICES
+Zelle payment to JLR QUALITY SERVICES CORP Conf# i7rdbv9w9	$65.00		Repair and Maintenance Service	
+4/26/2024	
+MARIELA MARSICCOBRETRE
+Zelle payment to Mariela Marsiccobretre Conf# d6i09pi2w	$1,000.00		Mariela Marsiccobetre	
+4/1/2024	
+Zelle payment to OMAR GARCIA Conf# c3pscoioy
+Zelle payment to OMAR GARCIA Conf# c3pscoioy	$5,000.00		Subcontracted Services	
+4/30/2024	
+Zelle payment to OMAR GARCIA Conf# duklw9fh5
+Zelle payment to OMAR GARCIA Conf# duklw9fh5	$7,000.00		Subcontracted Services	
+4/12/2024	
+Zelle payment to OMAR GARCIA Conf# iv4zk915w
+Zelle payment to OMAR GARCIA Conf# iv4zk915w	$3,000.00		Subcontracted Services	
+4/22/2024	
+Zelle payment to OMAR GARCIA for "CTA CITI"; Conf# cvmksm8lz
+Zelle payment to OMAR GARCIA for "CTA CITI"; Conf# cvmksm8lz	$3,500.00		Subcontracted Services	
+4/5/2024	
+Zelle payment to PHOENIX ARG, LLC Conf# avrgrg8dg
+Zelle payment to PHOENIX ARG, LLC Conf# avrgrg8dg	$450.00		Advertising	
+4/26/2024	
+Zelle payment to World Wise Consulting Inc for "Invoice 4689"; Conf# bqsaie2w4
+Zelle payment to World Wise Consulting Inc for "Invoice 4689"; Conf# bqsaie2w4	$1,200.00		Custom Services	
+4/22/2024	
+Zelle payment to World Wise Consulting Inc for "INVOICE 4767"; Conf# ho8mwll94
+Zelle payment to World Wise Consulting Inc for "INVOICE 4767"; Conf# ho8mwll94	$1,687.50		Custom Services	

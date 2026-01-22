@@ -1,0 +1,410 @@
+﻿@model IEnumerable<Movimiento>
+@using System.Linq
+
+@{
+    var bankName = (ViewBag.BankName as string) ?? "";
+    var itemsCount = (ViewBag.ItemsCount != null) ? (int)ViewBag.ItemsCount : Model?.Count() ?? 0;
+}
+
+@{
+    // Existing conversion for selected QB account
+    var selectedCuentaQB = Convert.ToString(ViewBag.SelectedCuentaQB) ?? "";
+}
+
+@Html.AntiForgeryToken()
+
+
+
+<h2>Transacciones encontradas</h2>     
+
+
+@if (ViewBag.BatchId != null)
+{
+@*     <a href="/QuickBooks/Export?batchId=@ViewBag.BatchId"
+       class="btn btn-success"
+       target="_blank">
+        <i class="fa fa-download"></i> Exportar a QuickBooks (.IIF)
+    </a> *@
+
+    <a href="/PdfNew/ExportCsv?batchId=@ViewBag.BatchId"
+       class="btn btn-outline-primary"
+       target="_blank" style="margin-left:.5rem;">
+        <i class="fa fa-file-excel"></i> Exportar a Excel (.csv)
+    </a>
+}
+
+<button id="btn-guardar-proceso" class="btn btn-primary">
+    💾 Guardar proceso
+</button>
+
+@if (!string.IsNullOrWhiteSpace(ViewBag.LastSelectedAccountQB))
+{
+    <div class="alert alert-secondary">
+        <strong>Cuenta QuickBooks seleccionada:</strong>
+        @ViewBag.LastSelectedAccountQB
+    </div>
+}
+
+
+<p>
+    @if (!string.IsNullOrEmpty(bankName))
+    {
+        <text>Banco: @bankName — </text>
+    }
+    <text>Cantidad total: @itemsCount</text>
+
+    @* Nuevo: resumen dinámico de selección (conteo + suma de montos) *@
+    <span id="selected-summary" style="margin-left:1rem;">
+        Seleccionados: <strong id="selected-count">0</strong> — 
+       @*  Suma seleccionada: <strong id="selected-sum">@((0m).ToString("C"))</strong> *@
+    </span>
+
+    @* Mostrar saldo anterior y restante (según Interest Charged) *@
+    <span id="previous-balance" style="margin-left:1rem;">
+        Saldo anterior: <strong id="previous-value">@((ViewBag.LastInterestCharged != null) ? ((decimal)ViewBag.LastInterestCharged).ToString("C") : "-")</strong>
+    </span>
+
+    <span id="remaining-balance" style="margin-left:1rem;">
+        Saldo restante: <strong id="remaining-value">@((ViewBag.LastInterestCharged != null) ? ((decimal)ViewBag.LastInterestCharged).ToString("C") : "-")</strong>
+    </span>
+
+    @* Toggle para mostrar/ocultar transacciones desmarcadas *@
+    <label style="margin-left:1rem;">
+        <input type="checkbox" id="show-unchecked" checked /> Mostrar desmarcadas
+    </label>
+</p>
+
+<p>
+    @if (ViewBag.BatchId != null)
+    {
+        <text>Batch: @ViewBag.BatchId</text>
+    }
+</p>
+
+@{
+    // --- AGREGADO: totales y saldos calculados a partir de los montos y Interest Charged
+    // Sumar montos positivos y negativos (negativos se mantienen con signo)
+    decimal positiveTotal = Model?.Where(m => m != null && m.Monto > 0m).Sum(m => m.Monto) ?? 0m;
+    decimal negativeTotal = Model?.Where(m => m != null && m.Monto < 0m).Sum(m => m.Monto) ?? 0m;
+    decimal negativeTotalAbsolute = Math.Abs(negativeTotal); // suma absoluta de débitos
+    decimal netSum = positiveTotal + negativeTotal; // positivos + (negativos como negativos)
+
+    decimal? interestCharged = ViewBag.LastInterestCharged != null ? (decimal?)ViewBag.LastInterestCharged : null;
+
+    // Interpretaciones de "saldo" solicitadas:
+    // 1) Restar interest menos (positivos) y menos (negativos en valor absoluto):
+    decimal? saldo_RestaPosYNegAbs = interestCharged.HasValue ? interestCharged.Value - positiveTotal - negativeTotalAbsolute : null;
+
+    // 2) Restar interest menos (suma neta de movimientos = positivos + negativos (con signo)):
+    decimal? saldo_RestaNeto = interestCharged.HasValue ? interestCharged.Value - netSum : null;
+}
+
+@if (!string.IsNullOrWhiteSpace(selectedCuentaQB))
+{
+    <div class="alert alert-info py-2">
+        Cuenta QuickBooks seleccionada: <strong>@selectedCuentaQB</strong>
+    </div>
+}
+
+@section Styles {
+    <style>
+        /* Mantener en verde solo las filas originalmente marcadas (has-empresa).
+           No aplicar color de fondo a filas modificadas ni a seleccionadas según petición. */
+        #resultados-table tbody tr.has-empresa td { background-color: #c1e9c7 !important; }
+
+        /* small visual hint for sortable headers */
+        #resultados-table thead th.sortable { cursor: pointer; user-select: none; }
+        #resultados-table thead th.sortable:after { content: " ⇅"; font-size: 0.8em; color: #666; margin-left: .25rem; }
+        #resultados-table thead th.sortable.asc:after { content: " ↑"; }
+        #resultados-table thead th.sortable.desc:after { content: " ↓"; }
+
+        .registrar-btn { margin-left: .5rem; }
+        .registrar-status { margin-left: .5rem; font-size: .9em; }
+        .spinner-border-sm { width: 1rem; height: 1rem; border-width: .12em; }
+
+        .icon-btn {
+            padding: .25rem .4rem;
+            line-height: 1;
+        }
+
+            .icon-btn i {
+                font-size: 0.9rem;
+            }
+
+        .empresa-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+        }
+
+        /* small select for account suggestions */
+        .account-suggest {
+            display: inline-block;
+            vertical-align: middle;
+            width: 220px;
+            margin-left: .5rem;
+            font-size: 0.85rem;
+            padding: .15rem .35rem;
+        }
+
+        /* Estilos para el modal de QuickBooks */
+        .modal-body .form-label {
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .modal-body .form-control[readonly] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .qb-data-row {
+            margin-bottom: 1rem;
+        }
+
+        .qb-success-badge {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid #c3e6cb;
+        }
+
+        .qb-error-badge {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid #f5c6cb;
+        }
+
+        .txn-id-cell {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .qb-view-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    </style>
+}
+
+<style>
+    #resultados-table { width: 100%; table-layout: fixed; font-family: 'Open Sans Condensed', sans-serif; font-size: 14px; }
+    #resultados-table .descripcion-cell { white-space: normal; overflow: hidden; text-overflow: ellipsis; }
+    /* add data-original-fromtable on inputs so JS can keep only originally-marked rows green */
+    #resultados-table .empresa-input { width: calc(100% - 90px); box-sizing: border-box; font-family: inherit; font-size: inherit; padding: .25rem .5rem; display: inline-block; vertical-align: middle; }
+    /* checkbox column */
+    #resultados-table td.select-col, #resultados-table th.select-col { text-align: center; vertical-align: middle; width: 3%; }
+</style>
+<!--- ESTA ES LA TABLA QUE MUESTRA LAS TRANSACCIONES CONVERTIDAS -------------------------------------------->
+<table class="table" id="resultados-table"> 
+    <colgroup>
+        <col style="width:3%" />    <!-- Checkbox -->
+        <col style="width:10%" />   <!-- Fecha -->
+        <col style="width:20%" />   <!-- Empresa -->
+        <col style="width:30%" />   <!-- Descripción -->
+        <col style="width:10%" />   <!-- Débito -->
+        <col style="width:10%" />   <!-- Crédito -->
+        <col style="width:10%" />   <!-- Cuenta -->
+        <col style="width:10%" />   <!-- Tipo Documento -->
+        <col style="width:10%" />   <!-- Id de Transaccion -->
+        <col style="width:10%" />   <!-- Accion -->
+    </colgroup>
+
+ @*    <thead>
+        <tr>
+            <th class="select-col"><input type="checkbox" id="select-all" title="Seleccionar todo" /></th>
+            <th class="sortable" data-col="1" data-type="date">Fecha</th>
+            <th class="sortable" data-col="2" data-type="string">Empresa</th>
+            <th class="sortable" data-col="3" data-type="string">Descripción</th>
+            <th class="sortable" data-col="4" data-type="number">Débito</th>
+            <th class="sortable" data-col="5" data-type="number">Crédito</th>
+            <th class="sortable" data-col="6" data-type="string">Cuenta</th>
+            <th class="sortable" data-col="7" data-type="string">Tipo Documento</th>
+        </tr>
+    </thead> *@
+
+    <thead>
+        <tr>
+            <th class="select-col"><input type="checkbox" id="select-all" title="Seleccionar todo" /></th>
+            <th class="sortable" data-col="1" data-type="date">Fecha</th>
+            <th class="sortable" data-col="2" data-type="string">Empresa</th>
+            <th class="sortable" data-col="3" data-type="string">Descripción</th>
+            <th class="sortable" data-col="4" data-type="number">Débito</th>
+            <th class="sortable" data-col="5" data-type="number">Crédito</th>
+            <th class="sortable" data-col="6" data-type="string">Cuenta</th>
+            <th class="sortable" data-col="7" data-type="string">Tipo Documento</th>
+            <th>TxnID</th> <!-- Nueva columna -->
+            <th>Acciones</th> <!-- Botón Ver/Editar -->
+        </tr>
+    </thead>
+
+    <tbody>
+        @{
+
+            var i = 0;
+            var recognized = (ViewBag.RecognizedCompanies as List<string>) ?? new List<string>();
+        }
+        @foreach (var mov in Model)
+{
+    var isFromTable = !string.IsNullOrWhiteSpace(mov.Empresa)
+                      && recognized.Any(r => string.Equals(r, mov.Empresa, StringComparison.OrdinalIgnoreCase));
+
+    var combinedOriginal = mov.Empresa ?? (mov.EmpresaExtraida?.ToString()) ?? "";
+    var cssClass = isFromTable ? "has-empresa" : "";
+
+    // debit if negative, credit if positive (assumes sign on Monto)
+    var debitValue = mov.Monto < 0 ? Math.Abs(mov.Monto) : 0m;
+    var creditValue = mov.Monto > 0 ? mov.Monto : 0m;
+
+    // Normalize displayed account: remove leading "Expense:" if present
+    var cuentaPred = mov.CuentaPredicha ?? "";
+    var displayCuenta = cuentaPred.StartsWith("Expense:", StringComparison.OrdinalIgnoreCase)
+                        ? cuentaPred.Substring("Expense:".Length).Trim()
+                        : cuentaPred;
+
+            <tr data-index="@i"
+                data-from-table="@(isFromTable ? "true" : "false")"
+                data-monto="@mov.Monto.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                data-cuenta="@((displayCuenta ?? "").Replace("\"", "'"))"
+                data-predicted-account="@((mov.CuentaPredicha ?? "").Replace("\"", "'"))"
+                data-applied-account="@((mov.CuentaContableAplicada ?? "").Replace("\"", "'"))"
+                class="@cssClass">
+
+                <td class="select-col">
+                    <input type="checkbox" class="row-check" data-index="@i" name="selected[@i]" aria-label="Seleccionar registro @i" />
+                </td>
+
+                <td data-sort-value="@mov.Fecha.ToString("o")">@mov.Fecha.ToShortDateString()</td>
+
+                <td>
+                    <input type="hidden" name="movimientos[@i].EmpresaOriginal" value="@combinedOriginal" />
+                    <input type="hidden" name="movimientos[@i].EmpresaFromTable" value="@(isFromTable ? "true" : "false")" />
+
+                    <div class="empresa-cell">
+                        <input class="form-control empresa-input"
+                               name="movimientos[@i].Empresa"
+                               data-index="@i"
+                               data-original="@combinedOriginal"
+                               data-original-fromtable="@(isFromTable ? "true" : "false")"
+                               placeholder="@combinedOriginal"
+                               value="@(isFromTable? mov.Empresa: "")" />
+
+                        <div class="empresa-actions">
+                            <!-- Registrar en QuickBooks -->
+                            <button type="button"
+                                    class="btn btn-success btn-sm icon-btn registrar-btn"
+                                    data-index="@i"
+                                    title="Registrar en QuickBooks">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                            </button>
+
+                            <!-- Limpiar empresa -->
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-sm icon-btn limpiar-btn"
+                                    data-index="@i"
+                                    title="Limpiar empresa">
+                                <i class="fas fa-eraser"></i>
+                            </button>
+
+                            <span class="registrar-status" data-index="@i"></span>
+                        </div>
+                    </div>
+                </td>
+
+                <td class="descripcion-cell" data-sort-value="@(mov.Descripcion?.ToUpperInvariant() ?? "")">@mov.Descripcion</td>
+
+                <td data-sort-value="@(debitValue.ToString(System.Globalization.CultureInfo.InvariantCulture))">
+                    @(debitValue > 0 ? debitValue.ToString("C") : "")
+                </td>
+
+                <td data-sort-value="@(creditValue.ToString(System.Globalization.CultureInfo.InvariantCulture))">
+                    @(creditValue > 0 ? creditValue.ToString("C") : 0)
+                </td>
+
+                <td data-sort-value="@(mov.CuentaPredicha ?? "")">@displayCuenta</td>
+                <td data-sort-value="@(mov.TipoDocumento ?? "")">@mov.TipoDocumento</td>
+
+                <!-- Nueva celda para TxnID -->
+                <td class="txn-id-cell"></td>
+
+                <!-- Botón Ver / Editar -->
+                <td>
+                    <button type="button" class="btn btn-info btn-sm qb-view-btn" data-index="@i" title="Ver / Editar QuickBooks">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            </tr>
+
+    i++;
+}
+    </tbody>
+</table>
+
+<!-- Agregar este modal DESPUÉS de la tabla y ANTES del div #server-data -->
+<!-- Modal para Ver/Editar QuickBooks -->
+<div class="modal fade" id="qbViewModal" tabindex="-1" aria-labelledby="qbViewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="qbViewModalLabel">
+                    <i class="fas fa-file-invoice-dollar"></i> Detalles del Cargo en QuickBooks
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="qbModalBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-3">Cargando datos...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@{
+    // Build account statistics to drive dropdown suggestions (server-side aggregation)
+    var accountStats = Model?
+        .GroupBy(m => string.IsNullOrWhiteSpace(m?.CuentaPredicha) ? (m?.CuentaContableAplicada ?? "SIN PREDICCION") : m!.CuentaPredicha!)
+        .Select(g => new {
+            Account = g.Key ?? "",
+            Count = g.Count(),
+            AvgScore = g.Any(x => x != null) ? (int)Math.Round(g.Average(x => x?.ScorePrediccion ?? 0)) : 0
+        })
+        .OrderByDescending(x => x.Count)
+        .ToList();
+    if (accountStats == null)
+    {
+        // Use an empty list of the same anonymous type as accountStats
+        accountStats = new[] { new { Account = "", Count = 0, AvgScore = 0 } }.Take(0).ToList();
+    }
+}
+
+<div id="server-data"
+     data-interest='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.LastInterestCharged))'
+     data-selected-qb='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Convert.ToString(ViewBag.SelectedCuentaQB) ?? ""))'
+     data-account-stats='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(accountStats))'
+     data-batch-id='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.BatchId?.ToString() ?? ""))'
+     data-currency='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(System.Globalization.CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol))'
+     data-bankname='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.BankName ?? ""))'
+     style="display:none;"></div>
+
+
+
+@section Scripts {
+    <script type="module" src="~/js/main.js"></script>
+}
+

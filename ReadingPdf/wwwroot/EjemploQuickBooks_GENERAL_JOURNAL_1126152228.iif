@@ -1,0 +1,20 @@
+;-----------------------------------------------------------------------------
+;
+;*** YOUR IIF FILE COULDN'T BE IMPORTED ***   
+;
+;Some of your records have errors.
+;
+;1. Search for the errors by typing "[ERROR]" to see only the failed records.
+;
+;2. Fix the errors and try to import the file again
+;
+;-----------------------------------------------------------------------------
+;
+;
+!TRNS	TRNSTYPE	DATE	ACCNT	AMOUNT	NAME	MEMO	
+!SPL	TRNSTYPE	DATE	ACCNT	AMOUNT	NAME	MEMO	
+!ENDTRNS
+; [ERROR] [Advertising & Promotion Charges] The Account does not exist in Quickbooks [11288] 
+TRNS	GENERAL JOURNAL	03/02/2025	G8 Checking Chase #9627	-12.95		STRIPE MERCHANT FEE	
+SPL	GENERAL JOURNAL	03/02/2025	Advertising & Promotion Charges	12.95		STRIPE MERCHANT FEE	
+ENDTRNS

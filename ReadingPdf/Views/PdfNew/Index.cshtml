@@ -1,0 +1,610 @@
+﻿@{
+    ViewData["Title"] = "Subir estados bancarios";
+}
+
+@section Styles {
+    <style>
+        /* Aplicar Open Sans Condensed a la tabla de movimientos */
+        #tablaMovimientos,
+        #tablaMovimientos th,
+        #tablaMovimientos td {
+            font-family: "Open Sans Condensed", sans-serif;
+        }
+
+        /* Encabezados más visibles */
+        #tablaMovimientos thead th {
+            font-weight: 700;
+        }
+
+        /* Celdas con peso ligero para mejor lectura */
+        #tablaMovimientos td {
+            font-weight: 300;
+        }
+
+        /* Estilos para la empresa QuickBooks */
+        .empresaQBLabel {
+            color: #0d6efd; /* azul Bootstrap primary */
+            font-weight: 600;
+        }
+        .empresaQBName {
+            font-weight: 700; /* nombre en negritas */
+        }
+    </style>
+}
+
+<div class="row mb-3">
+    <div class="col-md-3">
+        <h2 class="mb-3">Subir estados bancarios</h2>
+    </div>
+    <div class="col-md-9">
+        @* Space reserved for global messages if needed *@
+
+        <!-- Empresa QuickBooks (fuera de las pestañas para mostrarse siempre) -->
+        <div id="empresaQB" class="alert alert-info" style="display:none;">
+            <span id="empresaQBText">
+                <span id="empresaQBLabel" class="empresaQBLabel">Empresa QuickBooks:</span>
+                <span id="empresaQBName" class="empresaQBName">Cargando información de la empresa QuickBooks...</span>
+            </span>
+            <button id="btnSyncPlan" class="btn btn-sm btn-outline-primary ms-3" style="display:none;">
+                Actualizar plan de cuentas
+            </button>
+            <span id="syncStatus" class="ms-2"></span>
+        </div>
+    </div>
+</div>
+
+<!-- Nav tabs -->
+<ul class="nav nav-tabs" id="pdfQbTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-lectura-tab" data-bs-toggle="tab" data-bs-target="#tab-lectura" type="button" role="tab" aria-controls="tab-lectura" aria-selected="true">
+            Lectura PDFs
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-importar-tab" data-bs-toggle="tab" data-bs-target="#tab-importar" type="button" role="tab" aria-controls="tab-importar" aria-selected="false">
+            Importar QB
+        </button>
+    </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content mt-3" id="pdfQbTabsContent">
+    <!-- Lectura PDFs Tab -->
+    <div class="tab-pane fade show active" id="tab-lectura" role="tabpanel" aria-labelledby="tab-lectura-tab">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+
+        <form id="uploadForm" asp-action="Procesar" asp-controller="PdfNew" enctype="multipart/form-data" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Banco</label>
+                    <select id="BancoId" name="BancoId" class="form-select" required>
+                        @foreach (var b in (ViewBag.Bancos as List<ReadingPdf.Models.Bank>))
+                        {
+                            <option value="@b.BankId">@b.BankName</option>
+                        }
+                    </select>
+                </div>
+                <!-- ARCHIVOS -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Archivos PDF</label>
+                    <input type="file" id="archivosPdf" name="archivosPdf" multiple accept=".pdf"
+                           class="form-control" required />
+
+                    <small id="fileHelp" class="form-text text-muted"></small>
+
+                    <!-- PREVIEW -->
+                    <ul id="previewList" class="list-group mt-2"></ul>
+                </div>
+
+                <input type="hidden" id="LastSelectedAccountQB" name="LastSelectedAccountQB" value="" />
+                <input type="hidden" id="EmpresaQBName" name="EmpresaQBName" value="" />
+
+@*                 <div class="col-md-6 mb-3">
+                    <label class="form-label">Cuenta (QuickBooks)</label>
+                    <select id="CuentaQB" name="CuentaQB" class="form-select" required>
+                        <option value="">Cargando cuentas...</option>
+                    </select>
+
+                    <small id="cuentaHelp" class="form-text text-muted"></small>
+                </div> *@
+            </div>
+
+            
+
+            <button type="submit" class="btn btn-primary w-100" id="btnStart">
+                Procesar estados
+            </button>
+        </form>
+    </div>
+
+    <!-- Importar QB Tab -->
+    <div class="tab-pane fade" id="tab-importar" role="tabpanel" aria-labelledby="tab-importar-tab">
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div id="cuentasQB" class="alert alert-info" style="display:none;">
+                    Cargando cuentas de QuickBooks...
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Cuenta (QuickBooks)</label>
+                <select id="CuentaQB" name="CuentaQB" class="form-select" required>
+                    <option value="">Cargando cuentas...</option>
+                </select>
+
+                <small id="cuentaHelp" class="form-text text-muted"></small>
+            </div>
+            <div class="col-md-4 text-end">
+                <button type="button" id="btnLoadMovs" class="btn btn-secondary">
+                    Cargar movimientos de esta cuenta
+                </button>
+
+                <button type="button" id="btnTrainShown" class="btn btn-primary ms-2" style="display:none;" disabled>
+                    Entrenar con movimientos mostrados
+                </button>
+
+                <button type="button" id="btnDownloadCsv" class="btn btn-outline-success ms-2" style="display:none;" disabled>
+                    Descargar CSV
+                </button>
+
+                <span id="trainStatus" class="ms-2"></span>
+            </div>
+        </div>
+
+        <!-- TABLA DE MOVIMIENTOS QuickBooks -->
+        <div class="mt-2">
+            <h4>Movimientos QuickBooks</h4>
+
+            <table id="tablaMovimientos" class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Número</th>
+                        <th>Nombre</th>
+                        <th>Memo</th>
+                        <th>Cuenta</th>
+                        <th>Split</th>
+                        <th>Importe</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+            obtenerDatosEmpresaQB();
+            obtenerCuentasQB();
+            document.getElementById("CuentaQB").addEventListener("change", function () {
+                const cuenta = this.value;
+                if (!cuenta) return;
+
+                // guardar cuenta seleccionada globalmente
+                window.lastSelectedAccountQB = cuenta;
+
+
+
+                console.log("Cuenta seleccionada 1:", cuenta);
+                                
+
+            });
+        document.getElementById("uploadForm").addEventListener("submit", function () {
+            document.getElementById("LastSelectedAccountQB").value =
+                window.lastSelectedAccountQB || "";
+        });
+
+            window.lastLoadedMovements = [];
+            // window.lastSelectedAccountQB = "";
+
+
+            // hook al botón que añadimos
+            document.getElementById("btnSyncPlan").addEventListener("click", function () {
+                syncPlanCuentas();
+            });
+
+            // load movements button
+            document.getElementById("btnLoadMovs").addEventListener("click", function () {
+                cargarMovimientosCuentaSeleccionada();
+            });
+
+            // train button
+            const btnTrain = document.getElementById("btnTrainShown");
+            if (btnTrain) {
+                btnTrain.addEventListener("click", function () {
+                    trainShownMovements();
+                });
+            }
+
+            // download CSV button
+            const btnDownload = document.getElementById("btnDownloadCsv");
+            if (btnDownload) {
+                btnDownload.addEventListener("click", function () {
+                    downloadCsvFromShownMovements();
+                });
+            }
+
+            // keep last loaded movements in memory
+            window.lastLoadedMovements = [];
+        });
+
+        function limpiarNombreEmpresa(text) {
+            if (!text) return "";
+            text = text.replace(/^Empresa:\s*/i, "");
+            return text.trim();
+        }
+
+        // ===============================
+        //  CARGAR EMPRESA DESDE API
+        // ===============================
+        async function obtenerDatosEmpresaQB() {
+            const div = document.getElementById("empresaQB");
+            const labelSpan = document.getElementById("empresaQBLabel");
+            const nameSpan = document.getElementById("empresaQBName"); // nombre separado para asignar textContent
+            const btn = document.getElementById("btnSyncPlan");
+            const apiUrl = 'http://localhost:5000/api/quickbooks/empresa';
+
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 8000);
+
+                const res = await fetch(apiUrl, { signal: controller.signal });
+                clearTimeout(timeout);
+
+                if (!res.ok) {
+                    nameSpan.textContent = `API returned ${res.status} ${res.statusText}`;
+                    div.style.display = "block";
+                    btn.style.display = "none";
+                    return;
+                }
+
+                const data = await res.json();
+
+                let nombre = data?.datos ?? "";
+                nombre = limpiarNombreEmpresa(nombre);
+
+                // seguridad: asignar como textContent para evitar inyección
+                nameSpan.textContent = nombre;
+                div.style.display = "block";
+                // show sync button when we have a name
+                if (nombre && nombre.length > 0) {
+                    btn.style.display = "inline-block";
+                } else {
+                    btn.style.display = "none";
+                }
+
+            } catch (err) {
+                nameSpan.textContent = "Error conectando con QuickBooks API: " + (err.message || err);
+                div.style.display = "block";
+                document.getElementById("btnSyncPlan").style.display = "none";
+            }
+        }
+
+        // ===============================
+        //  CARGAR CUENTAS
+        // ===============================
+        async function obtenerCuentasQB() {
+            const select = document.getElementById("CuentaQB");
+            const div = document.getElementById("cuentasQB");
+
+            try {
+                const res = await fetch("http://localhost:5000/api/quickbooks/cuentas");
+                const data = await res.json();
+
+                const cuentas = data.cuentas || [];
+
+                select.innerHTML = "";
+
+                cuentas.forEach(c => {
+                    const opt = document.createElement("option");
+                    opt.value = c.nombre;
+                    opt.textContent = c.nombre;
+                    select.appendChild(opt);
+                });
+
+                div.textContent = "Cuentas cargadas: " + cuentas.length;
+                div.style.display = "block";
+
+            } catch (err) {
+                div.textContent = "Error cargando cuentas.";
+                div.style.display = "block";
+            }
+        }
+
+        // ===============================
+        //  BOTON: SINCRONIZAR PLAN DE CUENTAS
+        // ===============================
+        async function syncPlanCuentas() {
+            const btn = document.getElementById("btnSyncPlan");
+            const status = document.getElementById("syncStatus");
+            const empresaText = document.getElementById("empresaQBName").textContent || "";
+            let nombre = limpiarNombreEmpresa(empresaText.replace(/^Empresa QuickBooks:\s*/i, ""));
+
+            if (!nombre) {
+                alert("No se detectó nombre de empresa.");
+                return;
+            }
+
+            // recoger cuentas visibles en el select (unique, non-empty)
+            const select = document.getElementById("CuentaQB");
+            const cuentas = Array.from(select.options)
+                .map(o => o.value && o.value.trim())
+                .filter(v => v && v.length > 0);
+
+            if (cuentas.length === 0) {
+                if (!confirm("No hay cuentas cargadas en la página. ¿Desea continuar sin cuentas?")) {
+                    return;
+                }
+            }
+
+            btn.disabled = true;
+            status.textContent = "Sincronizando...";
+            try {
+                const payload = {
+                    nombreEmpresa: nombre,
+                    cuentas: cuentas
+                };
+
+                const res = await fetch("/PdfNew/SyncPlanCuentas", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const txt = await res.text();
+                    status.textContent = "Error: " + (txt || res.statusText);
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.success) {
+                    status.textContent = `Sincronizado. Nueva(s) cuenta(s) añadida(s): ${data?.nuevos ?? 0}`;
+                } else {
+                    status.textContent = "Error: " + (data.message || "Operación fallida");
+                }
+
+            } catch (err) {
+                status.textContent = "Error: " + (err.message || err);
+                console.error("syncPlanCuentas error:", err);
+            } finally {
+                btn.disabled = false;
+                setTimeout(() => { status.textContent = ""; }, 6000);
+            }
+        }
+
+        // ===============================
+        //  CARGAR MOVIMIENTOS
+        // ===============================
+        async function cargarMovimientosCuentaSeleccionada() {
+            const cuenta = document.getElementById("CuentaQB").value;
+
+            if (!cuenta) {
+                alert("Seleccione una cuenta primero.");
+                return;
+            }
+
+            const desde = "2024-01-01";
+            const hasta = "2024-12-31";
+
+            const url = `http://localhost:5000/api/quickbooks/movimientos?` +
+                `cuenta=${encodeURIComponent(cuenta)}` +
+                `&desde=${desde}&hasta=${hasta}`;
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) {
+                    console.error("❌ Error en respuesta HTTP:", res.status, res.statusText);
+                    alert("Error consultando movimientos QuickBooks.");
+                    return;
+                }
+
+                const data = await res.json();
+
+                // store in global so the train button can use them
+                window.lastLoadedMovements = data.movimientos || [];
+
+                // enable train & download buttons if there are movimientos
+                const btnTrain = document.getElementById("btnTrainShown");
+                const btnDownload = document.getElementById("btnDownloadCsv");
+                if (window.lastLoadedMovements.length > 0 && btnTrain) {
+                    btnTrain.style.display = "inline-block";
+                    btnTrain.disabled = false;
+                    if (btnDownload) {
+                        btnDownload.style.display = "inline-block";
+                        btnDownload.disabled = false;
+                    }
+                    document.getElementById("trainStatus").textContent = "";
+                } else {
+                    if (btnTrain) { btnTrain.style.display = "none"; }
+                    if (btnDownload) { btnDownload.style.display = "none"; }
+                }
+
+                // Mostrar en tabla HTML
+                mostrarMovimientosEnTabla(data.movimientos);
+
+            } catch (err) {
+                console.error("🔥 Error en cargarMovimientosCuentaSeleccionada:", err);
+            }
+        }
+
+        async function trainShownMovements() {
+            const status = document.getElementById("trainStatus");
+            const btn = document.getElementById("btnTrainShown");
+
+            if (!window.lastLoadedMovements || window.lastLoadedMovements.length === 0) {
+                alert("No hay movimientos cargados para entrenar.");
+                return;
+            }
+
+            if (!confirm(`Se entrenará con ${window.lastLoadedMovements.length} movimientos. ¿Continuar?`)) {
+                return;
+            }
+
+            btn.disabled = true;
+            status.textContent = "Entrenando...";
+
+            // === MAPEAR MOVIMIENTOS A FORMATO REQUERIDO POR EL BACKEND ===
+            const rows = window.lastLoadedMovements.map(m => ({
+                Label: m.split || m.Split || m.cuenta || m.Cuenta || "",
+                Memo: m.memo || m.Memo || "",
+                Company: m.empresa || m.Empresa || ""
+            }));
+
+            // Empaquetar en objeto raíz (MUY IMPORTANTE)
+            const payload = { Rows: rows };
+
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 60000);
+
+                const res = await fetch("/api/Training/TrainFromPayload", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeout);
+
+                if (!res.ok) {
+                    let txt = await res.text().catch(() => res.statusText);
+                    status.textContent = "Error: " + txt;
+                    console.error("TrainFromPayload failed:", res.status, txt);
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.success) {
+                    status.textContent = `Entrenamiento completado. Filas usadas: ${data.registros ?? rows.length}`;
+                } else {
+                    status.textContent = "Error: " + (data.message || "Operación fallida");
+                }
+
+            } catch (err) {
+                console.error("trainShownMovements error:", err);
+                status.textContent = "Error: " + (err.message || err);
+            } finally {
+                btn.disabled = false;
+                setTimeout(() => { status.textContent = ""; }, 8000);
+            }
+        }
+
+        // ===============================
+        //  DESCARGAR CSV
+        // ===============================
+        function escapeCsvField(value) {
+            if (value === null || value === undefined) return "";
+            const s = String(value);
+            return '"' + s.replace(/"/g, '""') + '"';
+        }
+
+        function sanitizeFilenamePart(value) {
+            if (!value) return "empresa";
+            return String(value).replace(/[^a-z0-9\-_]/ig, '_');
+        }
+
+        function getEmpresaNombreFromUi() {
+            const t = document.getElementById("empresaQBName");
+            if (!t) return "";
+            let txt = t.textContent || "";
+            txt = txt.replace(/^Empresa QuickBooks:\s*/i, "");
+            return txt.trim();
+        }
+
+        function downloadCsvFromShownMovements() {
+            const status = document.getElementById("trainStatus");
+            const btnDownload = document.getElementById("btnDownloadCsv");
+
+            if (!window.lastLoadedMovements || window.lastLoadedMovements.length === 0) {
+                alert("No hay movimientos cargados para exportar.");
+                return;
+            }
+
+            try {
+                btnDownload.disabled = true;
+                status.textContent = "Generando CSV...";
+
+                const empresa = getEmpresaNombreFromUi();
+
+                // Encabezados: nombre,memo,split,empresa
+                const headers = ["nombre", "memo", "split", "empresa"];
+                const lines = [];
+                lines.push(headers.join(","));
+
+                window.lastLoadedMovements.forEach(m => {
+                    const nombre = m.nombre || m.Nombre || m.name || m.Name || m.nombreCliente || m.NombreCliente || m.nombreCliente || "";
+                    const memo = m.memo || m.Memo || m.descripcion || m.Descripcion || "";
+                    const split = m.split || m.Split || m.cuenta || m.Cuenta || "";
+                    const empresaField = empresa || m.empresa || m.Empresa || "";
+
+                    const row = [
+                        escapeCsvField(nombre),
+                        escapeCsvField(memo),
+                        escapeCsvField(split),
+                        escapeCsvField(empresaField)
+                    ];
+                    lines.push(row.join(","));
+                });
+
+                const csvContent = lines.join("\r\n");
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+
+                const filename = `movimientos_${sanitizeFilenamePart(empresa)}_${(new Date()).toISOString().slice(0,10).replace(/-/g,'')}.csv`;
+
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                status.textContent = "CSV generado.";
+                setTimeout(() => { status.textContent = ""; }, 4000);
+            } catch (err) {
+                console.error("downloadCsvFromShownMovements error:", err);
+                status.textContent = "Error generando CSV: " + (err.message || err);
+            } finally {
+                if (btnDownload) btnDownload.disabled = false;
+            }
+        }
+
+        // ===============================
+        //  TABLA DE MOVIMIENTOS
+        // ===============================
+        function mostrarMovimientosEnTabla(movs) {
+            const tbody = document.querySelector("#tablaMovimientos tbody");
+            tbody.innerHTML = "";
+
+            (movs || []).forEach(m => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${m.fecha ? new Date(m.fecha).toLocaleDateString() : ""}</td>
+                    <td>${m.tipo}</td>
+                    <td>${m.numero}</td>
+                    <td>${m.nombre}</td>
+                    <td>${m.memo}</td>
+                    <td>${m.cuenta}</td>
+                    <td>${m.split}</td>
+                    <td>${m.importe}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+    </script>
+}
+
