@@ -41,7 +41,6 @@ export function attachViewHandlers() {
 async function openQBModal(txnId) {
     console.log('Opening modal for TxnID:', txnId);
 
-    // Obtener elementos del modal
     const modalEl = document.getElementById('qbViewModal');
     if (!modalEl) {
         console.error('Modal element not found');
@@ -52,7 +51,6 @@ async function openQBModal(txnId) {
     const modal = new bootstrap.Modal(modalEl);
     const modalBody = document.getElementById('qbModalBody');
 
-    // Mostrar loading
     modalBody.innerHTML = `
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
@@ -71,9 +69,20 @@ async function openQBModal(txnId) {
         const result = await response.json();
 
         console.log('API Response:', result);
+        console.log('Response data:', result.data);
 
         if (response.ok && result.success && result.data) {
             const data = result.data;
+
+            // ⭐ LOG PARA DEBUG - verificar qué propiedades existen
+            console.log('TxnId:', data.txnId);
+            console.log('TxnDate:', data.txnDate);
+            console.log('PayeeFullName:', data.payeeFullName);
+            console.log('AccountFullName:', data.accountFullName);
+            console.log('ExpenseAccountFullName:', data.expenseAccountFullName);
+            console.log('Amount:', data.amount);
+            console.log('Memo:', data.memo);
+            console.log('RefNumber:', data.refNumber);
 
             // Renderizar datos exitosamente
             modalBody.innerHTML = `
@@ -114,8 +123,12 @@ async function openQBModal(txnId) {
                             <input type="text" class="form-control" value="${escapeHtml(data.accountFullName || '')}" readonly>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Cuenta de Gasto:</label>
-                            <input type="text" class="form-control" value="${escapeHtml(data.expenseAccountFullName || '')}" readonly>
+                            <label class="form-label">Cuenta de Gasto (Split):</label>
+                            <input type="text" class="form-control" 
+                                   value="${escapeHtml(data.expenseAccountFullName || 'No especificada')}" 
+                                   readonly
+                                   style="${!data.expenseAccountFullName ? 'background-color: #fff3cd; color: #856404;' : ''}">
+                            ${!data.expenseAccountFullName ? '<small class="text-warning">⚠️ No se pudo obtener la cuenta de gasto</small>' : ''}
                         </div>
                     </div>
                     
@@ -134,11 +147,20 @@ async function openQBModal(txnId) {
                         </div>
                     </div>
                     ` : ''}
+                    
+                    <!-- Mostrar información raw para debugging -->
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#rawData">
+                            <i class="fas fa-code"></i> Ver datos completos (Debug)
+                        </button>
+                        <div class="collapse mt-2" id="rawData">
+                            <pre class="bg-light p-3 border rounded" style="max-height: 300px; overflow-y: auto; font-size: 0.85rem;">${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    </div>
                 </div>
             `;
 
         } else {
-            // Error o no encontrado
             const errorMsg = result.error || result.message || 'No se pudo obtener el cargo';
             console.error('Error from API:', errorMsg);
 
@@ -166,7 +188,7 @@ async function openQBModal(txnId) {
             <div class="mt-3">
                 <p class="text-muted mb-1">Posibles causas:</p>
                 <ul class="text-muted small">
-                    <li>El servidor no está respondiendo</li>
+                    <li>El servidor API no está ejecutándose (puerto 7059)</li>
                     <li>QuickBooks no está abierto o conectado</li>
                     <li>Problemas de red o certificados SSL</li>
                 </ul>

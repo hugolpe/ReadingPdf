@@ -262,11 +262,18 @@
     var debitValue = mov.Monto < 0 ? Math.Abs(mov.Monto) : 0m;
     var creditValue = mov.Monto > 0 ? mov.Monto : 0m;
 
-    // Normalize displayed account: remove leading "Expense:" if present
+    // Mostrar la cuenta aplicada (si existe) y si no usar la cuenta predicha.
+    // Además normalizar para quitar prefijo "Expense:" si está presente.
     var cuentaPred = mov.CuentaPredicha ?? "";
-    var displayCuenta = cuentaPred.StartsWith("Expense:", StringComparison.OrdinalIgnoreCase)
-                        ? cuentaPred.Substring("Expense:".Length).Trim()
-                        : cuentaPred;
+    var cuentaApplied = mov.CuentaContableAplicada ?? "";
+    string NormalizeCuenta(string s)
+    {
+        if (string.IsNullOrWhiteSpace(s)) return "";
+        return s.StartsWith("Expense:", StringComparison.OrdinalIgnoreCase)
+            ? s.Substring("Expense:".Length).Trim()
+            : s;
+    }
+    var displayCuenta = !string.IsNullOrWhiteSpace(cuentaApplied) ? NormalizeCuenta(cuentaApplied) : NormalizeCuenta(cuentaPred);
 
             <tr data-index="@i"
                 data-from-table="@(isFromTable ? "true" : "false")"
