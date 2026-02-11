@@ -15,54 +15,73 @@ using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Prefer environment variables for certificate configuration. Supported env var names (in order):
-// 1) CERT_PATH / CERT_PASSWORD (simple custom names)
-// 2) Kestrel__Certificates__Default__Path / Kestrel__Certificates__Default__Password
-// 3) ASPNETCORE_Kestrel__Certificates__Default__Path / ASPNETCORE_Kestrel__Certificates__Default__Password
-string GetEnv(params string[] names)
-{
-    foreach (var n in names)
-    {
-        var v = Environment.GetEnvironmentVariable(n);
-        if (!string.IsNullOrEmpty(v)) return v;
-    }
-    return null;
-}
+// =======================================================
+// 🔹 Kestrel HTTPS Configuration
+// =======================================================
+// Limpiar cualquier configuración vieja de certificados que Kestrel lea automáticamente
+builder.Configuration["Kestrel:Certificates:Default:Path"] = null;
+builder.Configuration["Kestrel:Certificates:Default:Password"] = null;
 
-var envCertPath = GetEnv("CERT_PATH", "Kestrel__Certificates__Default__Path", "ASPNETCORE_Kestrel__Certificates__Default__Path");
-var envCertPassword = GetEnv("CERT_PASSWORD", "Kestrel__Certificates__Default__Password", "ASPNETCORE_Kestrel__Certificates__Default__Password");
-
-// Fallback to configuration (appsettings.*.json, user secrets, etc.)
-var configCertPath = builder.Configuration["Kestrel:Certificates:Default:Path"];
-var configCertPassword = builder.Configuration["Kestrel:Certificates:Default:Password"];
-
-var certPath = !string.IsNullOrEmpty(envCertPath) ? envCertPath : configCertPath;
-var certPassword = !string.IsNullOrEmpty(envCertPassword) ? envCertPassword : configCertPassword;
-
-// Bind Kestrel explicitly to HTTPS on localhost:44392.
-// In Production you must configure a PFX via configuration (Kestrel:Certificates:Default:Path / Password).
-//// In Development the default dev certificate will be used automatically.
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.Listen(IPAddress.Loopback, 44392, listenOptions =>
+    // HTTP
+    serverOptions.Listen(IPAddress.Any, 5000);
+
+    var certPath = Environment.GetEnvironmentVariable("CERT_PATH")
+                   ?? builder.Configuration["Kestrel:Certificates:Path"]
+                   ?? "devcert.pfx";
+
+    var certPassword = Environment.GetEnvironmentVariable("CERT_PASSWORD")
+                       ?? builder.Configuration["Kestrel:Certificates:Password"]
+                       ?? "MiPassword123!";
+
+    if (File.Exists(certPath))
     {
-        if (!string.IsNullOrEmpty(certPath))
+        serverOptions.Listen(IPAddress.Any, 44392, listenOptions =>
         {
-            var cert = new X509Certificate2(certPath, certPassword ?? string.Empty);
-            listenOptions.UseHttps(cert);
-        }
-        else if (builder.Environment.IsDevelopment())
-        {
-            // Use the development certificate (requires dotnet dev-certs trusted)
-            listenOptions.UseHttps();
-        }
-        else
-        {
-            // Fail fast so you see the problem in logs when published
-            throw new InvalidOperationException("HTTPS certificate not configured for port 44392. Set CERT_PATH/CERT_PASSWORD or Kestrel:Certificates:Default:Path and Password in configuration.");
-        }
-    });
+            listenOptions.UseHttps(certPath, certPassword);
+        });
+        Console.WriteLine($"✅ HTTPS habilitado en puerto 44392 con certificado: {Path.GetFullPath(certPath)}");
+    }
+    else
+    {
+        Console.WriteLine($"⚠️ Certificado no encontrado en: {Path.GetFullPath(certPath)}");
+        Console.WriteLine("HTTPS no estará disponible.");
+        Console.WriteLine("Ejecuta: dotnet dev-certs https -ep ./devcert.pfx -p MiPassword123!");
+    }
 });
+//builder.WebHost.ConfigureKestrel(serverOptions =>
+//{
+//    // HTTP
+//    serverOptions.Listen(IPAddress.Any, 5000);
+
+//    // HTTPS — busca certificado por este orden:
+//    // 1) Variable de entorno CERT_PATH / CERT_PASSWORD
+//    // 2) appsettings.json → Kestrel:Certificates:Path / Password
+//    // 3) Fallback a devcert.pfx
+//    var certPath = Environment.GetEnvironmentVariable("CERT_PATH")
+//                   ?? builder.Configuration["Kestrel:Certificates:Path"]
+//                   ?? "devcert.pfx";
+
+//    var certPassword = Environment.GetEnvironmentVariable("CERT_PASSWORD")
+//                       ?? builder.Configuration["Kestrel:Certificates:Password"]
+//                       ?? "MiPassword123!";
+
+//    if (File.Exists(certPath))
+//    {
+//        serverOptions.Listen(IPAddress.Any, 44392, listenOptions =>
+//        {
+//            listenOptions.UseHttps(certPath, certPassword);
+//        });
+//        Console.WriteLine($"✅ HTTPS habilitado en puerto 44392 con certificado: {Path.GetFullPath(certPath)}");
+//    }
+//    else
+//    {
+//        Console.WriteLine($"⚠️ Certificado no encontrado en: {Path.GetFullPath(certPath)}");
+//        Console.WriteLine("HTTPS no estará disponible.");
+//        Console.WriteLine("Ejecuta: dotnet dev-certs https -ep ./devcert.pfx -p MiPassword123!");
+//    }
+//});
 
 // =======================================================
 // 🔹 1. Conexión a SQL Server
@@ -81,18 +100,13 @@ builder.Services.AddHttpClient<IClearbitService, ClearbitService>(client =>
 // =======================================================
 // 🔹 3. EPPlus
 // =======================================================
-//ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 ExcelPackage.License.SetNonCommercialPersonal("HugoVargas");
 
 // =======================================================
 // 🔹 4. Registrar servicios propios
 // =======================================================
 builder.Services.AddScoped<LTerceros>();
-
-// IIF builder
 builder.Services.AddSingleton<IIIFBuilderService, IIFBuilderService>();
-
-// ⭐️⭐️ REGISTRO CRÍTICO ⭐️⭐️
 builder.Services.AddSingleton<AccountPredictionService>();
 
 // =======================================================
@@ -115,14 +129,12 @@ builder.Services.AddCors(options =>
             .WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod();
-        // .AllowCredentials(); // Descomenta si usas cookies/autenticación
     });
 });
 
 // =======================================================
 // 🔹 6. PredictionApi HttpClient
 // =======================================================
-// NOTE: default fallback changed to the requested API host (localhost:7164)
 builder.Services.AddHttpClient<IPredictionApiClient, PredictionApiClient>(client =>
 {
     var baseUrl = builder.Configuration["PredictionApi:BaseUrl"] ?? "http://localhost:7164/";
@@ -131,7 +143,7 @@ builder.Services.AddHttpClient<IPredictionApiClient, PredictionApiClient>(client
 });
 
 // =======================================================
-// 🔹 6.1 Activation API warm-up hosted service (disabled for localhost:7165)
+// 🔹 6.1 Activation API warm-up hosted service
 // =======================================================
 var activationBase = builder.Configuration["ActivationApi:BaseUrl"]
                      ?? builder.Configuration["PredictionApi:BaseUrl"]
@@ -139,18 +151,9 @@ var activationBase = builder.Configuration["ActivationApi:BaseUrl"]
 
 if (!activationBase.Contains("localhost:7165", StringComparison.OrdinalIgnoreCase))
 {
-    builder.Services.AddHttpClient(); // ensures IHttpClientFactory is available
+    builder.Services.AddHttpClient();
     builder.Services.AddHostedService<WarmUpHostedService>();
 }
-else
-{
-    // Warm-up skipped because target is localhost:7165
-}
-
-// =======================================================
-// 🔹 6.2 PredictionApi warm-up hosted service (activate automatically)
-// =======================================================
-//builder.Services.AddHostedService<PredictionApiWarmUpHostedService>();
 
 // =======================================================
 // 🔹 7. QuickBooks Service
@@ -173,6 +176,7 @@ app.Lifetime.ApplicationStarted.Register(() =>
     var logger = app.Services.GetRequiredService<ILogger<Program>>();
     logger.LogInformation("🚀 Aplicación iniciando en: {Urls}", string.Join(", ", app.Urls));
 });
+
 // =======================================================
 // 🔹 10. Middleware Pipeline
 // =======================================================
