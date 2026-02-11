@@ -1,5 +1,5 @@
 ﻿// sorting.js
-export function attachSortingHandlers(table) {
+ function attachSortingHandlers(table) {
     if (!table) return;
 
     table.querySelectorAll('thead th.sortable').forEach(th => {

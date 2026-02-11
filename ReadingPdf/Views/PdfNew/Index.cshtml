@@ -103,15 +103,6 @@
 
                 <input type="hidden" id="LastSelectedAccountQB" name="LastSelectedAccountQB" value="" />
                 <input type="hidden" id="EmpresaQBName" name="EmpresaQBName" value="" />
-
-@*                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Cuenta (QuickBooks)</label>
-                    <select id="CuentaQB" name="CuentaQB" class="form-select" required>
-                        <option value="">Cargando cuentas...</option>
-                    </select>
-
-                    <small id="cuentaHelp" class="form-text text-muted"></small>
-                </div> *@
             </div>
 
             
@@ -178,63 +169,305 @@
     </div>
 </div>
 
+<!-- Agregar este modal antes del cierre del div principal, después de las pestañas -->
+<!-- Modal de progreso mejorado con barra de progreso -->
+<div class="modal fade" id="progressModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="progressModalLabel">Procesando...</h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p id="progressMessage" class="mb-3">Por favor espere...</p>
+
+                <!-- Barra de progreso (oculta por defecto) -->
+                <div id="progressBarContainer" style="display: none;">
+                    <div class="progress" style="height: 25px;">
+                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar"
+                             style="width: 0%;"
+                             aria-valuenow="0"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                            <span id="progressPercentage">0%</span>
+                        </div>
+                    </div>
+                    <small id="progressDetails" class="text-muted mt-2 d-block"></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts {
     <script>
+        // ===============================
+        //  FUNCIONES PARA MODAL DE PROGRESO
+        // ===============================
+        function showProgressModal(message, showProgress = false) {
+            const modal = new bootstrap.Modal(document.getElementById('progressModal'));
+            document.getElementById('progressMessage').textContent = message || 'Procesando...';
+            
+            const progressContainer = document.getElementById('progressBarContainer');
+            if (showProgress) {
+                progressContainer.style.display = 'block';
+                updateProgressBar(0, '');
+            } else {
+                progressContainer.style.display = 'none';
+            }
+            
+            modal.show();
+        }
+
+        function updateProgressBar(percentage, details = '') {
+            const progressBar = document.getElementById('progressBar');
+            const progressPercentage = document.getElementById('progressPercentage');
+            const progressDetails = document.getElementById('progressDetails');
+            
+            progressBar.style.width = percentage + '%';
+            progressBar.setAttribute('aria-valuenow', percentage);
+            progressPercentage.textContent = Math.round(percentage) + '%';
+            
+            if (details) {
+                progressDetails.textContent = details;
+            }
+        }
+
+        function hideProgressModal() {
+            const modalEl = document.getElementById('progressModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+                modal.hide();
+            }
+        }
+
+        // document.addEventListener("DOMContentLoaded", function () {
+        //     obtenerDatosEmpresaQB();
+        //     obtenerCuentasQB();
+
+        //     // Capturar cuenta seleccionada
+        //     document.getElementById("CuentaQB").addEventListener("change", function () {
+        //         const cuenta = this.value;
+        //         if (!cuenta) return;
+
+        //         // Guardar globalmente la cuenta seleccionada
+        //         window.lastSelectedAccountQB = cuenta;
+
+        //         // También guardar en sessionStorage por si acaso
+        //         sessionStorage.setItem('selectedAccountQB', cuenta);
+
+        //         console.log("✅ Cuenta QuickBooks seleccionada:", cuenta);
+        //     });
+
+        //     window.lastLoadedMovements = [];
+
+        //     document.getElementById("btnSyncPlan").addEventListener("click", function () {
+        //         syncPlanCuentas();
+        //     });
+
+        //     document.getElementById("btnLoadMovs").addEventListener("click", function () {
+        //         cargarMovimientosCuentaSeleccionada();
+        //     });
+
+        //     const btnTrain = document.getElementById("btnTrainShown");
+        //     if (btnTrain) {
+        //         btnTrain.addEventListener("click", function () {
+        //             trainShownMovements();
+        //         });
+        //     }
+
+        //     const btnDownload = document.getElementById("btnDownloadCsv");
+        //     if (btnDownload) {
+        //         btnDownload.addEventListener("click", function () {
+        //             downloadCsvFromShownMovements();
+        //         });
+        //     }
+        // });
+                // ===============================
+        //  ✅ MODIFICACIÓN: CAPTURAR CUENTA QB Y PASARLA AL PROCESAR
+        // ===============================
 
         document.addEventListener("DOMContentLoaded", function () {
             obtenerDatosEmpresaQB();
             obtenerCuentasQB();
+
+            // Capturar cuenta seleccionada
             document.getElementById("CuentaQB").addEventListener("change", function () {
                 const cuenta = this.value;
                 if (!cuenta) return;
 
-                // guardar cuenta seleccionada globalmente
+                // Guardar globalmente la cuenta seleccionada
                 window.lastSelectedAccountQB = cuenta;
 
+                // También guardar en sessionStorage por si acaso
+                sessionStorage.setItem('selectedAccountQB', cuenta);
 
-
-                console.log("Cuenta seleccionada 1:", cuenta);
-                                
-
+                console.log("✅ Cuenta QuickBooks seleccionada:", cuenta);
             });
-        document.getElementById("uploadForm").addEventListener("submit", function () {
-            document.getElementById("LastSelectedAccountQB").value =
-                window.lastSelectedAccountQB || "";
-        });
 
+            // ✅ MODIFICADO: Interceptar submit y pasar la cuenta seleccionada
+            document.getElementById("uploadForm").addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                // Capturar la cuenta seleccionada
+                const cuentaSeleccionada = window.lastSelectedAccountQB ||
+                                           document.getElementById("CuentaQB").value ||
+                                           sessionStorage.getItem('selectedAccountQB') ||
+                                           "";
+                                               // ✅ CAPTURAR EL NOMBRE DE LA EMPRESA
+        const empresaNombre = document.getElementById("empresaQBName")?.textContent?.trim() || "";
+        const empresaLimpia = empresaNombre.replace(/^Empresa\s+QuickBooks:\s*/i, '').trim();
+
+                // Asignar al campo oculto
+                document.getElementById("LastSelectedAccountQB").value = cuentaSeleccionada;
+
+                console.log("📤 Enviando con cuenta QB:", cuentaSeleccionada);
+
+        // ✅ ASIGNAR AL CAMPO OCULTO DE EMPRESA
+        document.getElementById("EmpresaQBName").value = empresaLimpia;
+
+
+        console.log("📤 Enviando con cuenta QB:", cuentaSeleccionada);
+        console.log("📤 Enviando con empresa:", empresaLimpia);
+                // Procesar con progreso
+                procesarPdfsConProgresoReal(this);
+            });
+
+            // Resto de event listeners...
             window.lastLoadedMovements = [];
-            // window.lastSelectedAccountQB = "";
+            document.getElementById("btnSyncPlan").addEventListener("click", syncPlanCuentas);
+            document.getElementById("btnLoadMovs").addEventListener("click", cargarMovimientosCuentaSeleccionada);
 
-
-            // hook al botón que añadimos
-            document.getElementById("btnSyncPlan").addEventListener("click", function () {
-                syncPlanCuentas();
-            });
-
-            // load movements button
-            document.getElementById("btnLoadMovs").addEventListener("click", function () {
-                cargarMovimientosCuentaSeleccionada();
-            });
-
-            // train button
             const btnTrain = document.getElementById("btnTrainShown");
             if (btnTrain) {
-                btnTrain.addEventListener("click", function () {
-                    trainShownMovements();
-                });
+                btnTrain.addEventListener("click", trainShownMovements);
             }
 
-            // download CSV button
             const btnDownload = document.getElementById("btnDownloadCsv");
             if (btnDownload) {
-                btnDownload.addEventListener("click", function () {
-                    downloadCsvFromShownMovements();
-                });
+                btnDownload.addEventListener("click", downloadCsvFromShownMovements);
+            }
+        });
+                // ===============================
+        //  ✅ MODIFICADO: PROCESAR PDFs CON PROGRESO Y CUENTA QB
+        // ===============================
+        async function procesarPdfsConProgresoReal(form) {
+            const formData = new FormData(form);
+            const files = document.getElementById('archivosPdf').files;
+
+            if (!files || files.length === 0) {
+                alert('Por favor seleccione al menos un archivo PDF.');
+                return;
             }
 
-            // keep last loaded movements in memory
-            window.lastLoadedMovements = [];
-        });
+            // Verificar que haya cuenta seleccionada
+            const cuentaQB = formData.get('LastSelectedAccountQB');
+            if (!cuentaQB) {
+                alert('⚠️ Por favor seleccione una Cuenta de QuickBooks antes de procesar.');
+                return;
+            }
+
+            console.log("🚀 Iniciando procesamiento con cuenta:", cuentaQB);
+
+            showProgressModal('Iniciando procesamiento...', true);
+            updateProgressBar(0, 'Subiendo archivos...');
+
+            try {
+                // 1) Llamar a StartProcesar
+                const response = await fetch('/PdfNew/StartProcesar', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const batchId = data.batchId;
+
+                if (!batchId) {
+                    throw new Error('No se recibió batchId del servidor');
+                }
+
+                console.log('✅ BatchId recibido:', batchId);
+                console.log('✅ Cuenta QB para este batch:', cuentaQB);
+
+                // 2) Hacer polling del progreso
+                let pollCount = 0;
+                const maxPolls = 600;
+
+                const checkProgress = async () => {
+                    try {
+                        const progressResponse = await fetch(`/PdfNew/GetProgress?batchId=${batchId}`);
+
+                        if (!progressResponse.ok) {
+                            console.warn('GetProgress falló:', progressResponse.status);
+                            if (pollCount < maxPolls) {
+                                pollCount++;
+                                setTimeout(checkProgress, 500);
+                            } else {
+                                throw new Error('Timeout esperando progreso');
+                            }
+                            return;
+                        }
+
+                        const progress = await progressResponse.json();
+                        console.log('Progreso:', progress);
+
+                        const percent = progress.percent || 0;
+                        let statusText = progress.status || 'Procesando...';
+
+                        if (progress.totalFiles > 0) {
+                            statusText += ` (${progress.processedFiles}/${progress.totalFiles} archivos)`;
+                        }
+                        if (progress.totalMovements > 0) {
+                            statusText += ` - ${progress.processedMovements}/${progress.totalMovements} movimientos`;
+                        }
+
+                        updateProgressBar(percent, statusText);
+
+                        if (progress.done) {
+                            if (progress.status === "Error") {
+                                hideProgressModal();
+                                alert('Error durante el procesamiento. Por favor revise los archivos.');
+                                return;
+                            }
+
+                            updateProgressBar(100, '¡Procesamiento completado!');
+
+                            setTimeout(() => {
+                                hideProgressModal();
+                                // ✅ Pasar la cuenta QB en la URL
+                                window.location.href = `/PdfNew/EditTemporal?batchId=${batchId}&selectedAccountQB=${encodeURIComponent(cuentaQB)}`;
+                            }, 1000);
+                        } else {
+                            if (pollCount < maxPolls) {
+                                pollCount++;
+                                setTimeout(checkProgress, 500);
+                            } else {
+                                throw new Error('Timeout: el procesamiento tomó demasiado tiempo');
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Error en checkProgress:', err);
+                        hideProgressModal();
+                        alert('Error consultando el progreso: ' + err.message);
+                    }
+                };
+
+                await checkProgress();
+
+            } catch (error) {
+                console.error('Error procesando PDFs:', error);
+                hideProgressModal();
+                alert('Error al procesar los archivos: ' + error.message);
+            }
+        }
 
         function limpiarNombreEmpresa(text) {
             if (!text) return "";
@@ -247,10 +480,11 @@
         // ===============================
         async function obtenerDatosEmpresaQB() {
             const div = document.getElementById("empresaQB");
-            const labelSpan = document.getElementById("empresaQBLabel");
-            const nameSpan = document.getElementById("empresaQBName"); // nombre separado para asignar textContent
+            const nameSpan = document.getElementById("empresaQBName");
             const btn = document.getElementById("btnSyncPlan");
-            const apiUrl = 'http://localhost:5000/api/quickbooks/empresa';
+            const apiUrl = 'https://localhost:7165/api/quickbooks/empresa';
+
+            showProgressModal('Conectando con QuickBooks...');
 
             try {
                 const controller = new AbortController();
@@ -267,14 +501,12 @@
                 }
 
                 const data = await res.json();
-
                 let nombre = data?.datos ?? "";
                 nombre = limpiarNombreEmpresa(nombre);
 
-                // seguridad: asignar como textContent para evitar inyección
                 nameSpan.textContent = nombre;
                 div.style.display = "block";
-                // show sync button when we have a name
+                
                 if (nombre && nombre.length > 0) {
                     btn.style.display = "inline-block";
                 } else {
@@ -284,40 +516,159 @@
             } catch (err) {
                 nameSpan.textContent = "Error conectando con QuickBooks API: " + (err.message || err);
                 div.style.display = "block";
-                document.getElementById("btnSyncPlan").style.display = "none";
+                btn.style.display = "none";
+            } finally {
+                hideProgressModal();
             }
         }
 
         // ===============================
         //  CARGAR CUENTAS
         // ===============================
+                // ===============================
+        // CARGAR CUENTAS CON TIPO
+        // ===============================
+        let cuentasQBData = []; // ✅ Variable global para almacenar datos completos
+
         async function obtenerCuentasQB() {
             const select = document.getElementById("CuentaQB");
             const div = document.getElementById("cuentasQB");
 
             try {
-                const res = await fetch("http://localhost:5000/api/quickbooks/cuentas");
+                const res = await fetch("https://localhost:7165/api/quickbooks/cuentas-con-tipo");
                 const data = await res.json();
 
-                const cuentas = data.cuentas || [];
+                if (!data.success) {
+                    throw new Error(data.message || "Error obteniendo cuentas");
+                }
 
-                select.innerHTML = "";
+                const cuentas = data.cuentas || [];
+                cuentasQBData = cuentas; // ✅ Guardar datos completos
+
+                select.innerHTML = '<option value="">-- Seleccione una cuenta --</option>';
 
                 cuentas.forEach(c => {
                     const opt = document.createElement("option");
-                    opt.value = c.nombre;
-                    opt.textContent = c.nombre;
+                    opt.value = c.fullName || c.nombre; // Usar FullName para QB
+                    opt.textContent = `${c.nombre} (${c.tipo === 'atBank' ? 'Banco' : 'Tarjeta Crédito'})`;
+
+                    // ✅ Guardar información adicional como data attributes
+                    opt.setAttribute('data-tipo', c.tipo);
+                    opt.setAttribute('data-tipo-transaccion', c.tipoTransaccion);
+                    opt.setAttribute('data-list-id', c.listID || '');
+                    opt.setAttribute('data-saldo', c.saldo || 0);
+
                     select.appendChild(opt);
                 });
 
-                div.textContent = "Cuentas cargadas: " + cuentas.length;
+                div.textContent = `✅ Cuentas cargadas: ${cuentas.length}`;
                 div.style.display = "block";
 
+                // ✅ Agregar listener para cuando cambie la selección
+                select.addEventListener('change', onCuentaQBChange);
+
             } catch (err) {
-                div.textContent = "Error cargando cuentas.";
+                console.error("Error cargando cuentas:", err);
+                div.textContent = "❌ Error cargando cuentas: " + err.message;
                 div.style.display = "block";
             }
         }
+
+
+               // ✅ NUEVO: Función que se ejecuta cuando cambia la cuenta seleccionada
+        // function onCuentaQBChange(event) {
+        //     const select = event.target;
+        //     const selectedOption = select.options[select.selectedIndex];
+
+        //     if (!selectedOption || !selectedOption.value) {
+        //         console.log("No hay cuenta seleccionada");
+        //         return;
+        //     }
+
+        //     const tipoCuenta = selectedOption.getAttribute('data-tipo');
+        //     const tipoTransaccion = selectedOption.getAttribute('data-tipo-transaccion');
+        //     const listId = selectedOption.getAttribute('data-list-id');
+        //     const saldo = selectedOption.getAttribute('data-saldo');
+
+        //     console.log("📋 Cuenta seleccionada:", {
+        //         nombre: selectedOption.value,
+        //         tipo: tipoCuenta,
+        //         tipoTransaccion: tipoTransaccion,
+        //         listId: listId,
+        //         saldo: saldo
+        //     });
+
+        //     // ✅ Guardar en variable global o sessionStorage para usar después
+        //     sessionStorage.setItem('cuentaQB_Tipo', tipoCuenta);
+        //     sessionStorage.setItem('cuentaQB_TipoTransaccion', tipoTransaccion);
+        //     sessionStorage.setItem('cuentaQB_ListID', listId);
+        //     sessionStorage.setItem('cuentaQB_Nombre', selectedOption.value);
+        // }
+
+                function onCuentaQBChange(event) {
+            const select = event.target;
+            const selectedOption = select.options[select.selectedIndex];
+
+            const tipoCuenta = selectedOption.getAttribute('data-tipo');
+            const tipoTransaccion = selectedOption.getAttribute('data-tipo-transaccion');
+            const listId = selectedOption.getAttribute('data-list-id');
+
+            sessionStorage.setItem('cuentaQB_Tipo', tipoCuenta);
+            sessionStorage.setItem('cuentaQB_TipoTransaccion', tipoTransaccion);
+            sessionStorage.setItem('cuentaQB_ListID', listId);
+            sessionStorage.setItem('cuentaQB_Nombre', selectedOption.value);
+        }
+
+
+        // ✅ FUNCIÓN HELPER: Obtener el tipo de transacción de la cuenta actual
+        function obtenerTipoTransaccionCuentaActual() {
+            const tipoTransaccion = sessionStorage.getItem('cuentaQB_TipoTransaccion');
+
+            if (!tipoTransaccion) {
+                console.warn("⚠️ No hay tipo de transacción guardado");
+                return "Deposit"; // Default
+            }
+
+            return tipoTransaccion;
+        }
+
+        // ✅ FUNCIÓN HELPER: Obtener datos completos de la cuenta actual
+        function obtenerDatosCuentaActual() {
+            return {
+                nombre: sessionStorage.getItem('cuentaQB_Nombre'),
+                tipo: sessionStorage.getItem('cuentaQB_Tipo'),
+                tipoTransaccion: sessionStorage.getItem('cuentaQB_TipoTransaccion'),
+                listId: sessionStorage.getItem('cuentaQB_ListID')
+            };
+        }
+
+        // async function obtenerCuentasQB() {
+        //     const select = document.getElementById("CuentaQB");
+        //     const div = document.getElementById("cuentasQB");
+
+        //     try {
+        //         const res = await fetch("http://localhost:7165/api/quickbooks/cuentas");
+        //         const data = await res.json();
+
+        //         const cuentas = data.cuentas || [];
+
+        //         select.innerHTML = "";
+
+        //         cuentas.forEach(c => {
+        //             const opt = document.createElement("option");
+        //             opt.value = c.nombre;
+        //             opt.textContent = c.nombre;
+        //             select.appendChild(opt);
+        //         });
+
+        //         div.textContent = "Cuentas cargadas: " + cuentas.length;
+        //         div.style.display = "block";
+
+        //     } catch (err) {
+        //         div.textContent = "Error cargando cuentas.";
+        //         div.style.display = "block";
+        //     }
+        // }
 
         // ===============================
         //  BOTON: SINCRONIZAR PLAN DE CUENTAS
@@ -333,7 +684,6 @@
                 return;
             }
 
-            // recoger cuentas visibles en el select (unique, non-empty)
             const select = document.getElementById("CuentaQB");
             const cuentas = Array.from(select.options)
                 .map(o => o.value && o.value.trim())
@@ -346,7 +696,8 @@
             }
 
             btn.disabled = true;
-            status.textContent = "Sincronizando...";
+            showProgressModal('Sincronizando plan de cuentas...');
+            
             try {
                 const payload = {
                     nombreEmpresa: nombre,
@@ -376,6 +727,7 @@
                 status.textContent = "Error: " + (err.message || err);
                 console.error("syncPlanCuentas error:", err);
             } finally {
+                hideProgressModal();
                 btn.disabled = false;
                 setTimeout(() => { status.textContent = ""; }, 6000);
             }
@@ -395,9 +747,11 @@
             const desde = "2024-01-01";
             const hasta = "2024-12-31";
 
-            const url = `http://localhost:5000/api/quickbooks/movimientos?` +
+            const url = `https://localhost:7165/api/quickbooks/movimientos?` +
                 `cuenta=${encodeURIComponent(cuenta)}` +
                 `&desde=${desde}&hasta=${hasta}`;
+
+            showProgressModal('Cargando movimientos de QuickBooks...');
 
             try {
                 const res = await fetch(url);
@@ -408,13 +762,11 @@
                 }
 
                 const data = await res.json();
-
-                // store in global so the train button can use them
                 window.lastLoadedMovements = data.movimientos || [];
 
-                // enable train & download buttons if there are movimientos
                 const btnTrain = document.getElementById("btnTrainShown");
                 const btnDownload = document.getElementById("btnDownloadCsv");
+                
                 if (window.lastLoadedMovements.length > 0 && btnTrain) {
                     btnTrain.style.display = "inline-block";
                     btnTrain.disabled = false;
@@ -428,11 +780,12 @@
                     if (btnDownload) { btnDownload.style.display = "none"; }
                 }
 
-                // Mostrar en tabla HTML
                 mostrarMovimientosEnTabla(data.movimientos);
 
             } catch (err) {
                 console.error("🔥 Error en cargarMovimientosCuentaSeleccionada:", err);
+            } finally {
+                hideProgressModal();
             }
         }
 
@@ -450,19 +803,20 @@
             }
 
             btn.disabled = true;
-            status.textContent = "Entrenando...";
+            showProgressModal(`Entrenando modelo...`, true);
+            updateProgressBar(10, 'Preparando datos...');
 
-            // === MAPEAR MOVIMIENTOS A FORMATO REQUERIDO POR EL BACKEND ===
             const rows = window.lastLoadedMovements.map(m => ({
                 Label: m.split || m.Split || m.cuenta || m.Cuenta || "",
                 Memo: m.memo || m.Memo || "",
                 Company: m.empresa || m.Empresa || ""
             }));
 
-            // Empaquetar en objeto raíz (MUY IMPORTANTE)
             const payload = { Rows: rows };
 
             try {
+                updateProgressBar(30, 'Enviando datos al servidor...');
+                
                 const controller = new AbortController();
                 const timeout = setTimeout(() => controller.abort(), 60000);
 
@@ -477,6 +831,8 @@
                 });
 
                 clearTimeout(timeout);
+                
+                updateProgressBar(70, 'Procesando entrenamiento...');
 
                 if (!res.ok) {
                     let txt = await res.text().catch(() => res.statusText);
@@ -486,6 +842,8 @@
                 }
 
                 const data = await res.json();
+                updateProgressBar(100, 'Entrenamiento completado');
+                
                 if (data.success) {
                     status.textContent = `Entrenamiento completado. Filas usadas: ${data.registros ?? rows.length}`;
                 } else {
@@ -496,14 +854,13 @@
                 console.error("trainShownMovements error:", err);
                 status.textContent = "Error: " + (err.message || err);
             } finally {
+                setTimeout(() => hideProgressModal(), 800);
                 btn.disabled = false;
                 setTimeout(() => { status.textContent = ""; }, 8000);
             }
         }
 
-        // ===============================
-        //  DESCARGAR CSV
-        // ===============================
+        // [Resto de funciones sin cambios: escapeCsvField, sanitizeFilenamePart, etc.]
         function escapeCsvField(value) {
             if (value === null || value === undefined) return "";
             const s = String(value);
@@ -537,15 +894,13 @@
                 status.textContent = "Generando CSV...";
 
                 const empresa = getEmpresaNombreFromUi();
-
-                // Encabezados: nombre,memo,split,empresa
                 const headers = ["nombre", "memo", "split", "empresa"];
                 const lines = [];
                 lines.push(headers.join(","));
 
                 window.lastLoadedMovements.forEach(m => {
-                    const nombre = m.nombre || m.Nombre || m.name || m.Name || m.nombreCliente || m.NombreCliente || m.nombreCliente || "";
-                    const memo = m.memo || m.Memo || m.descripcion || m.Descripcion || "";
+                    const nombre = m.nombre || m.Nombre || m.name || m.Name || "";
+                    const memo = m.memo || m.Memo || "";
                     const split = m.split || m.Split || m.cuenta || m.Cuenta || "";
                     const empresaField = empresa || m.empresa || m.Empresa || "";
 
@@ -582,9 +937,6 @@
             }
         }
 
-        // ===============================
-        //  TABLA DE MOVIMIENTOS
-        // ===============================
         function mostrarMovimientosEnTabla(movs) {
             const tbody = document.querySelector("#tablaMovimientos tbody");
             tbody.innerHTML = "";
@@ -607,4 +959,5 @@
 
     </script>
 }
+
 

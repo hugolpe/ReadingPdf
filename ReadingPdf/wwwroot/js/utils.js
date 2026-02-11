@@ -1,14 +1,12 @@
-﻿// utils.js
-import { getServerData } from './serverData.js';
-
-export function normalizeText(s) {
+﻿// utils.js - SIN getServerData (ya está en serverData.js)
+function normalizeText(s) {
     if (!s) return '';
     const noDiacritics = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const cleaned = noDiacritics.replace(/[^\p{L}\p{N}\s]/gu, ' ');
     return cleaned.replace(/\s+/g, ' ').trim().toUpperCase();
 }
 
-export function formatCurrency(value) {
+function formatCurrency(value) {
     const sd = getServerData();
     const symbol = sd.currency || '$';
     const num = Number(value) || 0;

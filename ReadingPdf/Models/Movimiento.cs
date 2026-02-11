@@ -39,11 +39,24 @@ namespace ReadingPdf.Models
         // Cuenta contable final
         public string CuentaContableAplicada { get; set; }
 
-        public object EmpresaExtraida { get; internal set; }
+        // Changed from object -> string for safe mapping / usage in views
+        public string EmpresaExtraida { get; internal set; }
         public string CuentaContable { get; internal set; }
 
         // 🔥 NUEVO: Crédito / Débito
         public TipoMovimiento Tipo { get; set; }
+
+        // Changed from object -> nullable int so EF can map (nullable if not always present)
+        public int? BancoId { get; internal set; }
+
+        // Add this property to fix the error:
+        public Guid ProcesoId { get; set; }
+
+        // Add this property to the Movimiento class
+        public string? CuentaAplicada { get; set; }
+
+        public string EmpresaOriginal { get; set; }
+        public string QuickBooksTxnId { get; internal set; }
     }
 
     // Enum correctamente definido en el namespace

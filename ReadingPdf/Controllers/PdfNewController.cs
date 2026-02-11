@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
 using Microsoft.ML.Data;
 using Newtonsoft.Json;
+using NPOI.Util;
 using OfficeOpenXml;
 using ReadingPdf.Data;
 using ReadingPdf.Models;
@@ -12,6 +14,7 @@ using ReadingPdf.Services;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
@@ -23,39 +26,50 @@ using System.Threading;
 using System.Threading.Tasks;
 using Tesseract;
 using UglyToad.PdfPig;
+using static ReadingPdf.Controllers.PdfNewController;
 
 namespace ReadingPdf.Controllers
 {
     public class PdfNewController : Controller
     {
-        // In-memory "tabla temporal" storage: BatchId -> TempBatch (items + optional BankId)
-        // This avoids touching DbContext/migrations and lets the user edit before exporting.
-        //private class TempBatch
-        //{
-        //    public List<Movimiento> Items { get; set; } = new();
-        //    public int? BankId { get; set; }
-        //}
-        // Add these fields to your PdfNewController class (near other private fields)
         private static readonly Regex regexCreditoContexto = new Regex(@"(CREDITO|CRÉDITO|DEPÓSITO|DEPOSITO|DEPOSIT|CREDIT)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private static readonly Regex regexDebitoContexto = new Regex(@"(DÉBITO|DEBITO|DEBIT|RETIRO|WITHDRAWAL|CHARGE)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+
 
         private class TempBatch
         {
             public List<Movimiento> Items { get; set; } = new();
             public int? BankId { get; set; }
-
-            // ✅ NUEVO: cuenta QuickBooks seleccionada en Index
             public string? SelectedCuentaQB { get; set; }
-
-            // ✅ NUEVO: Interest Charged extraído del/los PDFs (nullable)
             public decimal? InterestCharged { get; set; }
         }
+        // ✅ 6. AGREGAR PROPIEDAD Percent A BatchProgress
 
+
+        public class BatchProgress
+        {
+            public string BatchId { get; set; } = "";
+            public int TotalFiles { get; set; }
+            public int ProcessedFiles { get; set; }
+            public int TotalMovements { get; set; }
+            public int ProcessedMovements { get; set; }
+            public int Percent { get; set; }
+            public string Status { get; set; } = "";
+            public bool Done { get; set; }
+            public DateTime CompletedAt { get; set; }
+            public string SelectedAccountQB { get; set; } = "";
+            public List<Movimiento> Movimientos { get; set; } = new();
+            public decimal? InterestCharged { get; set; }  // ✅ NUEVA PROPIEDAD
+                                                           // ✅ AGREGAR ESTA LÍNEA
+            public string BankName { get; set; } = "";  // ← NUEVO CAMPO
+            public string EmpresaQBName { get; set; } = "";  // ✅ AGREGAR ESTA LÍNEA
+        }
 
         private static readonly ConcurrentDictionary<Guid, TempBatch> _tempTables = new();
+        private static readonly ConcurrentDictionary<string, BatchProgress> _batchProgress = new();
 
-        private readonly string _apiPredictUrl = "https://localhost:44377/api/Movimientos/predict-mov";
-        private readonly string _clasificacionApiBase = "http://localhost:7164"; // <--- Ajusta la URL base según dónde corra tu ClasificacionApi
+        private readonly string _clasificacionApiBase = "http://localhost:7164";
         private readonly ApplicationDbContext _context;
         private readonly ApplicationDbContext _db;
         private readonly IClearbitService _clearbit;
@@ -64,25 +78,69 @@ namespace ReadingPdf.Controllers
         private readonly ILogger<PdfNewController> _logger;
         private readonly AccountPredictionService _accountPredictor;
         private readonly IPredictionApiClient _predictionClient;
-   
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public PdfNewController(ApplicationDbContext context, IClearbitService clearbit, ILogger<PdfNewController> logger, AccountPredictionService accountPredictor, IPredictionApiClient predictionClient)
+        public PdfNewController(ApplicationDbContext context, IClearbitService clearbit, ILogger<PdfNewController> logger, AccountPredictionService accountPredictor, IPredictionApiClient predictionClient, IServiceScopeFactory scopeFactory)
         {
             _context = context;
-            _db = context; // ensure single DbContext field is initialized
+            _db = context;
             _clearbit = clearbit;
             _logger = logger;
             _patternsPath = Path.Combine(Directory.GetCurrentDirectory(), "extraction_patterns.json");
             _accountPredictor = accountPredictor;
             _predictionClient = predictionClient;
+            _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
         }
 
-        // Note: removed the second constructor that accepted (ApplicationDbContext db, IClearbitService clearbit)
-        // to avoid DI ambiguity. All required services are injected in the single constructor above.
+        // ✅ NUEVO MÉTODO: Llamar a la API de predicción
+        private async Task<(string? account, int confidence)> PredictAccountViaApi(string memo, string company)
+        {
+            try
+            {
+                using var httpClient = new HttpClient();
+                httpClient.Timeout = TimeSpan.FromSeconds(30);
 
-        // =====================================================
-        // 🔄 Reabrir proceso guardado
-        // =====================================================
+                var requestBody = new
+                {
+                    Memo = memo ?? "",
+                    Company = company ?? ""
+                };
+
+                var json = JsonConvert.SerializeObject(requestBody);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                _logger?.LogInformation("Calling prediction API for memo: {Memo}, company: {Company}", memo, company);
+
+                Console.WriteLine($"{_clasificacionApiBase}/api/Prediction");
+
+                var response = await httpClient.PostAsync($"{_clasificacionApiBase}/api/Prediction", content);
+
+
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+
+                    if (!string.IsNullOrWhiteSpace(result))
+                    {
+                        var predictedAccount = result.Trim('"');
+                        _logger?.LogInformation("Prediction API returned: {Account}", predictedAccount);
+                        return (predictedAccount, 100);
+                    }
+                }
+                else
+                {
+                    _logger?.LogWarning("Prediction API returned status code: {StatusCode}", response.StatusCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error calling prediction API for memo: {Memo}", memo);
+            }
+
+            return (null, 0);
+        }
+
         [HttpGet]
         public async Task<IActionResult> ReabrirProceso(Guid id)
         {
@@ -93,9 +151,6 @@ namespace ReadingPdf.Controllers
             if (proceso == null)
                 return NotFound("Proceso no encontrado");
 
-            // ==========================
-            // 1️⃣ Reconstruir el MODEL
-            // ==========================
             var movimientos = proceso.Movimientos
                 .OrderBy(m => m.Fecha)
                 .Select(m => new Movimiento
@@ -108,35 +163,27 @@ namespace ReadingPdf.Controllers
                     CuentaPredicha = m.CuentaPredicha,
                     CuentaContableAplicada = m.CuentaAplicada,
                     TipoDocumento = m.TipoDocumento,
+                    QuickBooksTxnId = m.QuickBooksTxnId,
                     ScorePrediccion = (int)m.ScorePrediccion
                 })
                 .ToList();
 
-            // ==========================
-            // 2️⃣ ViewBag EXACTO
-            // ==========================
-            ViewBag.BatchId = proceso.Id; // 🔑 MISMO BatchId
+            ViewBag.BatchId = proceso.Id;
             ViewBag.BankName = proceso.Banco;
             ViewBag.ItemsCount = movimientos.Count;
             ViewBag.LastInterestCharged = proceso.SaldoInicial;
-            //ViewBag.SelectedCuentaQB = proceso.CuentaQBSeleccionada;
-            ViewBag.SelectedCuentaQB = LastSelectedAccountQB ?? "";
-
-            // Empresas reconocidas (para verde)
+            ViewBag.SelectedCuentaQB = proceso.CuentaQBSeleccionada ?? "";        // keep existing slot used by other code
+            //ViewBag.LastSelectedAccountQB = proceso.CuentaQBSeleccionada ?? "";   // ← ADDED: show the stored account in the view
+            ViewBag.LastSelectedAccountQB = movimientos.LastOrDefault().QuickBooksTxnId ?? "";   // ← ADDED: show the stored account in the view
             ViewBag.RecognizedCompanies = movimientos
                 .Where(m => !string.IsNullOrWhiteSpace(m.Empresa))
                 .Select(m => m.Empresa)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            // ==========================
-            // 3️⃣ Renderizar MISMA vista
-            // ==========================
             return View("Resultados", movimientos);
         }
 
-
-        // 🔹 Normaliza texto (quita tildes, pasa a minúsculas, recorta)
         private string Normalize(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
@@ -158,16 +205,14 @@ namespace ReadingPdf.Controllers
                      .Trim();
         }
 
-        // 🔹 Palabras que indican que NO es un nombre de empresa/persona
-        private static readonly string[] NoiseWords = new[] 
+        private static readonly string[] NoiseWords = new[]
         {
-    "payment", "pago", "transfer", "transferencia", "zelle",
-    "deposit", "withdrawal", "visa", "mastercard", "spei",
-    "conf#", "ref#", "autoriz", "authorization", "ach",
-    "purchase", "pos ", "mobile", "online"
-};
+            "payment", "pago", "transfer", "transferencia", "zelle",
+            "deposit", "withdrawal", "visa", "mastercard", "spei",
+            "conf#", "ref#", "autoriz", "authorization", "ach",
+            "purchase", "pos ", "mobile", "online"
+        };
 
-        // 🔹 Valida que el candidato parezca nombre de empresa/persona
         private bool IsValidCompanyName(string name)
         {
             var norm = Normalize(name);
@@ -178,24 +223,19 @@ namespace ReadingPdf.Controllers
             if (norm.Length < 3 || norm.Length > 30)
                 return false;
 
-            // Debe tener al menos una letra
             if (!norm.Any(char.IsLetter))
                 return false;
 
-            // No debe contener palabras de ruido
             if (NoiseWords.Any(n => norm.Contains(n)))
                 return false;
 
             return true;
         }
 
-
-
-        // Simple model para persistir patrones
         private class PatternEntry
         {
             public int Id { get; set; }
-            public int? BankId { get; set; } // null => global
+            public int? BankId { get; set; }
             public string Pattern { get; set; } = "";
             public string Description { get; set; } = "";
             public DateTime CreatedAt { get; set; }
@@ -216,7 +256,6 @@ namespace ReadingPdf.Controllers
                 }
                 catch
                 {
-                    // Si hay error, retornar lista vacía para no bloquear procesamiento
                     return new List<PatternEntry>();
                 }
             }
@@ -233,7 +272,6 @@ namespace ReadingPdf.Controllers
                 }
                 catch
                 {
-                    // No throw: no queremos romper el flujo de procesamiento por fallo al guardar aprendizaje.
                 }
             }
         }
@@ -245,13 +283,11 @@ namespace ReadingPdf.Controllers
 
             memo = memo.Trim();
 
-            // 1) Probar patrones persistidos
             var patterns = LoadPatterns();
 
-            // Priorizar patrones del banco
             var ordered = patterns
                 .Where(p => p.BankId == bankId || p.BankId == null)
-                .OrderByDescending(p => p.BankId.HasValue) // first specific bank
+                .OrderByDescending(p => p.BankId.HasValue)
                 .ThenBy(p => p.CreatedAt)
                 .ToList();
 
@@ -270,13 +306,11 @@ namespace ReadingPdf.Controllers
                 }
                 catch
                 {
-                    // patrones corruptos -> ignorar
                     continue;
                 }
             }
 
-            // 2) Heurísticas: keywords seguidas de nombre
-            var keywords = new[] 
+            var keywords = new[]
             {
                 "PAY TO","PAGO A","PAGADO A","MERCHANT","REMIT TO","VENDEDOR","PAYEE","TO:","FOR:",
                 "POR:","DE:","COMPRADO EN","COMPRA EN"
@@ -284,7 +318,6 @@ namespace ReadingPdf.Controllers
 
             foreach (var kw in keywords)
             {
-                // construir regex como: (?:KW)\s+([A-Za-z0-9\.\-&ÑÁÉÍÓÚñáéíóú ]{3,80})
                 var safeKw = Regex.Escape(kw);
                 var pattern = $@"(?:{safeKw})\s+([A-Za-z0-9\.\-&ÑÁÉÍÓÚñáéíóú ]{{3,80}})";
                 var rx = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -294,14 +327,12 @@ namespace ReadingPdf.Controllers
                     var candidate = m.Groups[1].Value.Trim();
                     if (candidate.Length >= 3)
                     {
-                        // aprender patrón para el banco
                         AutoAddPattern(bankId, $@"(?:{safeKw})\s+({Regex.Escape(candidate)})", $"Auto-generated from keyword '{kw}'");
                         return candidate;
                     }
                 }
             }
 
-            // 3) Heurística: secuencia de palabras con mayúsculas (merchant names a menudo en Title Case or ALL CAPS)
             var capRx = new Regex(@"([A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚñáéíóú0-9\.\-&]{1,30}(?:\s+[A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚñáéíóú0-9\.\-&]{1,30}){0,4})", RegexOptions.Compiled);
             var capMatch = capRx.Match(memo);
             if (capMatch.Success)
@@ -309,19 +340,16 @@ namespace ReadingPdf.Controllers
                 var candidate = capMatch.Groups[1].Value.Trim();
                 if (candidate.Length >= 3 && candidate.Length <= 80)
                 {
-                    // Guardar patrón sencillo que capture esa secuencia
                     AutoAddPattern(bankId, $"({Regex.Escape(candidate)})", "Auto-generated from capitalized sequence");
                     return candidate;
                 }
             }
 
-            // 4) Heurística: cadenas en mayúsculas continuas (ALL CAPS)
             var allCapsRx = new Regex(@"([A-Z0-9&\.\- ]{4,80})", RegexOptions.Compiled);
             var m2 = allCapsRx.Match(memo);
             if (m2.Success)
             {
                 var candidate = m2.Groups[1].Value.Trim();
-                // filtrar si contiene muchas palabras genéricas o números
                 if (!string.IsNullOrWhiteSpace(candidate) && candidate.Length >= 3)
                 {
                     AutoAddPattern(bankId, $"({Regex.Escape(candidate)})", "Auto-generated from ALL CAPS segment");
@@ -329,7 +357,6 @@ namespace ReadingPdf.Controllers
                 }
             }
 
-            // No se encontró
             return null;
         }
 
@@ -340,7 +367,6 @@ namespace ReadingPdf.Controllers
                 lock (_patternsLock)
                 {
                     var list = LoadPatterns();
-                    // Evitar duplicados exactos
                     if (list.Any(p => p.BankId == bankId && string.Equals(p.Pattern, pattern, StringComparison.OrdinalIgnoreCase)))
                         return;
 
@@ -359,57 +385,42 @@ namespace ReadingPdf.Controllers
             }
             catch
             {
-                // no detener flujo
             }
         }
 
         [HttpGet]
         public IActionResult Index()
         {
-            // Leer bancos desde la tabla
             var bancos = _context.Bank.ToList();
-
-            // Pasar al ViewBag o a un ViewModel
             ViewBag.Bancos = bancos;
-
             return View();
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> Procesar(List<IFormFile> archivosPdf, int BancoId)
-            [HttpPost]
+        [HttpPost]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> Procesar(List<IFormFile> archivosPdf, int BancoId, string? LastSelectedAccountQB)
         {
             if (archivosPdf == null || archivosPdf.Count == 0)
                 return View("Index");
 
-
-
             var bancoSeleccionado = await _context.Bank.FindAsync(BancoId);
-
             var movimientosTotales = new List<Movimiento>();
 
-            // Accumulators for Interest Charged across processed PDFs
             decimal totalInterest = 0m;
             bool anyInterestFound = false;
 
             foreach (var archivoPdf in archivosPdf)
             {
-                // Guardar temporalmente
                 var tempPath = Path.GetTempFileName();
                 using (var stream = new FileStream(tempPath, FileMode.Create))
                     await archivoPdf.CopyToAsync(stream);
 
-                // Diagnostic placeholder (raw text extraction helper not available)
                 string? rawText = null;
 
-                // Procesar PDF actual (protegido)
                 try
                 {
                     var movimientos = AmexParser.ParsePdf(tempPath, bancoSeleccionado) ?? new List<Movimiento>();
 
-                    // capture InterestCharged exposed by AmexParser (if any)
-                    // IMPORTANT: only take the first PDF's InterestCharged and ignore the rest
                     if (!anyInterestFound)
                     {
                         if (AmexParser.LastInterestCharged.HasValue)
@@ -417,7 +428,7 @@ namespace ReadingPdf.Controllers
                             totalInterest = AmexParser.LastInterestCharged.Value;
                             anyInterestFound = true;
                         }
-                        else if (AmexParser.PaymentsCredits.HasValue) // <-- ADDED: consider PaymentsCredits
+                        else if (AmexParser.PaymentsCredits.HasValue)
                         {
                             totalInterest = AmexParser.PaymentsCredits.Value;
                             anyInterestFound = true;
@@ -427,18 +438,15 @@ namespace ReadingPdf.Controllers
                             totalInterest = AmexParser.BalanceAnterior.Value;
                             anyInterestFound = true;
                         }
-                        else
+                        else if (AmexParser.SaldoAnteriorFees.HasValue)
                         {
                             totalInterest = AmexParser.SaldoAnteriorFees.Value;
                             anyInterestFound = true;
                         }
                     }
 
-
-                    // Agregar a la lista general
                     movimientosTotales.AddRange(movimientos);
 
-                    // Borrar temporal solo si parse tuvo éxito (evita perder el PDF en caso de fallo)
                     try
                     {
                         System.IO.File.Delete(tempPath);
@@ -459,7 +467,6 @@ namespace ReadingPdf.Controllers
                 }
                 catch (Exception ex)
                 {
-                    // Log and persist rawText next to the temp PDF for inspection
                     _logger?.LogError(ex, "Error parsing PDF {TempPath}", tempPath);
                     try
                     {
@@ -473,33 +480,23 @@ namespace ReadingPdf.Controllers
                         _logger?.LogWarning(wex, "Failed writing debug text for {TempPath}", tempPath);
                     }
 
-                    // Do not delete the PDF so you can inspect it manually if needed.
                     continue;
                 }
             }
 
-            // Cargar lista de empresas reconocidas una sola vez (para no llamar a BD por cada movimiento)
             var empresasReconocidas = _context.EmpresasReconocidas
                 .Where(e => !string.IsNullOrWhiteSpace(e.TextoOriginal))
                 .Select(e => e.TextoOriginal!)
                 .ToList();
 
-            // Pass recognized company names to the view so the view can validate origin
             ViewBag.RecognizedCompanies = empresasReconocidas;
 
-            // Cache local para no pedir Clearbit repetidamente por la misma empresa
             var clearbitCache = new ConcurrentDictionary<string, ReadingPdf.Services.ClearbitResult?>();
-
-            // model file paths for local predictor
-            var modelPath = Path.Combine(Directory.GetCurrentDirectory(), "models", "account-predictor.zip");
-            var tokensPath = Path.Combine(Directory.GetCurrentDirectory(), "models", "tokens_by_company.json");
-            var labelsPath = Path.Combine(Directory.GetCurrentDirectory(), "models", "labels.json");
 
             foreach (var mov in movimientosTotales)
             {
                 try
                 {
-                    // 0) Intento de detección usando la tabla de EmpresasReconocidas (case-insensitive)
                     string? detected = null;
                     if (!string.IsNullOrWhiteSpace(mov.Descripcion))
                     {
@@ -507,16 +504,12 @@ namespace ReadingPdf.Controllers
                             .FirstOrDefault(e => mov.Descripcion.IndexOf(e, StringComparison.OrdinalIgnoreCase) >= 0);
                     }
 
-
-
                     if (!string.IsNullOrWhiteSpace(detected))
                     {
-                        // If we found a known company, store it in UPPERCASE
                         mov.Empresa = detected.ToUpperInvariant();
                     }
                     else
                     {
-                        // 1) EXTRAER NOMBRE desde el memo si Empresa está vacía
                         if (string.IsNullOrWhiteSpace(mov.Empresa))
                         {
                             var extracted = ExtractNameFromMemo(mov.Descripcion, BancoId);
@@ -525,13 +518,11 @@ namespace ReadingPdf.Controllers
                         }
                     }
 
-                    // 2) Enriching Clearbit (si hay empresa identificable)
                     if (!string.IsNullOrWhiteSpace(mov.Empresa))
                     {
                         var key = mov.Empresa.Trim().ToUpperInvariant();
                         if (!clearbitCache.TryGetValue(key, out var cbResult))
                         {
-                            // Primero: name -> domain
                             var domain = await _clearbit.FindDomainByNameAsync(mov.Empresa);
                             if (!string.IsNullOrWhiteSpace(domain))
                             {
@@ -539,7 +530,6 @@ namespace ReadingPdf.Controllers
                             }
                             else
                             {
-                                // intento directo por nombre como dominio
                                 cbResult = await _clearbit.EnrichByDomainAsync(mov.Empresa);
                             }
                             clearbitCache[key] = cbResult;
@@ -554,66 +544,40 @@ namespace ReadingPdf.Controllers
                             mov.EnrichedNaics = cbResult.Naics;
                             mov.EnrichedTags = cbResult.Tags != null ? string.Join(",", cbResult.Tags) : null;
 
-                            // Aplicar reglas para mapa contable
                             mov.CuentaContableAplicada = MapClearbitToAccount(cbResult, mov.Descripcion);
-                            // Si aún no hay cuenta predicha por tu predictor, puedes usar la aplicada
                             if (string.IsNullOrWhiteSpace(mov.CuentaPredicha))
                                 mov.CuentaPredicha = mov.CuentaContableAplicada;
                         }
                     }
 
-                    // 3) Predicción remota usando PredictionController API, con fallback a predictor local
+                    // ✅ CAMBIO PRINCIPAL: Usar la nueva API de predicción
                     try
                     {
-                        bool applied = false;
+                        var (predictedAccount, confidence) = await PredictAccountViaApi(
+                            mov.Descripcion ?? "",
+                            mov.Empresa ?? ""
+                        );
 
-                        // 3a) Intentar predicción remota primero
-                        try
+                        if (!string.IsNullOrWhiteSpace(predictedAccount))
                         {
-                            var remote = await _predictionClient.PredictAccountAsync(mov.Descripcion ?? "", mov.Empresa ?? "", CancellationToken.None);
-                            if (!string.IsNullOrWhiteSpace(remote))
-                            {
-                                mov.CuentaPredicha = remote;
-                                // remote API doesn't return score; use a sentinel high value to indicate confidence
-                                mov.ScorePrediccion = 100;
-                                applied = true;
-                            }
+                            mov.CuentaPredicha = predictedAccount;
+                            mov.ScorePrediccion = confidence;
                         }
-                        catch (Exception exRemote)
+                        else
                         {
-                            _logger?.LogWarning(exRemote, "Remote prediction API failed for movement {desc}", mov.Descripcion);
-                        }
-
-                        // 3b) Si la remota no arrojó resultado, usar predictor local como fallback
-                        if (!applied)
-                        {
-                            var planDeCuentas = GetCompanyPlanAccounts(mov.Empresa ?? "");
-                            var (account, score) = _accountPredictor.PredictForCompany(mov.Descripcion ?? "", mov.Empresa ?? "", planDeCuentas, modelPath, tokensPath, labelsPath);
-                            if (!string.IsNullOrWhiteSpace(account))
-                            {
-                                mov.CuentaPredicha = account;
-                                // Convert float score in [0..1] to 0..100; keep 0 if unknown
-                                mov.ScorePrediccion = (int)Math.Round(score * 100);
-                            }
-                            else
-                            {
-                                if (string.IsNullOrWhiteSpace(mov.CuentaPredicha))
-                                    mov.CuentaPredicha = "SIN PREDICCION";
-                                mov.ScorePrediccion = 0;
-                            }
+                            if (string.IsNullOrWhiteSpace(mov.CuentaPredicha))
+                                mov.CuentaPredicha = "SIN PREDICCION";
+                            mov.ScorePrediccion = 0;
                         }
                     }
                     catch (Exception exPred)
                     {
-                        _logger?.LogWarning(exPred, "Prediction flow failed for movement {desc}", mov.Descripcion);
+                        _logger?.LogWarning(exPred, "⚠️ Predicción falló para movimiento: {Desc}",
+    mov.Descripcion != null ? mov.Descripcion.Substring(0, Math.Min(50, mov.Descripcion.Length)) : "");
                         if (string.IsNullOrWhiteSpace(mov.CuentaPredicha))
                             mov.CuentaPredicha = "SIN PREDICCION";
                         mov.ScorePrediccion = 0;
                     }
-
-                    //// compute Debit / Credit from Monto (debit when negative, credit when positive)
-                    //mov.Debito = mov.Monto < 0 ? Math.Abs(mov.Monto) : 0m;
-                    //mov.Credito = mov.Monto > 0 ? mov.Monto : 0m;
 
                     CalcularDebitoCredito(mov);
                 }
@@ -625,7 +589,6 @@ namespace ReadingPdf.Controllers
                 }
             }
 
-            // Create a temporary batch ID and store in-memory for later editing/export
             var batchId = Guid.NewGuid();
 
             _tempTables[batchId] = new TempBatch
@@ -640,12 +603,12 @@ namespace ReadingPdf.Controllers
             ViewBag.BankName = bancoSeleccionado?.BankName ?? "";
             ViewBag.ItemsCount = movimientosTotales.Count;
             ViewBag.SelectedCuentaQB = LastSelectedAccountQB;
+            ViewBag.LastSelectedAccountQB = LastSelectedAccountQB; // ← ADDED: expose the saved account to the view
             ViewBag.LastInterestCharged = anyInterestFound ? totalInterest : (decimal?)null;
 
             return View("Resultados", movimientosTotales);
         }
 
-        // Helper to clone Movimiento (avoid accidental shared refs)
         private Movimiento CloneMovimientoForTemp(Movimiento m) =>
                 new Movimiento
                 {
@@ -678,7 +641,6 @@ namespace ReadingPdf.Controllers
                     EnrichedCompanyDomain = m.EnrichedCompanyDomain,
                     CuentaContableAplicada = m.CuentaContableAplicada,
                     EmpresaExtraida = m.EmpresaExtraida,
-                    // copy the computed fields
                     Debito = m.Debito,
                     Credito = m.Credito
                 };
@@ -688,97 +650,518 @@ namespace ReadingPdf.Controllers
             var desc = mov.Descripcion ?? "";
             var montoAbs = Math.Abs(mov.Monto);
 
-            bool contextoCredito = regexCreditoContexto.IsMatch(desc);
-            bool contextoDebito = regexDebitoContexto.IsMatch(desc);
+            // Try to read bank id if available on the movimiento
+            int? bankId = null;
+            try
+            {
+                bankId = mov.BancoId;
+            }
+            catch
+            {
+                bankId = null;
+            }
 
-            if (contextoCredito)
+            // Special handling for Chase (BankId == 4): many Chase statements present all amounts as positive.
+            if (bankId == 4)
+            {
+                // Use context tokens first (CREDIT/DEBIT, DEPOSITO, RETIRO, etc.)
+                bool contextoCredito = regexCreditoContexto.IsMatch(desc) || Regex.IsMatch(desc, @"\bCR\b", RegexOptions.IgnoreCase);
+                bool contextoDebito = regexDebitoContexto.IsMatch(desc) || Regex.IsMatch(desc, @"\bDR\b", RegexOptions.IgnoreCase);
+
+                if (contextoCredito)
+                {
+                    mov.Credito = montoAbs;
+                    mov.Debito = 0m;
+                    return;
+                }
+
+                if (contextoDebito)
+                {
+                    mov.Debito = montoAbs;
+                    mov.Credito = 0m;
+                    return;
+                }
+
+                // Additional heuristics for Chase descriptions when values are all positive:
+                var low = desc.ToLowerInvariant();
+
+                var debitKeywords = new[]
+                {
+                    "purchase", "purch", "pos ", "withdrawal", "retiro", "retir", "charge", "pago", "payment", "autoriz", "authorization"
+                };
+                var creditKeywords = new[]
+                {
+                    "deposit", "deposito", "depósito", "credit", "credito", "cr", "refund", "payment received", "payment -"
+                };
+
+                if (debitKeywords.Any(k => low.Contains(k)))
+                {
+                    mov.Debito = montoAbs;
+                    mov.Credito = 0m;
+                    return;
+                }
+
+                if (creditKeywords.Any(k => low.Contains(k)))
+                {
+                    mov.Credito = montoAbs;
+                    mov.Debito = 0m;
+                    return;
+                }
+
+                // Fallback: preserve previous sign-based behavior if negative values are present.
+                if (mov.Monto < 0)
+                {
+                    mov.Debito = montoAbs;
+                    mov.Credito = 0m;
+                    return;
+                }
+                if (mov.Monto > 0)
+                {
+                    // When we can't infer from description for Chase, prefer marking as Credito (common for deposit-like rows).
+                    mov.Credito = montoAbs;
+                    mov.Debito = 0m;
+                    return;
+                }
+
+                // default
+                mov.Debito = 0m;
+                mov.Credito = 0m;
+                return;
+            }
+
+            // Default logic for other banks (fixed to work with positive-only statements)
+            bool contextoCreditoDefault = regexCreditoContexto.IsMatch(desc) || Regex.IsMatch(desc, @"\bCR\b", RegexOptions.IgnoreCase);
+            bool contextoDebitoDefault = regexDebitoContexto.IsMatch(desc) || Regex.IsMatch(desc, @"\bDR\b", RegexOptions.IgnoreCase);
+
+            if (contextoCreditoDefault)
+            {
+                // Description indicates a credit (e.g., DEPOSITO)
+                mov.Credito = montoAbs;
+                mov.Debito = 0m;
+                return;
+            }
+
+            if (contextoDebitoDefault)
+            {
+                // Description indicates a debit (e.g., RETIRO, CHARGE)
+                mov.Debito = montoAbs;
+                mov.Credito = 0m;
+                return;
+            }
+
+            // Extra heuristics for positive-only statements: check common keywords
+            var lowDesc = desc.ToLowerInvariant();
+            var debitHints = new[] { "purchase", "purch", "pos ", "withdrawal", "retiro", "retir", "charge", "payment", "pago", "autoriz", "authorization" };
+            var creditHints = new[] { "deposit", "deposito", "depósito", "refund", "payment received", "payment -" };
+
+            if (debitHints.Any(k => lowDesc.Contains(k)))
             {
                 mov.Debito = montoAbs;
                 mov.Credito = 0m;
                 return;
             }
 
-            if (contextoDebito)
+            if (creditHints.Any(k => lowDesc.Contains(k)))
             {
-                if (mov.Monto < 0)
-                {
-                    mov.Debito = montoAbs;
-                    mov.Credito = 0m;
-                }
-                else
-                {
-                    mov.Credito = montoAbs;
-                    mov.Debito = 0m;
-                }
+                mov.Credito = montoAbs;
+                mov.Debito = 0m;
                 return;
             }
 
+            // Final fallback: use sign when available, otherwise treat positive as credit (most statements list credits as positive)
             if (mov.Monto < 0)
             {
                 mov.Debito = montoAbs;
                 mov.Credito = 0m;
             }
-            else
+            else if (mov.Monto > 0)
             {
                 mov.Credito = montoAbs;
                 mov.Debito = 0m;
             }
-        }
-
-
-        [HttpGet]
-        public IActionResult EditTemporal(Guid batchId, string? sortBy = null, string? sortDir = "asc")
-        {
-            if (!_tempTables.TryGetValue(batchId, out var batch))
-            {
-                // Log useful diagnostic info
-                _logger?.LogWarning("EditTemporal: batch {BatchId} not found. Current in-memory batches: {Keys}",
-                    batchId,
-                    _tempTables.Keys.Any() ? string.Join(", ", _tempTables.Keys) : "<none>");
-
-                // Provide friendly UX: store message and redirect to Index so user can retry
-                TempData["ErrorMessage"] = $"Batch '{batchId}' not found. It may have expired or the app was restarted.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            ViewBag.BatchId = batchId;
-            if (batch.BankId.HasValue)
-            {
-                var bank = _context.Bank.Find(batch.BankId.Value);
-                ViewBag.BankName = bank?.BankName ?? "";
-            }
             else
             {
-                ViewBag.BankName = "";
+                mov.Debito = 0m;
+                mov.Credito = 0m;
             }
-
-            ViewBag.ItemsCount = batch.Items?.Count ?? 0;
-            ViewBag.SortBy = sortBy;
-            ViewBag.SortDir = sortDir;
-            ViewBag.SelectedCuentaQB = batch.SelectedCuentaQB ?? "";
-
-
-            IEnumerable<Movimiento> itemsToShow = batch.Items ?? new List<Movimiento>();
-
-            if (!string.IsNullOrWhiteSpace(sortBy))
-            {
-                if (sortBy.Equals("descripcion", StringComparison.OrdinalIgnoreCase))
-                {
-                    itemsToShow = sortDir?.Equals("desc", StringComparison.OrdinalIgnoreCase) == true
-                        ? itemsToShow.OrderByDescending(m => m.Descripcion)
-                        : itemsToShow.OrderBy(m => m.Descripcion);
-                }
-                else if (sortBy.Equals("fecha", StringComparison.OrdinalIgnoreCase))
-                {
-                    itemsToShow = sortDir?.Equals("desc", StringComparison.OrdinalIgnoreCase) == true
-                        ? itemsToShow.OrderByDescending(m => m.Fecha)
-                        : itemsToShow.OrderBy(m => m.Fecha);
-                }
-                // Add other fields if you want to support more sorting keys.
-            }
-
-            return View("Resultados", itemsToShow.ToList());
         }
+        
+        [HttpGet]
+        public IActionResult EditTemporal(string batchId, string selectedAccountQB = "")
+        {
+            if (string.IsNullOrWhiteSpace(batchId))
+            {
+                return RedirectToAction("Index");
+            }
+            //******
+            if (!_batchProgress.TryGetValue(batchId, out var progress))
+            {
+                TempData["ErrorMessage"] = "Batch no encontrado";
+                return RedirectToAction("Index");
+            }
+
+            var movimientos = progress.Movimientos ?? new List<Movimiento>();
+
+            var cuentaQB = !string.IsNullOrWhiteSpace(selectedAccountQB)
+                ? selectedAccountQB
+                : progress.SelectedAccountQB ?? "";
+
+            ViewBag.BatchId = batchId;
+            ViewBag.SelectedCuentaQB = cuentaQB;
+            ViewBag.LastSelectedAccountQB = cuentaQB; // ← ADDED: expose the stored account for the view
+
+            var primerMovimiento = movimientos.FirstOrDefault();
+            var bancoId = primerMovimiento?.BancoId as int?;
+
+            ViewBag.BankName = bancoId.HasValue
+                ? (_context.Bank.FirstOrDefault(b => b.BankId == bancoId.Value)?.BankName ?? "")
+                : "";
+            // ✅ USAR EL BANKNAME GUARDADO EN PROGRESS
+            ViewBag.BankName = progress.BankName ?? "";  // ← CAMBIAR ESTA LÍNEA
+
+            
+            ViewBag.ItemsCount = movimientos.Count;
+            ViewBag.EmpresaQBName = progress.EmpresaQBName ?? "";  // ✅ AGREGAR ESTA LÍNEA
+            ViewBag.RecognizedCompanies = movimientos
+                .Where(m => !string.IsNullOrWhiteSpace(m.Empresa))
+                .Select(m => m.Empresa)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            ViewBag.LastInterestCharged = AmexParser.LastInterestCharged;
+            
+            _logger?.LogInformation("📄 EditTemporal: Batch {BatchId}, Cuenta QB: {CuentaQB}, Movimientos: {Count}",
+                batchId, cuentaQB, movimientos.Count);
+
+            return View("Resultados", movimientos);
+        }
+        // ✅ NUEVO: Clase para el request de QB con AccountFullName
+        public class QuickBooksChargeRequest
+        {
+            public string Vendor { get; set; } = "";
+            public string Memo { get; set; } = "";
+            public decimal Amount { get; set; }
+            public string TxnDate { get; set; } = "";
+            public string AccountFullName { get; set; } = "";  // ✅ CAMPO PRINCIPAL
+            public string ExpenseAccount { get; set; } = "";
+            public string TipoDocumento { get; set; } = ""; // ✅ AGREGADO
+        }
+
+
+
+        [HttpPost]
+        public async Task<IActionResult> RegistrarEnQuickBooks([FromBody] QuickBooksChargeRequest request)
+        {
+            try
+            {
+                _logger?.LogInformation("📤 Registrando en QB: Vendor={Vendor}, Account={Account}, Amount={Amount}, Tipo={Tipo}",
+                    request.Vendor, request.AccountFullName, request.Amount, request.TipoDocumento);
+
+                // ===================================
+                // VALIDACIONES
+                // ===================================
+                var tiposValidos = new[] {
+            "CreditCardCharge",
+            "Deposit",
+            "Check",
+            "CreditCardCredit"
+        };
+
+                if (!tiposValidos.Contains(request.TipoDocumento))
+                {
+                    _logger?.LogWarning("❌ Tipo de documento inválido: {Tipo}", request.TipoDocumento);
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Tipo de documento inválido: {request.TipoDocumento}. Tipos válidos: {string.Join(", ", tiposValidos)}"
+                    });
+                }
+
+                if (string.IsNullOrWhiteSpace(request.Vendor))
+                {
+                    return Json(new { success = false, message = "Vendor es requerido" });
+                }
+
+                if (string.IsNullOrWhiteSpace(request.AccountFullName))
+                {
+                    return Json(new { success = false, message = "AccountFullName es requerido" });
+                }
+
+                if (request.Amount <= 0)
+                {
+                    return Json(new { success = false, message = "Amount debe ser mayor a 0" });
+                }
+
+                // ===================================
+                // ✅ CONVERTIR FECHA AL FORMATO CORRECTO
+                // ===================================
+                string txnDateFormatted;
+                try
+                {
+                    // Intentar parsear la fecha en varios formatos comunes
+                    DateTime parsedDate;
+
+                    if (DateTime.TryParseExact(request.TxnDate, "M/d/yyyy",
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.None, out parsedDate))
+                    {
+                        // Formato: 12/20/2024 o 1/5/2024
+                        txnDateFormatted = parsedDate.ToString("yyyy-MM-dd");
+                        _logger?.LogInformation("✅ Fecha parseada desde M/d/yyyy: {Original} → {Formatted}",
+                            request.TxnDate, txnDateFormatted);
+                    }
+                    else if (DateTime.TryParseExact(request.TxnDate, "MM/dd/yyyy",
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.None, out parsedDate))
+                    {
+                        // Formato: 12/20/2024
+                        txnDateFormatted = parsedDate.ToString("yyyy-MM-dd");
+                        _logger?.LogInformation("✅ Fecha parseada desde MM/dd/yyyy: {Original} → {Formatted}",
+                            request.TxnDate, txnDateFormatted);
+                    }
+                    else if (DateTime.TryParseExact(request.TxnDate, "yyyy-MM-dd",
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.None, out parsedDate))
+                    {
+                        // Ya está en el formato correcto
+                        txnDateFormatted = request.TxnDate;
+                        _logger?.LogInformation("✅ Fecha ya en formato correcto: {Date}", txnDateFormatted);
+                    }
+                    else if (DateTime.TryParse(request.TxnDate, out parsedDate))
+                    {
+                        // Intento genérico
+                        txnDateFormatted = parsedDate.ToString("yyyy-MM-dd");
+                        _logger?.LogInformation("✅ Fecha parseada genéricamente: {Original} → {Formatted}",
+                            request.TxnDate, txnDateFormatted);
+                    }
+                    else
+                    {
+                        _logger?.LogError("❌ No se pudo parsear la fecha: {Date}", request.TxnDate);
+                        return Json(new
+                        {
+                            success = false,
+                            message = $"Formato de fecha inválido: '{request.TxnDate}'. Use formato MM/dd/yyyy o yyyy-MM-dd"
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "❌ Error parseando fecha: {Date}", request.TxnDate);
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Error parseando fecha: {ex.Message}"
+                    });
+                }
+
+                // ===================================
+                // PREPARAR PAYLOAD
+                // ===================================
+                var payload = new
+                {
+                    // Para CreditCardChargeAddRq
+                    payeeFullName = request.Vendor,
+                    accountRef = request.AccountFullName,
+                    expenseAccountFullName = request.ExpenseAccount ?? "Uncategorized Expenses",
+                    amount = request.Amount,
+                    txnDate = txnDateFormatted,  // ✅ USAR LA FECHA FORMATEADA
+                    memo = request.Memo ?? "",
+                    refNumber = "",
+
+                    // Campos adicionales para otros tipos
+                    depositToAccountRef = request.AccountFullName,
+                    vendor = request.Vendor,
+                    tipoDocumento = request.TipoDocumento
+                };
+
+                var json = JsonConvert.SerializeObject(payload);
+                _logger?.LogDebug("📦 Payload JSON: {Payload}", json);
+
+                // ===================================
+                // CONFIGURAR HTTPCLIENT
+                // ===================================
+                var handler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+                };
+
+                using var httpClient = new HttpClient(handler, disposeHandler: true);
+                httpClient.Timeout = TimeSpan.FromSeconds(120);
+                httpClient.DefaultRequestHeaders.Connection.Clear();
+                httpClient.DefaultRequestHeaders.ConnectionClose = false;
+
+                // ===================================
+                // DETERMINAR ENDPOINT CORRECTO
+                // ===================================
+                string baseUrl = "https://localhost:7059/api/quickbooks/";
+
+                string endpoint = request.TipoDocumento switch
+                {
+                    "CreditCardCharge" => baseUrl + "charge",
+                    "Deposit" => baseUrl + "deposit",
+                    "Check" => baseUrl + "check",
+                    "CreditCardCredit" => baseUrl + "registrar-credito",
+                    _ => baseUrl + "charge"
+                };
+
+                _logger?.LogInformation("🌐 Endpoint seleccionado: {Endpoint}", endpoint);
+
+                // ===================================
+                // LÓGICA DE REINTENTOS
+                // ===================================
+                int maxRetries = 3;
+                int retryDelayMs = 1000;
+                string lastError = null;
+
+                for (int attempt = 1; attempt <= maxRetries; attempt++)
+                {
+                    try
+                    {
+                        _logger?.LogInformation("🔄 Intento {Attempt}/{MaxRetries} llamando a {Endpoint}",
+                            attempt, maxRetries, endpoint);
+
+                        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+                        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+
+                        var response = await httpClient.PostAsync(endpoint, content, cts.Token);
+
+                        // ===================================
+                        // LEER RESPUESTA
+                        // ===================================
+                        string responseBody = string.Empty;
+                        try
+                        {
+                            responseBody = await response.Content.ReadAsStringAsync();
+                            _logger?.LogDebug("📥 Response body: {Body}",
+                                responseBody?.Substring(0, Math.Min(500, responseBody?.Length ?? 0)));
+                        }
+                        catch (Exception readEx)
+                        {
+                            _logger?.LogWarning(readEx, "⚠️ No se pudo leer body de la respuesta");
+                            lastError = $"Error leyendo respuesta: {readEx.Message}";
+
+                            if (attempt == maxRetries)
+                                throw;
+
+                            await Task.Delay(retryDelayMs * attempt);
+                            continue;
+                        }
+
+                        // ===================================
+                        // VALIDAR STATUS CODE
+                        // ===================================
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            _logger?.LogError("❌ QuickBooks API error ({StatusCode}): {Body}",
+                                response.StatusCode, responseBody);
+
+                            lastError = $"HTTP {(int)response.StatusCode}: {responseBody}";
+
+                            // Si es 4xx, no reintentar
+                            if ((int)response.StatusCode >= 400 && (int)response.StatusCode < 500)
+                            {
+                                return Json(new { success = false, message = lastError });
+                            }
+
+                            // Si es 5xx, reintentar
+                            if (attempt < maxRetries)
+                            {
+                                _logger?.LogWarning("⏳ Error 5xx, reintentando en {Delay}ms...", retryDelayMs * attempt);
+                                await Task.Delay(retryDelayMs * attempt);
+                                continue;
+                            }
+
+                            return Json(new { success = false, message = lastError });
+                        }
+
+                        // ===================================
+                        // PARSEAR RESPUESTA EXITOSA
+                        // ===================================
+                        dynamic qbResponse = null;
+                        try
+                        {
+                            if (!string.IsNullOrWhiteSpace(responseBody))
+                            {
+                                qbResponse = JsonConvert.DeserializeObject<dynamic>(responseBody);
+                            }
+                        }
+                        catch (Exception parseEx)
+                        {
+                            _logger?.LogWarning(parseEx, "⚠️ Respuesta no JSON: {Body}",
+                                responseBody?.Substring(0, Math.Min(200, responseBody?.Length ?? 0)));
+                        }
+
+                        var txnId = (string)(qbResponse?.txnId?.ToString() ??
+                                            qbResponse?.txnID?.ToString() ??
+                                            qbResponse?.TxnID?.ToString() ?? "");
+
+                        _logger?.LogInformation("✅ Registro exitoso: TxnID={TxnId}, Tipo={Tipo}",
+                            txnId, request.TipoDocumento);
+
+                        return Json(new
+                        {
+                            success = true,
+                            txnId = txnId,
+                            tipoDocumento = request.TipoDocumento,
+                            message = $"Registrado exitosamente como {request.TipoDocumento}"
+                        });
+                    }
+                    catch (TaskCanceledException tcex) when (!tcex.CancellationToken.IsCancellationRequested)
+                    {
+                        _logger?.LogError(tcex, "⏱️ Timeout en intento {Attempt}/{MaxRetries}", attempt, maxRetries);
+                        lastError = $"Timeout al llamar a QuickBooks API (intento {attempt}/{maxRetries})";
+
+                        if (attempt < maxRetries)
+                        {
+                            _logger?.LogInformation("⏳ Reintentando en {Delay}ms...", retryDelayMs * attempt);
+                            await Task.Delay(retryDelayMs * attempt);
+                            continue;
+                        }
+                    }
+                    catch (HttpRequestException httpEx)
+                    {
+                        _logger?.LogError(httpEx, "🌐 Error HTTP en intento {Attempt}/{MaxRetries}", attempt, maxRetries);
+                        lastError = $"Error de conexión: {httpEx.Message}";
+
+                        if (attempt < maxRetries)
+                        {
+                            _logger?.LogInformation("⏳ Reintentando en {Delay}ms...", retryDelayMs * attempt);
+                            await Task.Delay(retryDelayMs * attempt);
+                            continue;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError(ex, "💥 Error inesperado en intento {Attempt}/{MaxRetries}", attempt, maxRetries);
+                        lastError = $"Error inesperado: {ex.Message}";
+
+                        if (attempt < maxRetries)
+                        {
+                            await Task.Delay(retryDelayMs * attempt);
+                            continue;
+                        }
+                    }
+                }
+
+                // ===================================
+                // TODOS LOS INTENTOS FALLARON
+                // ===================================
+                _logger?.LogError("❌ Todos los intentos fallaron. Último error: {LastError}", lastError);
+
+                return Json(new
+                {
+                    success = false,
+                    message = $"No se pudo contactar al servicio QuickBooks después de {maxRetries} intentos. {lastError}"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error crítico en RegistrarEnQuickBooks");
+                return Json(new { success = false, message = $"Error interno: {ex.Message}" });
+            }
+        }
+
+             
 
         [HttpPost]
         public IActionResult UpdateTemporal(Guid batchId, List<Movimiento> movimientos)
@@ -786,11 +1169,6 @@ namespace ReadingPdf.Controllers
             if (movimientos == null)
                 return BadRequest();
 
-            //_tempTables[batchId] = new TempBatch
-            //{
-            //    Items = movimientos.Select(m => CloneMovimientoForTemp(m)).ToList(),
-            //    BankId = _tempTables.TryGetValue(batchId, out var existing) ? existing.BankId : null
-            //};
             _tempTables[batchId] = new TempBatch
             {
                 Items = movimientos.Select(m => CloneMovimientoForTemp(m)).ToList(),
@@ -801,7 +1179,6 @@ namespace ReadingPdf.Controllers
             return RedirectToAction(nameof(EditTemporal), new { batchId });
         }
 
-        // Changed to GET so browser can navigate and show Save dialog. Accepts optional filename.
         [HttpGet]
         public IActionResult ExportarTemporal(Guid batchId, string? filename = null)
         {
@@ -812,8 +1189,6 @@ namespace ReadingPdf.Controllers
             return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
-        // New endpoint: receive selected text and learn/update Empresa for the item in the temp table
-        // Note: we keep this simple and allow anonymous POSTs for frontend JS by ignoring antiforgery.
         [HttpPost]
         [IgnoreAntiforgeryToken]
         public async Task<IActionResult> SelectEmpresa([FromBody] SelectEmpresaDto dto)
@@ -827,12 +1202,10 @@ namespace ReadingPdf.Controllers
             if (dto.Index < 0 || dto.Index >= batch.Items.Count)
                 return BadRequest(new { success = false, message = "Index out of range" });
 
-            // Normalize to UPPERCASE before storing/learning
             var selected = dto.Selected.Trim().ToUpperInvariant();
             batch.Items[dto.Index].Empresa = selected;
             batch.Items[dto.Index].EmpresaExtraida = selected;
 
-            // Learn a simple pattern that captures the exact selected text for this bank
             try
             {
                 var bankId = batch.BankId;
@@ -840,10 +1213,8 @@ namespace ReadingPdf.Controllers
             }
             catch
             {
-                // ignore learning failures
             }
 
-            // Persist as recognized company so future Procesar runs pick it up immediately
             try
             {
                 var selUpper = selected.ToUpperInvariant();
@@ -876,7 +1247,6 @@ namespace ReadingPdf.Controllers
             public string Selected { get; set; } = "";
         }
 
-        // Updated to accept optional desiredFileName and sanitize it
         private byte[] BuildExcelBytes(List<Movimiento> movimientos, out string fileName, string? desiredFileName = null)
         {
             using var paquete = new ExcelPackage();
@@ -900,13 +1270,11 @@ namespace ReadingPdf.Controllers
                 hoja.Cells[i + 2, 6].Value = mov.CuentaPredicha;
             }
 
-            // If caller provided a filename, sanitize and use it; otherwise generate one.
             if (!string.IsNullOrWhiteSpace(desiredFileName))
             {
                 try
                 {
                     var sanitized = desiredFileName;
-                    // replace invalid filename chars
                     foreach (var c in Path.GetInvalidFileNameChars())
                         sanitized = sanitized.Replace(c, '_');
                     if (!sanitized.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
@@ -928,24 +1296,21 @@ namespace ReadingPdf.Controllers
 
         private static string MapClearbitToAccount(ReadingPdf.Services.ClearbitResult cb, string description)
         {
-            // Reglas heurísticas: prioridad por NAICS -> industry/subIndustry -> tags -> descripción
             string text = (description ?? "").ToUpperInvariant();
 
-            // 1) NAICS-based rules (comunes)
             if (!string.IsNullOrWhiteSpace(cb.Naics))
             {
                 var naics = cb.Naics;
-                if (naics.StartsWith("722")) // Food services and drinking places
+                if (naics.StartsWith("722"))
                     return "Expenses:Restaurants";
-                if (naics.StartsWith("447") || naics.StartsWith("324") || naics.Contains("FUEL")) // Gas stations / petroleum
+                if (naics.StartsWith("447") || naics.StartsWith("324") || naics.Contains("FUEL"))
                     return "Expenses:Gasoline";
-                if (naics.StartsWith("481") || naics.StartsWith("482") || naics.StartsWith("488")) // Transportation/air/ship
+                if (naics.StartsWith("481") || naics.StartsWith("482") || naics.StartsWith("488"))
                     return "Expenses:Transportation";
-                if (naics.StartsWith("5112") || naics.StartsWith("518") || naics.StartsWith("519")) // software/online
+                if (naics.StartsWith("5112") || naics.StartsWith("518") || naics.StartsWith("519"))
                     return "Expenses:Software";
             }
 
-            // 2) Industry / SubIndustry
             var industry = (cb.Industry ?? "").ToUpperInvariant();
             var sub = (cb.SubIndustry ?? "").ToUpperInvariant();
             if (industry.Contains("RESTAURANT") || sub.Contains("RESTAURANT") || industry.Contains("FOOD"))
@@ -959,7 +1324,6 @@ namespace ReadingPdf.Controllers
             if (industry.Contains("WHOLESALE") || industry.Contains("RETAIL"))
                 return "Expenses:Supplies";
 
-            // 3) Tags
             if (cb.Tags != null)
             {
                 foreach (var t in cb.Tags)
@@ -972,7 +1336,6 @@ namespace ReadingPdf.Controllers
                 }
             }
 
-            // 4) Fallback: buscar palabras clave en la descripción del movimiento (heurística)
             if (text.Contains("RESTAURANT") || text.Contains("DINER") || text.Contains("FOOD") || text.Contains("CAFÉ") || text.Contains("CAFE"))
                 return "Expenses:Restaurants";
             if (text.Contains("GAS") || text.Contains("PETROLEUM") || text.Contains("PUMP") || text.Contains("ESTACION"))
@@ -984,11 +1347,9 @@ namespace ReadingPdf.Controllers
             if (text.Contains("SOFT") || text.Contains("SAAS") || text.Contains("SUBSCRIPTION") || text.Contains("ANNUAL") && text.Contains("FEE"))
                 return "Expenses:Software";
 
-            // Default
             return "Expenses:Uncategorized";
         }
 
-        // Existing GuardarExcel kept for backwards compatibility (still used nowhere by default)
         private void GuardarExcel(List<Movimiento> movimientos)
         {
             using var paquete = new ExcelPackage();
@@ -1033,493 +1394,798 @@ namespace ReadingPdf.Controllers
         public string CuentaQB { get; private set; }
         public string LastSelectedAccountQB { get; private set; }
 
+        
+
         [HttpPost]
-        [IgnoreAntiforgeryToken] // called via fetch from client; keep same-origin in production or use antiforgery token.
-        public IActionResult StartProcesar(List<IFormFile> archivosPdf, int BancoId, string? CuentaQB)
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> StartProcesar(
+    IFormFileCollection archivosPdf,
+    int BancoId,
+    string LastSelectedAccountQB,
+    string EmpresaQBName)
         {
-            if (archivosPdf == null || archivosPdf.Count == 0)
-                return BadRequest(new { error = "No files" });
-
-            // capture the selected QuickBooks account from the incoming request
-            var capturedCuentaQB = CuentaQB ?? "";
-
-            // create batch id and progress entry
-            var batchId = Guid.NewGuid();
-            var prog = new ProgressInfo { Percent = 0, Status = "Queued", TotalFiles = archivosPdf.Count };
-            _progress[batchId] = prog;
-
-            // Create an initial empty TempBatch immediately so EditTemporal won't return 404
-            // (will be overwritten with real results when background processing completes)
-            _tempTables[batchId] = new TempBatch
-            {
-                Items = new List<Movimiento>(),
-                BankId = BancoId,
-                SelectedCuentaQB = capturedCuentaQB
-            };
-
-            // save files to temp paths
-            var tempPaths = new List<string>();
             try
             {
-                foreach (var f in archivosPdf)
+                // Validar que se enviaron archivos
+                if (archivosPdf == null || archivosPdf.Count == 0)
                 {
-                    var temp = Path.GetTempFileName();
-                    using (var fs = new FileStream(temp, FileMode.Create))
-                    {
-                        f.CopyTo(fs);
-                    }
-                    tempPaths.Add(temp);
+                    _logger?.LogWarning("❌ No se recibieron archivos PDF");
+                    return Json(new { success = false, message = "No se seleccionaron archivos" });
                 }
+
+                var batchId = Guid.NewGuid().ToString();
+
+                _logger?.LogInformation("📋 Creando batch {BatchId} con {FileCount} archivos",
+                    batchId, archivosPdf.Count);
+                // ✅ OBTENER EL NOMBRE DEL BANCO
+                var bancoSeleccionado = await _context.Bank.FindAsync(BancoId);
+                var bankName = bancoSeleccionado?.BankName ?? "";
+                _logger?.LogInformation("📋 Creando batch {BatchId} para banco: {BankName}, empresa: {Empresa}",
+    batchId, bankName, EmpresaQBName);
+                _logger?.LogInformation("📋 Creando batch {BatchId} con {FileCount} archivos para banco: {BankName}",
+                    batchId, archivosPdf.Count, bankName);
+                // ✅ CREAR ENTRADA DE PROGRESO CON BANKNAME
+                _batchProgress[batchId] = new BatchProgress
+                {
+                    BatchId = batchId,
+                    TotalFiles = archivosPdf.Count,
+                    ProcessedFiles = 0,
+                    Status = "Guardando archivos...",
+                    Done = false,
+                    Percent = 0,
+                    SelectedAccountQB = LastSelectedAccountQB ?? "",
+                    BankName = bankName , // ← AGREGAR ESTA LÍNEA
+                    EmpresaQBName = EmpresaQBName ?? ""  // ✅ AGREGAR ESTA LÍNEA
+                };
+
+                _logger?.LogInformation("📋 Batch {BatchId} - Cuenta QB: {CuentaQB}",
+                    batchId, LastSelectedAccountQB);
+
+                // ✅ GUARDAR ARCHIVOS FÍSICAMENTE ANTES DEL BACKGROUND TASK
+                var tempPaths = new List<string>();
+
+                try
+                {
+                    for (int i = 0; i < archivosPdf.Count; i++)
+                    {
+                        var archivoPdf = archivosPdf[i];  // ✅ Usar archivoPdf, no archivos
+                        var tempPath = Path.GetTempFileName();
+
+                        _logger?.LogDebug("💾 Guardando archivo {Index}/{Total}: {FileName}",
+                            i + 1, archivosPdf.Count, archivoPdf.FileName);
+
+                        using (var stream = new FileStream(tempPath, FileMode.Create))
+                        {
+                            await archivoPdf.CopyToAsync(stream);
+                        }
+
+                        tempPaths.Add(tempPath);
+
+                        _logger?.LogInformation("✅ Archivo {Index}/{Total} guardado: {Path} ({Size} bytes)",
+                            i + 1, archivosPdf.Count, tempPath, new FileInfo(tempPath).Length);
+                    }
+
+                    _logger?.LogInformation("✅ {Count} archivos guardados exitosamente, iniciando procesamiento",
+                        tempPaths.Count);
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "❌ Error guardando archivos temporales");
+
+                    // Limpiar archivos que se hayan guardado
+                    foreach (var path in tempPaths)
+                    {
+                        try { System.IO.File.Delete(path); } catch { }
+                    }
+
+                    return Json(new { success = false, message = "Error guardando archivos: " + ex.Message });
+                }
+
+                // ✅ INICIAR PROCESAMIENTO EN BACKGROUND CON LAS RUTAS GUARDADAS
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        _logger?.LogInformation("▶️ Iniciando procesamiento en background para batch {BatchId}", batchId);
+
+                        await ProcesarEnBackground(batchId, tempPaths, BancoId, LastSelectedAccountQB ?? "");
+
+                        _logger?.LogInformation("✅ Procesamiento completado para batch {BatchId}", batchId);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError(ex, "💥 Error en procesamiento background para batch {BatchId}", batchId);
+
+                        if (_batchProgress.ContainsKey(batchId))
+                        {
+                            _batchProgress[batchId].Done = true;
+                            _batchProgress[batchId].Status = "Error: " + ex.Message;
+                            _batchProgress[batchId].Percent = 0;
+                        }
+                    }
+                    finally
+                    {
+                        // ✅ LIMPIAR ARCHIVOS TEMPORALES
+                        _logger?.LogInformation("🧹 Limpiando {Count} archivos temporales para batch {BatchId}",
+                            tempPaths.Count, batchId);
+
+                        foreach (var path in tempPaths)
+                        {
+                            try
+                            {
+                                if (System.IO.File.Exists(path))
+                                {
+                                    System.IO.File.Delete(path);
+                                    _logger?.LogDebug("🗑️ Eliminado: {Path}", path);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger?.LogWarning(ex, "⚠️ No se pudo eliminar archivo temporal: {Path}", path);
+                            }
+                        }
+                    }
+                });
+
+                _logger?.LogInformation("✅ Retornando batchId al cliente: {BatchId}", batchId);
+
+                return Json(new { success = true, batchId = batchId });
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Failed saving uploaded files to temp");
-                _progress.TryRemove(batchId, out _);
-                // remove the early temp entry to avoid stale empty batch if we failed
-                _tempTables.TryRemove(batchId, out _);
-                return StatusCode(500, new { error = "Failed saving files" });
+                _logger?.LogError(ex, "❌ Error general en StartProcesar");
+                return Json(new { success = false, message = "Error: " + ex.Message });
+            }
+        }
+
+
+
+        private async Task ProcesarEnBackground(
+            string batchId,
+            List<string> archivosPaths,
+            int bancoId,
+            string selectedAccountQB)
+        {
+            if (!_batchProgress.TryGetValue(batchId, out var progress))
+            {
+                _logger?.LogError("❌ Batch {BatchId} no encontrado en _batchProgress", batchId);
+                return;
             }
 
-            // capture bank snapshot (safe to pass simple entity)
-            var bancoSeleccionado = _context.Bank.Find(BancoId);
+            // ✅ CREAR UN SCOPE NUEVO PARA EL BACKGROUND TASK
+            // Esto evita el ObjectDisposedException
+            using var scope = _scopeFactory.CreateScope();
+            var scopedContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var scopedClearbit = scope.ServiceProvider.GetRequiredService<IClearbitService>();
 
-            // Fire-and-forget background processing
-            Task.Run(async () =>
+            try
             {
-                try
+                _logger?.LogInformation("🚀 Iniciando ProcesarEnBackground para batch {BatchId}", batchId);
+
+                progress.Status = "Procesando archivos PDF...";
+                progress.TotalFiles = archivosPaths.Count;
+                progress.Percent = 5;
+
+                var allMovimientos = new List<Movimiento>();
+
+                // ✅ USAR EL CONTEXTO DEL SCOPE, NO _context
+                var bancoSeleccionado = await scopedContext.Bank.FindAsync(bancoId);
+
+                if (bancoSeleccionado == null)
                 {
-                    prog.Status = "Processing files";
-                    prog.TotalFiles = tempPaths.Count;
-                    prog.ProcessedFiles = 0;
-                    var movimientosTotales = new List<Movimiento>();
+                    _logger?.LogWarning("⚠️ Banco {BancoId} no encontrado", bancoId);
+                }
+                else
+                {
+                    _logger?.LogInformation("🏦 Banco seleccionado: {BankName} (ID: {BankId})",
+                        bancoSeleccionado.BankName, bancoId);
+                }
 
-                    // Track only first InterestCharged value
-                    decimal totalInterest = 0m;
-                    bool anyInterestFound = false;
+                decimal totalInterest = 0m;
+                bool anyInterestFound = false;
 
-                    // 1) parse each PDF and update progress per file
-                    for (int i = 0; i < tempPaths.Count; i++)
+                // ========================================
+                // PASO 1: PARSEAR ARCHIVOS PDF
+                // ========================================
+                _logger?.LogInformation("📄 Parseando {Count} archivos PDF...", archivosPaths.Count);
+
+                for (int i = 0; i < archivosPaths.Count; i++)
+                {
+                    var tempPath = archivosPaths[i];
+
+                    progress.Status = $"Parseando archivo {i + 1} / {archivosPaths.Count}...";
+                    progress.ProcessedFiles = i;
+                    progress.Percent = 5 + (int)((i / (double)archivosPaths.Count) * 25);
+
+                    try
                     {
-                        var path = tempPaths[i];
-                        prog.Status = $"Parsing file {i + 1} / {tempPaths.Count}";
-                        try
+                        if (!System.IO.File.Exists(tempPath))
                         {
-                            var movs = AmexParser.ParsePdf(path, bancoSeleccionado);
-                            if (movs != null && movs.Count > 0)
-                                movimientosTotales.AddRange(movs);
+                            _logger?.LogWarning("⚠️ Archivo temporal no encontrado: {Path}", tempPath);
+                            continue;
+                        }
 
-                            // capture InterestCharged if present, but only the first PDF value
-                            if (!anyInterestFound)
+                        var fileInfo = new FileInfo(tempPath);
+                        _logger?.LogInformation("📄 Parseando archivo {Index}/{Total}: {Path} ({Size} bytes)",
+                            i + 1, archivosPaths.Count, tempPath, fileInfo.Length);
+
+                        // ✅ PARSEAR PDF
+                        var movimientos = AmexParser.ParsePdf(tempPath, bancoSeleccionado) ?? new List<Movimiento>();
+
+                        _logger?.LogInformation("✅ Archivo {Index}/{Total}: {Count} movimientos extraídos",
+                            i + 1, archivosPaths.Count, movimientos.Count);
+
+                        // Capturar Interest Charged
+                        if (!anyInterestFound)
+                        {
+                            if (AmexParser.LastInterestCharged.HasValue)
                             {
-                                if (AmexParser.LastInterestCharged.HasValue)
-                                {
-                                    totalInterest = AmexParser.LastInterestCharged.Value;
-                                    anyInterestFound = true;
-                                }
-                                else if (AmexParser.PaymentsCredits.HasValue)
-                                {
-                                    totalInterest = AmexParser.PaymentsCredits.Value;
-                                    anyInterestFound = true;
-                                }
-                                else if (AmexParser.BalanceAnterior.HasValue)
-                                {
-                                    totalInterest = AmexParser.BalanceAnterior.Value;
-                                    anyInterestFound = true;
-                                }
+                                totalInterest = AmexParser.LastInterestCharged.Value;
+                                anyInterestFound = true;
+                                _logger?.LogInformation("💰 LastInterestCharged capturado: {Amount:C}", totalInterest);
+                            }
+                            else if (AmexParser.PaymentsCredits.HasValue)
+                            {
+                                totalInterest = AmexParser.PaymentsCredits.Value;
+                                anyInterestFound = true;
+                                _logger?.LogInformation("💰 PaymentsCredits capturado: {Amount:C}", totalInterest);
+                            }
+                            else if (AmexParser.BalanceAnterior.HasValue)
+                            {
+                                totalInterest = AmexParser.BalanceAnterior.Value;
+                                anyInterestFound = true;
+                                _logger?.LogInformation("💰 BalanceAnterior capturado: {Amount:C}", totalInterest);
+                            }
+                            else if (AmexParser.SaldoAnteriorFees.HasValue)
+                            {
+                                totalInterest = AmexParser.SaldoAnteriorFees.Value;
+                                anyInterestFound = true;
+                                _logger?.LogInformation("💰 SaldoAnteriorFees capturado: {Amount:C}", totalInterest);
                             }
                         }
-                        catch (Exception ex)
-                        {
-                            _logger?.LogError(ex, "Error parsing file {file}", path);
-                        }
-                        prog.ProcessedFiles = i + 1;
-                        prog.Percent = (int)((prog.ProcessedFiles / (double)Math.Max(1, prog.TotalFiles)) * 30); // first 30% for parsing
+
+                        allMovimientos.AddRange(movimientos);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError(ex, "❌ Error parseando archivo {Index}/{Total}: {Path}",
+                            i + 1, archivosPaths.Count, tempPath);
                     }
 
-                    prog.Status = "Enriching and predicting";
-                    prog.TotalMovements = movimientosTotales.Count;
-                    prog.ProcessedMovements = 0;
+                    progress.ProcessedFiles = i + 1;
+                    progress.Percent = 5 + (int)(((i + 1) / (double)archivosPaths.Count) * 25);
+                    progress.Status = $"Parseado {i + 1}/{archivosPaths.Count} archivos";
 
-                    // load recognized companies once
-                    var empresasReconocidas = _context.EmpresasReconocidas
-                        .Where(e => !string.IsNullOrWhiteSpace(e.TextoOriginal))
-                        .Select(e => e.TextoOriginal!)
-                        .ToList();
-
-                    var clearbitCache = new ConcurrentDictionary<string, ReadingPdf.Services.ClearbitResult?>();
-
-                    // model file paths for local predictor
-                    var modelPath = Path.Combine(Directory.GetCurrentDirectory(), "models", "account-predictor.zip");
-                    var tokensPath = Path.Combine(Directory.GetCurrentDirectory(), "models", "tokens_by_company.json");
-                    var labelsPath = Path.Combine(Directory.GetCurrentDirectory(), "models", "labels.json");
-
-                    for (int mi = 0; mi < movimientosTotales.Count; mi++)
+                    if ((i + 1) % 10 == 0 || i == archivosPaths.Count - 1)
                     {
-                        var mov = movimientosTotales[mi];
-                        try
+                        _logger?.LogInformation("⏳ Progreso: {Processed}/{Total} archivos ({Percent}%)",
+                            i + 1, archivosPaths.Count, progress.Percent);
+                    }
+                }
+
+                _logger?.LogInformation("📊 Total de movimientos extraídos: {Count}", allMovimientos.Count);
+
+                if (allMovimientos.Count == 0)
+                {
+                    _logger?.LogWarning("⚠️ No se extrajeron movimientos");
+                    progress.Done = true;
+                    progress.Status = "Advertencia: No se encontraron movimientos en los archivos";
+                    progress.Percent = 100;
+                    progress.Movimientos = new List<Movimiento>();
+                    progress.SelectedAccountQB = selectedAccountQB;
+                    return;
+                }
+
+                // ========================================
+                // PASO 2: ENRIQUECER CON CLEARBIT Y PREDECIR
+                // ========================================
+                progress.Status = "Enriqueciendo datos...";
+                progress.TotalMovements = allMovimientos.Count;
+                progress.ProcessedMovements = 0;
+                progress.Percent = 30;
+
+                _logger?.LogInformation("🔍 Iniciando enriquecimiento de {Count} movimientos...", allMovimientos.Count);
+
+                // ✅ USAR SCOPED CONTEXT
+                var empresasReconocidas = await scopedContext.EmpresasReconocidas
+                    .Where(e => !string.IsNullOrWhiteSpace(e.TextoOriginal))
+                    .Select(e => e.TextoOriginal!)
+                    .ToListAsync();
+
+                _logger?.LogInformation("📋 Empresas reconocidas en BD: {Count}", empresasReconocidas.Count);
+
+                var clearbitCache = new ConcurrentDictionary<string, ReadingPdf.Services.ClearbitResult?>();
+
+                for (int mi = 0; mi < allMovimientos.Count; mi++)
+                {
+                    var mov = allMovimientos[mi];
+
+                    try
+                    {
+                        // Detectar empresa
+                        string? detected = null;
+                        if (!string.IsNullOrWhiteSpace(mov.Descripcion))
                         {
-                            // detection by recognized companies
-                            string? detected = null;
-                            if (!string.IsNullOrWhiteSpace(mov.Descripcion))
+                            detected = empresasReconocidas
+                                .FirstOrDefault(e => mov.Descripcion.IndexOf(e, StringComparison.OrdinalIgnoreCase) >= 0);
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(detected))
+                        {
+                            mov.Empresa = detected.ToUpperInvariant();
+                        }
+                        else if (string.IsNullOrWhiteSpace(mov.Empresa))
+                        {
+                            var extracted = ExtractNameFromMemo(mov.Descripcion, bancoId);
+                            if (!string.IsNullOrWhiteSpace(extracted))
+                                mov.Empresa = extracted.ToUpperInvariant();
+                        }
+
+                        // Enriquecimiento Clearbit
+                        if (!string.IsNullOrWhiteSpace(mov.Empresa))
+                        {
+                            var key = mov.Empresa.Trim().ToUpperInvariant();
+
+                            if (!clearbitCache.TryGetValue(key, out var cbResult))
+                            // ✅ USAR SCOPED CLEARBIT SERVICE
                             {
-                                detected = empresasReconocidas
-                                    .FirstOrDefault(e => mov.Descripcion.IndexOf(e, StringComparison.OrdinalIgnoreCase) >= 0);
+                                var domain = await scopedClearbit.FindDomainByNameAsync(mov.Empresa);
+
+                                if (!string.IsNullOrWhiteSpace(domain))
+                                    cbResult = await scopedClearbit.EnrichByDomainAsync(domain);
+                                else
+                                    cbResult = await scopedClearbit.EnrichByDomainAsync(mov.Empresa);
+
+                                clearbitCache[key] = cbResult;
                             }
 
-                            if (!string.IsNullOrWhiteSpace(detected))
+                            if (cbResult != null)
                             {
-                                mov.Empresa = detected.ToUpperInvariant();
+                                mov.EnrichedCompanyDomain = cbResult.Domain;
+                                mov.EnrichedIndustry = cbResult.Industry;
+                                mov.EnrichedSubIndustry = cbResult.SubIndustry;
+                                mov.EnrichedSector = cbResult.Sector;
+                                mov.EnrichedNaics = cbResult.Naics;
+                                mov.EnrichedTags = cbResult.Tags != null ? string.Join(",", cbResult.Tags) : null;
+                                mov.CuentaContableAplicada = MapClearbitToAccount(cbResult, mov.Descripcion);
+
+                                if (string.IsNullOrWhiteSpace(mov.CuentaPredicha))
+                                    mov.CuentaPredicha = mov.CuentaContableAplicada;
+                            }
+                        }
+
+                        // Predicción de cuenta vía API
+                        try
+                        {
+                            var (predictedAccount, confidence) = await PredictAccountViaApi(
+                                mov.Descripcion ?? "",
+                                mov.Empresa ?? ""
+                            );
+
+                            if (!string.IsNullOrWhiteSpace(predictedAccount))
+                            {
+                                mov.CuentaPredicha = predictedAccount;
+                                mov.ScorePrediccion = confidence;
                             }
                             else
                             {
-                                if (string.IsNullOrWhiteSpace(mov.Empresa))
-                                {
-                                    var extracted = ExtractNameFromMemo(mov.Descripcion, BancoId);
-                                    if (!string.IsNullOrWhiteSpace(extracted))
-                                        mov.Empresa = extracted.ToUpperInvariant();
-                                }
-                            }
-
-                            if (!string.IsNullOrWhiteSpace(mov.Empresa))
-                            {
-                                var key = mov.Empresa.Trim().ToUpperInvariant();
-                                if (!clearbitCache.TryGetValue(key, out var cbResult))
-                                {
-                                    var domain = await _clearbit.FindDomainByNameAsync(mov.Empresa);
-                                    if (!string.IsNullOrWhiteSpace(domain))
-                                        cbResult = await _clearbit.EnrichByDomainAsync(domain);
-                                    else
-                                        cbResult = await _clearbit.EnrichByDomainAsync(mov.Empresa);
-
-                                    clearbitCache[key] = cbResult;
-                                }
-
-                                if (cbResult != null)
-                                {
-                                    mov.EnrichedCompanyDomain = cbResult.Domain;
-                                    mov.EnrichedIndustry = cbResult.Industry;
-                                    mov.EnrichedSubIndustry = cbResult.SubIndustry;
-                                    mov.EnrichedSector = cbResult.Sector;
-                                    mov.EnrichedNaics = cbResult.Naics;
-                                    mov.EnrichedTags = cbResult.Tags != null ? string.Join(",", cbResult.Tags) : null;
-
-                                    mov.CuentaContableAplicada = MapClearbitToAccount(cbResult, mov.Descripcion);
-                                    if (string.IsNullOrWhiteSpace(mov.CuentaPredicha))
-                                        mov.CuentaPredicha = mov.CuentaContableAplicada;
-                                }
-                            }
-
-                            // 3) Predicción remota usando PredictionController API, con fallback a predictor local
-                            try
-                            {
-                                bool applied = false;
-
-                                // 3a) Intentar predicción remota primero
-                                try
-                                {
-                                    var remote = await _predictionClient.PredictAccountAsync(mov.Descripcion ?? "", mov.Empresa ?? "", CancellationToken.None);
-                                    if (!string.IsNullOrWhiteSpace(remote))
-                                    {
-                                        mov.CuentaPredicha = remote;
-                                        // remote API doesn't return score; use a sentinel high value to indicate confidence
-                                        mov.ScorePrediccion = 100;
-                                        applied = true;
-                                    }
-                                }
-                                catch (Exception exRemote)
-                                {
-                                    _logger?.LogWarning(exRemote, "Remote prediction API failed for movement {desc}", mov.Descripcion);
-                                }
-
-                                // 3b) Si la remota no arrojó resultado, usar predictor local como fallback
-                                if (!applied)
-                                {
-                                    var planDeCuentas = GetCompanyPlanAccounts(mov.Empresa ?? "");
-                                    var (account, score) = _accountPredictor.PredictForCompany(mov.Descripcion ?? "", mov.Empresa ?? "", planDeCuentas, modelPath, tokensPath, labelsPath);
-                                    if (!string.IsNullOrWhiteSpace(account))
-                                    {
-                                        mov.CuentaPredicha = account;
-                                        // Convert float score in [0..1] to 0..100; keep 0 if unknown
-                                        mov.ScorePrediccion = (int)Math.Round(score * 100);
-                                    }
-                                    else
-                                    {
-                                        if (string.IsNullOrWhiteSpace(mov.CuentaPredicha))
-                                            mov.CuentaPredicha = "SIN PREDICCION";
-                                        mov.ScorePrediccion = 0;
-                                    }
-                                }
-                            }
-                            catch (Exception exPred)
-                            {
-                                _logger?.LogWarning(exPred, "Prediction flow failed for movement {desc}", mov.Descripcion);
                                 if (string.IsNullOrWhiteSpace(mov.CuentaPredicha))
                                     mov.CuentaPredicha = "SIN PREDICCION";
                                 mov.ScorePrediccion = 0;
                             }
-
-                            // compute Debito/Credito
-                            mov.Debito = mov.Monto < 0 ? Math.Abs(mov.Monto) : 0m;
-                            mov.Credito = mov.Monto > 0 ? mov.Monto : 0m;
                         }
-                        catch (Exception ex)
+                        catch (Exception exPred)
                         {
-                            _logger?.LogError(ex, "Error processing movement {idx}", mi);
-                            mov.CuentaPredicha = mov.CuentaPredicha ?? "ERROR";
+                            _logger?.LogWarning(exPred, "⚠️ Predicción falló para movimiento: {Desc}",
+                                mov.Descripcion?.Substring(0, Math.Min(50, mov.Descripcion?.Length ?? 0)));
+
+                            if (string.IsNullOrWhiteSpace(mov.CuentaPredicha))
+                                mov.CuentaPredicha = "SIN PREDICCION";
                             mov.ScorePrediccion = 0;
                         }
 
-                        prog.ProcessedMovements = mi + 1;
-                        var part = 30 + (int)((prog.ProcessedMovements / (double)Math.Max(1, prog.TotalMovements)) * 70);
-                        prog.Percent = Math.Min(100, part);
-                        prog.Status = $"Processed {prog.ProcessedMovements}/{prog.TotalMovements} movimientos";
+                        // Calcular débito/crédito
+                        CalcularDebitoCredito(mov);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError(ex, "❌ Error procesando movimiento {Index}/{Total}",
+                            mi + 1, allMovimientos.Count);
+                        mov.CuentaPredicha = mov.CuentaPredicha ?? "ERROR";
+                        mov.ScorePrediccion = 0;
                     }
 
-                    // store results in in-memory temp table (overwrites the early empty entry)
-                    _tempTables[batchId] = new TempBatch
+                    progress.ProcessedMovements = mi + 1;
+                    progress.Percent = 30 + (int)(((mi + 1) / (double)allMovimientos.Count) * 70);
+                    progress.Status = $"Procesado {mi + 1}/{allMovimientos.Count} movimientos";
+
+                    if ((mi + 1) % 10 == 0 || mi == allMovimientos.Count - 1)
                     {
-                        Items = movimientosTotales.Select(m => CloneMovimientoForTemp(m)).ToList(),
-                        BankId = BancoId,
-                        SelectedCuentaQB = capturedCuentaQB,
-                        InterestCharged = anyInterestFound ? totalInterest : (decimal?)null
+                        _logger?.LogInformation("⏳ Progreso: {Processed}/{Total} movimientos ({Percent}%)",
+                            mi + 1, allMovimientos.Count, progress.Percent);
+                    }
+                }
+
+                // ========================================
+                // PASO 3: GUARDAR RESULTADOS
+                // ========================================
+                progress.Movimientos = allMovimientos;
+                progress.InterestCharged = anyInterestFound ? totalInterest : (decimal?)null;  // ✅ AGREGAR ESTO
+                progress.Done = true;
+                progress.Status = "Completado exitosamente";
+                progress.SelectedAccountQB = selectedAccountQB;
+                progress.Percent = 100;
+
+                _logger?.LogInformation("✅ Batch {BatchId} completado exitosamente:", batchId);
+                _logger?.LogInformation("   📊 Total movimientos: {Count}", allMovimientos.Count);
+                _logger?.LogInformation("   💰 Interest capturado: {Interest:C}", totalInterest);
+                _logger?.LogInformation("   🏦 Cuenta QB: {CuentaQB}", selectedAccountQB);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "💥 Error fatal en procesamiento background para batch {BatchId}", batchId);
+
+                progress.Done = true;
+                progress.Status = "Error: " + ex.Message;
+                progress.Percent = 0;
+                progress.Movimientos = new List<Movimiento>();
+            }
+        }
+
+        [HttpGet]
+        public IActionResult GetProgress(string batchId)
+        {
+            try
+            {
+                _logger?.LogInformation("📊 GetProgress: batchId={BatchId}, Total batches={Count}",
+                    batchId, _batchProgress.Count);
+
+                if (string.IsNullOrWhiteSpace(batchId))
+                {
+                    return BadRequest(new { error = "batchId requerido" });
+                }
+
+                if (!_batchProgress.TryGetValue(batchId, out var progress))
+                {
+                    _logger?.LogWarning("❌ Batch NO encontrado: {BatchId}", batchId);
+                    _logger?.LogWarning("   IDs disponibles: {Ids}",
+                        string.Join(", ", _batchProgress.Keys.Take(5)));
+                    return NotFound(new { error = "Batch no encontrado" });
+                }
+
+                _logger?.LogInformation("✅ Batch encontrado: Percent={Percent}%, Done={Done}, Status={Status}",
+                    progress.Percent, progress.Done, progress.Status);
+
+                return Json(new
+                {
+                    percent = progress.Percent,
+                    status = progress.Status,
+                    done = progress.Done,
+                    processedFiles = progress.ProcessedFiles,
+                    totalFiles = progress.TotalFiles,
+                    processedMovements = progress.ProcessedMovements,
+                    totalMovements = progress.TotalMovements
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "💥 Error en GetProgress");
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+        [HttpGet]
+        public IActionResult ExportCsv(string batchId)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(batchId))
+                {
+                    return BadRequest("BatchId requerido");
+                }
+
+                if (!_batchProgress.TryGetValue(batchId, out var progress))
+                {
+                    return NotFound("Batch no encontrado");
+                }
+
+                var movimientos = progress.Movimientos ?? new List<Movimiento>();
+
+                if (movimientos.Count == 0)
+                {
+                    return NotFound("No hay movimientos para exportar");
+                }
+
+                var csv = new StringBuilder();
+
+                // Header
+                csv.AppendLine("Fecha,Empresa,Descripcion,Debito,Credito,Cuenta,TipoDocumento");
+
+                // Datos
+                foreach (var mov in movimientos)
+                {
+                    // Use computed Debito/Credito fields (works when statement values are all positive)
+                    var debitValue = mov.Debito;
+                    var creditValue = mov.Credito;
+
+                    // Normalizar cuenta (quitar prefijo "Expense:" si existe)
+                    var cuenta = mov.CuentaContableAplicada ?? mov.CuentaPredicha ?? "";
+                    if (cuenta.StartsWith("Expense:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        cuenta = cuenta.Substring("Expense:".Length).Trim();
+                    }
+
+                    // Formatear descripción (agregar comillas y escapar comillas internas)
+                    var descripcion = mov.Descripcion ?? "";
+                    if (descripcion.Contains(",") || descripcion.Contains("\"") || descripcion.Contains("\n"))
+                    {
+                        descripcion = "\"" + descripcion.Replace("\"", "\"\"") + "\"";
+                    }
+
+                    // Formatear empresa (agregar comillas si contiene comas)
+                    var empresa = mov.Empresa ?? "";
+                    if (empresa.Contains(",") || empresa.Contains("\""))
+                    {
+                        empresa = "\"" + empresa.Replace("\"", "\"\"") + "\"";
+                    }
+
+                    // Construir línea
+                    var line = string.Join(",", new[]
+                    {
+                mov.Fecha.ToString("M/d/yyyy"),                          // Fecha
+                empresa,                                                  // Empresa
+                descripcion,                                              // Descripcion
+                debitValue > 0 ? debitValue.ToString("0.##") : "0",     // Debito
+                creditValue > 0 ? creditValue.ToString("0.##") : "0",   // Credito
+                cuenta,                                                   // Cuenta
+                mov.TipoDocumento ?? ""                                  // TipoDocumento
+            });
+
+                    csv.AppendLine(line);
+                }
+
+                var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+                var fileName = $"Transacciones_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+
+                _logger?.LogInformation("✅ Exportando {Count} movimientos en CSV para batch {BatchId}",
+                    movimientos.Count, batchId);
+
+                return File(bytes, "text/csv", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error exportando CSV para batch {BatchId}", batchId);
+                return StatusCode(500, "Error generando el archivo");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GuardarProceso([FromBody] GuardarProcesoRequest request)
+        {
+            try
+            {
+                _logger?.LogInformation("💾 Iniciando guardado de proceso para batch {BatchId}", request?.BatchId);
+
+                if (request == null)
+                    return Json(new { success = false, message = "Request body is required" });
+
+                var errors = new List<string>();
+
+                if (string.IsNullOrWhiteSpace(request.BatchId))
+                    errors.Add("BatchId requerido.");
+
+                if (request.Movimientos == null || request.Movimientos.Count == 0)
+                    errors.Add("Se requiere al menos un movimiento en 'Movimientos'.");
+
+                if (!string.IsNullOrWhiteSpace(request.CuentaQB) && request.CuentaQB.Length > 200)
+                    errors.Add("CuentaQB excede la longitud máxima de 200 caracteres.");
+
+                if (request.Movimientos != null)
+                {
+                    for (int i = 0; i < request.Movimientos.Count; i++)
+                    {
+                        var mov = request.Movimientos[i];
+                        if (mov == null)
+                        {
+                            errors.Add($"Movimiento[{i}]: objeto nulo.");
+                            continue;
+                        }
+
+                        if (string.IsNullOrWhiteSpace(mov.Fecha) || !DateTime.TryParse(mov.Fecha, CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+                        {
+                            errors.Add($"Movimiento[{i}]: Fecha inválida o no parseable ('{mov.Fecha}').");
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(mov.Empresa) && mov.Empresa.Length > 200)
+                            errors.Add($"Movimiento[{i}]: Empresa excede 200 caracteres.");
+
+                        if (!string.IsNullOrWhiteSpace(mov.Descripcion) && mov.Descripcion.Length > 500)
+                            errors.Add($"Movimiento[{i}]: Descripcion excede 500 caracteres.");
+
+                        if (!string.IsNullOrWhiteSpace(mov.CuentaPredicha) && mov.CuentaPredicha.Length > 200)
+                            errors.Add($"Movimiento[{i}]: CuentaPredicha excede 200 caracteres.");
+
+                        if (!string.IsNullOrWhiteSpace(mov.TipoDocumento) && mov.TipoDocumento.Length > 100)
+                            errors.Add($"Movimiento[{i}]: TipoDocumento excede 100 caracteres.");
+
+                        if (mov.Monto < -1000000000m || mov.Monto > 1000000000m)
+                            errors.Add($"Movimiento[{i}]: Monto fuera de rango razonable ('{mov.Monto}').");
+
+                        if (mov.ScorePrediccion < 0 || mov.ScorePrediccion > 100)
+                            errors.Add($"Movimiento[{i}]: ScorePrediccion debe estar entre 0 y 100.");
+                    }
+                }
+
+                if (errors.Count > 0)
+                {
+                    _logger?.LogWarning("❌ GuardarProceso: validation failed for batch {BatchId} with {ErrorCount} errors", request.BatchId, errors.Count);
+                    return Json(new { success = false, message = "Validation failed", errors = errors });
+                }
+
+                if (!Guid.TryParse(request.BatchId, out var procesoGuid))
+                {
+                    _logger?.LogWarning("❌ GuardarProceso: BatchId no es un GUID válido: {BatchId}", request.BatchId);
+                    return Json(new { success = false, message = "BatchId inválido" });
+                }
+
+                // Clean / limit company name for the generated process name
+                var empresaNombre = request.EmpresaNombre ?? "Empresa";
+                empresaNombre = System.Text.RegularExpressions.Regex.Replace(empresaNombre, @"[^\w\s-]", "").Trim();
+                if (empresaNombre.Length > 30)
+                    empresaNombre = empresaNombre.Substring(0, 30);
+
+                var bancoNombre = request.Banco ?? "AMEX";
+                var fechaFormateada = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                var nombreProcesoGenerado = $"{empresaNombre}-{bancoNombre}-{fechaFormateada}";
+
+                // Try to find an existing proceso and update it instead of creating a new one.
+                var existingProceso = await _context.Procesos
+                    .Include(p => p.Movimientos)
+                    .FirstOrDefaultAsync(p => p.Id == procesoGuid);
+
+                if (existingProceso != null)
+                {
+                    // Update relevant fields but DO NOT create a new Proceso row.
+                    _logger?.LogInformation("🔁 Actualizando proceso existente {ProcesoId} en lugar de crear uno nuevo", existingProceso.Id);
+
+                    existingProceso.Banco = request.Banco ?? existingProceso.Banco;
+                    existingProceso.CuentaQBSeleccionada = request.CuentaQB ?? existingProceso.CuentaQBSeleccionada;
+                    existingProceso.SaldoInicial = request.SaldoInicial ?? existingProceso.SaldoInicial;
+                    // Optionally update the display name if caller provided EmpresaNombre (keeps backwards compatibility).
+                    if (!string.IsNullOrWhiteSpace(request.EmpresaNombre))
+                        existingProceso.Nombre = nombreProcesoGenerado;
+
+                    existingProceso.FechaCreacion = existingProceso.FechaCreacion == default ? DateTime.UtcNow : existingProceso.FechaCreacion;
+                    existingProceso.Estado = existingProceso.Estado ?? "Abierto";
+
+                    // Remove existing MovimientoProceso rows for this proceso to replace with the new snapshot.
+                    var toRemove = _context.MovimientosProceso.Where(m => m.ProcesoId == existingProceso.Id);
+                    _context.MovimientosProceso.RemoveRange(toRemove);
+
+                    // Add new MovimientoProceso snapshot rows
+                    foreach (var mov in request.Movimientos ?? new List<MovimientoDto>())
+                    {
+                        var fechaParsed = ParseFecha(mov.Fecha);
+
+                        var movimientoProceso = new MovimientoProceso
+                        {
+                            ProcesoId = existingProceso.Id,
+                            Fecha = fechaParsed,
+                            Empresa = mov.Empresa ?? "",
+                            EmpresaOriginal = mov.Empresa ?? "",
+                            Descripcion = mov.Descripcion ?? "",
+                            Monto = mov.Monto,
+                            CuentaPredicha = mov.CuentaPredicha ?? "",
+                            CuentaAplicada = !string.IsNullOrWhiteSpace(mov.CuentaAplicada) ? mov.CuentaAplicada : (mov.CuentaPredicha ?? ""),
+                            ScorePrediccion = mov.ScorePrediccion,
+                            TipoDocumento = mov.TipoDocumento ?? "",
+                            RegistradoQB = !string.IsNullOrWhiteSpace(mov.TxnIdQuickBooks),
+                            QuickBooksTxnId = mov.TxnIdQuickBooks ?? null
+                        };
+
+                        _context.MovimientosProceso.Add(movimientoProceso);
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                    _logger?.LogInformation("✅ Proceso actualizado exitosamente: {ProcesoId} con {Count} movimientos",
+                        existingProceso.Id, request.Movimientos?.Count ?? 0);
+
+                    return Json(new { success = true, procesoId = existingProceso.Id.ToString(), updated = true });
+                }
+                else
+                {
+                    // Create new proceso (original behavior)
+                    var newProceso = new Proceso
+                    {
+                        Id = procesoGuid,
+                        Nombre = nombreProcesoGenerado,
+                        Banco = request.Banco ?? "AMEX",
+                        CuentaQBSeleccionada = request.CuentaQB ?? "",
+                        SaldoInicial = request.SaldoInicial ?? 0m,
+                        FechaCreacion = DateTime.UtcNow,
+                        Estado = "Abierto"
                     };
 
-                    prog.Status = "Done";
-                    prog.Percent = 100;
-                    prog.Done = true;
-                }
-                catch (Exception ex)
-                {
-                    _logger?.LogError(ex, "Background processing failed for batch {batch}", batchId);
-                    _progress.TryGetValue(batchId, out var pFail);
-                    if (pFail != null)
+                    _context.Procesos.Add(newProceso);
+
+                    foreach (var mov in request.Movimientos ?? new List<MovimientoDto>())
                     {
-                        pFail.Status = "Error";
-                        pFail.Done = true;
-                    }
-                }
-                finally
-                {
-                    // cleanup temp files
-                    try
-                    {
-                        foreach (var t in tempPaths)
+                        var fechaParsed = ParseFecha(mov.Fecha);
+
+                        var movimientoProceso = new MovimientoProceso
                         {
-                            try { System.IO.File.Delete(t); } catch { }
-                        }
+                            ProcesoId = newProceso.Id,
+                            Fecha = fechaParsed,
+                            Empresa = mov.Empresa ?? "",
+                            EmpresaOriginal = mov.Empresa ?? "",
+                            Descripcion = mov.Descripcion ?? "",
+                            Monto = mov.Monto,
+                            CuentaPredicha = mov.CuentaPredicha ?? "",
+                            CuentaAplicada = !string.IsNullOrWhiteSpace(mov.CuentaAplicada) ? mov.CuentaAplicada : (mov.CuentaPredicha ?? ""),
+                            ScorePrediccion = mov.ScorePrediccion,
+                            TipoDocumento = mov.TipoDocumento ?? "",
+                            RegistradoQB = !string.IsNullOrWhiteSpace(mov.TxnIdQuickBooks),
+                            QuickBooksTxnId = mov.TxnIdQuickBooks ?? null
+                        };
+
+                        _context.MovimientosProceso.Add(movimientoProceso);
                     }
-                    catch { }
+
+                    await _context.SaveChangesAsync();
+
+                    _logger?.LogInformation("✅ Proceso guardado exitosamente: {ProcesoId} con {Count} movimientos",
+                        newProceso.Id, request.Movimientos?.Count ?? 0);
+
+                    return Json(new { success = true, procesoId = newProceso.Id.ToString(), updated = false });
                 }
-            });
-
-            // return batch id to client so it can poll
-            return Json(new { batchId = batchId });
-        }
-
-        [HttpGet]
-        public IActionResult GetProgress(Guid batchId)
-        {
-            if (!_progress.TryGetValue(batchId, out var progInfo))
-                return NotFound(new { error = "Batch not found" });
-
-            return Json(new
-            {
-                percent = progInfo.Percent,
-                status = progInfo.Status,
-                done = progInfo.Done,
-                processedFiles = progInfo.ProcessedFiles,
-                totalFiles = progInfo.TotalFiles,
-                processedMovements = progInfo.ProcessedMovements,
-                totalMovements = progInfo.TotalMovements
-            });
-        }
-
-        public static List<Movimiento> GetItems(Guid batchId)
-        {
-            if (_tempTables.TryGetValue(batchId, out var tempBatch))
-            {
-                return tempBatch.Items;
-            }
-
-            return new List<Movimiento>();
-        }
-
-        public class SyncPlanDto
-        {
-            public string NombreEmpresa { get; set; } = "";
-            public List<string> Cuentas { get; set; } = new List<string>();
-        }
-
-        [HttpPost]
-        [IgnoreAntiforgeryToken]
-        public async Task<IActionResult> SyncPlanCuentas([FromBody] SyncPlanDto dto)
-        {
-            if (dto == null || string.IsNullOrWhiteSpace(dto.NombreEmpresa))
-                return BadRequest(new { success = false, message = "Invalid input" });
-
-            try
-            {
-                using var http = new HttpClient();
-                http.DefaultRequestHeaders.ExpectContinue = false;
-                http.DefaultRequestVersion = new Version(1,1);
-                http.Timeout = TimeSpan.FromSeconds(30);
-
-
-
-                // 1) Registrar u obtener empresa en la ClasificacionApi
-                Console.WriteLine("URL => " + $"{_clasificacionApiBase}/api/Clasificacion/registrar-empresa");
-
-                var req1 = JsonConvert.SerializeObject(new { nombre = dto.NombreEmpresa });
-                var res1 = await http.PostAsync($"{_clasificacionApiBase}/api/Clasificacion/registrar-empresa",
-                    new StringContent(req1, Encoding.UTF8, "application/json"));
-
-//                Console.WriteLine("URL => " + $"{_clasificacionApiBase}/api/Clasificacion/registrar-empresa");
-                Console.WriteLine("JSON => " + req1);
-
-
-
-                if (!res1.IsSuccessStatusCode)
-                    return StatusCode((int)res1.StatusCode, new { success = false, message = "Failed obtaining empresa from ClasificacionApi" });
-
-                var c1 = await res1.Content.ReadAsStringAsync();
-                int empresaId = 0;
-                try
-                {
-                    var dyn = JsonConvert.DeserializeObject<dynamic>(c1);
-                    empresaId = (int)(dyn?.empresaId ?? dyn?.EmpresaId ?? 0);
-                }
-                catch
-                {
-                    int.TryParse(c1, out empresaId);
-                }
-
-                if (empresaId == 0)
-                    return StatusCode(500, new { success = false, message = "Invalid empresaId returned by ClasificacionApi" });
-
-                // 2) Sincronizar plan de cuentas
-                var req2 = JsonConvert.SerializeObject(new { empresaId = empresaId, cuentas = dto.Cuentas ?? new List<string>() });
-                var res2 = await http.PostAsync($"{_clasificacionApiBase}/api/plan/sincronizar",
-                    new StringContent(req2, Encoding.UTF8, "application/json"));
-
-                if (!res2.IsSuccessStatusCode)
-                    return StatusCode((int)res2.StatusCode, new { success = false, message = "Failed syncing plan in ClasificacionApi" });
-
-                var c2 = await res2.Content.ReadAsStringAsync();
-                int nuevos = 0;
-                try
-                {
-                    var dyn2 = JsonConvert.DeserializeObject<dynamic>(c2);
-                    nuevos = (int)(dyn2?.nuevos ?? dyn2?.Nuevos ?? 0);
-                }
-                catch
-                {
-                    int.TryParse(c2, out nuevos);
-                }
-
-                return Ok(new { success = true, empresaId = empresaId, nuevos = nuevos });
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "SyncPlanCuentas failed");
-                return StatusCode(500, new { success = false, message = ex.Message });
+                _logger?.LogError(ex, "❌ Error guardando proceso");
+                return Json(new { success = false, message = ex.Message });
             }
         }
 
-        [HttpPost]
-        public IActionResult PredictCuentaPorEmpresa([FromBody] PredictRequest req, [FromServices] AccountPredictionService predictor)
+        // Método auxiliar para parsear fechas
+        private DateTime ParseFecha(string fechaStr)
         {
-            if (req == null || string.IsNullOrWhiteSpace(req.Memo) || string.IsNullOrWhiteSpace(req.Company))
-                return BadRequest(new { success = false, message = "Invalid request" });
-
-            // Obtén el plan de cuentas de la empresa desde la BD.
-            // Ajusta este bloque a la estructura real de tu tabla Empresa / plan de cuentas.
-            List<string> planDeCuentas = GetCompanyPlanAccounts(req.Company);
-
-            // Rutas de archivos del modelo (colócalas donde quieras en tu proyecto)
-            var modelPath = Path.Combine(Directory.GetCurrentDirectory(), "models", "account-predictor.zip");
-            var tokensPath = Path.Combine(Directory.GetCurrentDirectory(), "models", "tokens_by_company.json");
-            var labelsPath = Path.Combine(Directory.GetCurrentDirectory(), "models", "labels.json");
-
             try
             {
-                var (account, score) = predictor.PredictForCompany(req.Memo, req.Company, planDeCuentas, modelPath, tokensPath, labelsPath);
-                return Ok(new { success = true, cuenta = account, score = score });
+                return DateTime.Parse(fechaStr);
             }
-            catch (Exception ex)
+            catch
             {
-                _logger?.LogError(ex, "PredictCuentaPorEmpresa failed");
-                return StatusCode(500, new { success = false, message = "Error predicting" });
+                return DateTime.UtcNow;
             }
         }
 
-        public class PredictRequest
+        // DTO para el request
+        public class GuardarProcesoRequest
         {
-            public string Memo { get; set; } = "";
-            public string Company { get; set; } = "";
+            public string BatchId { get; set; } = "";
+
+            public string? Banco { get; set; }
+            public string? CuentaQB { get; set; }
+            public decimal? SaldoInicial { get; set; }
+            public List<MovimientoDto>? Movimientos { get; set; }
+            // ✅ AGREGAR ESTA LÍNEA:
+            public string? EmpresaNombre { get; set; }  // ← Nombre de la empresa QB
         }
 
-        // Example helper — adapt to your schema:
-        private List<string> GetCompanyPlanAccounts(string company)
+        public class MovimientoDto
         {
-            // TODO: reemplaza esto por la consulta real de tu tabla que contiene el plan de cuentas por empresa.
-            // Ejemplo simple: buscar en _context.Empresas o en una tabla de cuentas asociadas y devolver nombres o códigos.
-            // Por ahora devolvemos un conjunto de cuentas de ejemplo.
-            return new List<string>
-            {
-                "Expenses:Restaurants",
-                "Expenses:Gasoline",
-                "Expenses:Software",
-                "Expenses:Travel",
-                "Expenses:Uncategorized"
-            };
-        }
-        // C#
-        public class PredItem
-        {
-            [ColumnName("Label")]
-            public string Label { get; set; } = ""; // dummy value for prediction
-
-            public string Memo { get; set; } = "";
-            public string Company { get; set; } = "";
-            public float SimilarWordsCount { get; set; }
+            public string Fecha { get; set; } = "";
+            public string? Empresa { get; set; }
+            public string? Descripcion { get; set; }
+            public decimal Monto { get; set; }
+            public decimal Debito { get; set; }
+            public decimal Credito { get; set; }
+            public string? CuentaPredicha { get; set; }
+            public string? CuentaAplicada { get; set; }
+            public string? TipoDocumento { get; set; }
+            public string? TxnIdQuickBooks { get; set; }
+            public int ScorePrediccion { get; set; }
         }
 
-        // GET: /PdfNew/ExportCsv?batchId={guid}
-        [HttpGet]
-        public IActionResult ExportCsv(Guid batchId)
-        {
-            if (!_tempTables.TryGetValue(batchId, out var batch) || batch?.Items == null)
-                return NotFound();
-
-            var sb = new System.Text.StringBuilder();
-            sb.AppendLine("Fecha,Empresa,Descripcion,Debito,Credito,Cuenta,TipoDocumento");
-
-            foreach (var m in batch.Items)
-            {
-                var fecha = m != null ? m.Fecha.ToString("yyyy-MM-dd") : "";
-                string Escape(string? s)
-                {
-                    if (string.IsNullOrEmpty(s)) return "";
-                    s = s.Replace("\"", "\"\"");
-                    if (s.Contains(',') || s.Contains('\n') || s.Contains('\r') || s.Contains('"'))
-                        return $"\"{s}\"";
-                    return s;
-                }
-
-                var empresa = Escape(m?.Empresa);
-                var desc = Escape(m?.Descripcion);
-                var debito = (m?.Debito ?? 0m).ToString(System.Globalization.CultureInfo.InvariantCulture);
-                var credito = (m?.Credito ?? 0m).ToString(System.Globalization.CultureInfo.InvariantCulture);
-                var cuenta = Escape(m?.CuentaPredicha ?? m?.CuentaContableAplicada);
-                var tipo = Escape(m?.TipoDocumento);
-
-                sb.AppendLine($"{fecha},{empresa},{desc},{debito},{credito},{cuenta},{tipo}");
-            }
-
-            var bytes = System.Text.Encoding.UTF8.GetBytes(sb.ToString());
-            var fileName = $"results_{batchId}.csv";
-            return File(bytes, "text/csv; charset=utf-8", fileName);
-        }
     }
 }
-

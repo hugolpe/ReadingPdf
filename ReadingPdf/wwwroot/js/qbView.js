@@ -1,7 +1,7 @@
-﻿// qbView.js
+// qbView.js
 console.log('qbView.js loaded');
 
-export function attachViewHandlers() {
+function attachViewHandlers() {
     console.log('Attaching view handlers...');
 
     document.querySelectorAll('.qb-view-btn').forEach(btn => {
@@ -79,7 +79,7 @@ async function openQBModal(txnId) {
             console.log('TxnDate:', data.txnDate);
             console.log('PayeeFullName:', data.payeeFullName);
             console.log('AccountFullName:', data.accountFullName);
-            console.log('ExpenseAccountFullName:', data.expenseAccountFullName);
+            console.log('expenseAccount:', data.expenseAccountFullName);
             console.log('Amount:', data.amount);
             console.log('Memo:', data.memo);
             console.log('RefNumber:', data.refNumber);

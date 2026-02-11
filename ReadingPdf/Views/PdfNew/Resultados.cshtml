@@ -1,5 +1,6 @@
 ﻿@model IEnumerable<Movimiento>
 @using System.Linq
+@using Newtonsoft.Json
 
 @{
     var bankName = (ViewBag.BankName as string) ?? "";
@@ -13,40 +14,46 @@
 
 @Html.AntiForgeryToken()
 
-
-
-<h2>Transacciones encontradas</h2>     
-
-
-@if (ViewBag.BatchId != null)
-{
-@*     <a href="/QuickBooks/Export?batchId=@ViewBag.BatchId"
-       class="btn btn-success"
-       target="_blank">
-        <i class="fa fa-download"></i> Exportar a QuickBooks (.IIF)
-    </a> *@
-
-    <a href="/PdfNew/ExportCsv?batchId=@ViewBag.BatchId"
-       class="btn btn-outline-primary"
-       target="_blank" style="margin-left:.5rem;">
-        <i class="fa fa-file-excel"></i> Exportar a Excel (.csv)
-    </a>
-}
-
-<button id="btn-guardar-proceso" class="btn btn-primary">
-    💾 Guardar proceso
-</button>
-
-@if (!string.IsNullOrWhiteSpace(ViewBag.LastSelectedAccountQB))
-{
-    <div class="alert alert-secondary">
-        <strong>Cuenta QuickBooks seleccionada:</strong>
-        @ViewBag.LastSelectedAccountQB
+<div class="row">
+    <div class="col">
+        <h2>Transacciones encontradas</h2>
     </div>
-}
+    <div class="col">
+        @if (ViewBag.BatchId != null)
+        {
+            <text>Batch: @ViewBag.BatchId</text>
+        }
+    </div>
+</div>
 
+<div class="row">
+    <div class="col-6">
+        @if (!string.IsNullOrWhiteSpace(ViewBag.SelectedCuentaQB))
+        {
+            <div class="alert alert-info">
+                <strong>Cuenta QuickBooks seleccionada:</strong>
+                @ViewBag.SelectedCuentaQB
+            </div>
+        }
+    </div>
+    <div class="col-3">
+        @if (ViewBag.BatchId != null)
+        {
+            <a href="/PdfNew/ExportCsv?batchId=@ViewBag.BatchId"
+               class="btn btn-outline-primary"
+               target="_blank" style="margin-left:.5rem;">
+                <i class="fa fa-file-excel"></i> Exportar a Excel (.csv)
+            </a>
+        }
+    </div>
+    <div class="col-3">
+        <button id="btn-guardar-proceso" class="btn btn-primary">
+            💾 Guardar proceso
+        </button>
+    </div>
+</div>
 
-<p>
+<p style="font-size: 13px; height: 20px; font-family: 'Open Sans Condensed', sans-serif;">
     @if (!string.IsNullOrEmpty(bankName))
     {
         <text>Banco: @bankName — </text>
@@ -55,8 +62,8 @@
 
     @* Nuevo: resumen dinámico de selección (conteo + suma de montos) *@
     <span id="selected-summary" style="margin-left:1rem;">
-        Seleccionados: <strong id="selected-count">0</strong> — 
-       @*  Suma seleccionada: <strong id="selected-sum">@((0m).ToString("C"))</strong> *@
+        Seleccionados: <strong id="selected-count">0</strong> —
+        Suma seleccionada: <strong id="selected-sum">@((0m).ToString("C"))</strong>
     </span>
 
     @* Mostrar saldo anterior y restante (según Interest Charged) *@
@@ -70,15 +77,8 @@
 
     @* Toggle para mostrar/ocultar transacciones desmarcadas *@
     <label style="margin-left:1rem;">
-        <input type="checkbox" id="show-unchecked" checked /> Mostrar desmarcadas
+        <input type="checkbox" id="show-unchecked" checked /> Ver Todas
     </label>
-</p>
-
-<p>
-    @if (ViewBag.BatchId != null)
-    {
-        <text>Batch: @ViewBag.BatchId</text>
-    }
 </p>
 
 @{
@@ -96,31 +96,136 @@
     decimal? saldo_RestaPosYNegAbs = interestCharged.HasValue ? interestCharged.Value - positiveTotal - negativeTotalAbsolute : null;
 
     // 2) Restar interest menos (suma neta de movimientos = positivos + negativos (con signo)):
-    decimal? saldo_RestaNeto = interestCharged.HasValue ? interestCharged.Value - netSum : null;
-}
-
-@if (!string.IsNullOrWhiteSpace(selectedCuentaQB))
-{
-    <div class="alert alert-info py-2">
-        Cuenta QuickBooks seleccionada: <strong>@selectedCuentaQB</strong>
-    </div>
+    decimal? saldo_RestaNeto = interestCharged.HasValue ? interestCharged.Value + netSum : null;
 }
 
 @section Styles {
     <style>
+        /* Menú Contextual */
+        .context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 10000;
+            min-width: 200px;
+        }
+
+            .context-menu ul {
+                list-style: none;
+                margin: 0;
+                padding: 5px 0;
+            }
+
+            .context-menu li {
+                padding: 8px 15px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                transition: background-color 0.2s;
+            }
+
+                .context-menu li:hover {
+                    background-color: #f0f0f0;
+                }
+
+                .context-menu li.divider {
+                    height: 1px;
+                    background-color: #e0e0e0;
+                    margin: 5px 0;
+                    padding: 0;
+                    cursor: default;
+                }
+
+                    .context-menu li.divider:hover {
+                        background-color: #e0e0e0;
+                    }
+
+                .context-menu li i {
+                    width: 16px;
+                    text-align: center;
+                    color: #666;
+                }
+
+        /* Make date column as small as practical */
+        #resultados-table td.date-cell,
+        #resultados-table thead th[data-type="date"] {
+            width: 4% !important; /* match the colgroup narrow width */
+            white-space: nowrap;
+            padding: .15rem .35rem;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* If you want even tighter visual, uncomment the next rule */
+        /* #resultados-table td.date-cell { font-size:0.8rem; padding:.1rem .25rem; } */
+
+        /* Highlight de la fila cuando se hace click derecho */
+        #resultados-table tbody tr.context-active {
+            background-color: #e3f2fd !important;
+        }
+
+        .btn-elimina {
+            display: inline-block;
+            font-weight: 400;
+            color: #212529;
+            text-align: center;
+            vertical-align: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            /* user-select: none; */
+            /* background-color: transparent; */
+            border: 1px solid transparent;
+            padding: 0rem 0.5rem;
+            font-size: 1rem;
+            line-height: 1.3;
+            border-radius: .25rem;
+            transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out
+        }
         /* Mantener en verde solo las filas originalmente marcadas (has-empresa).
-           No aplicar color de fondo a filas modificadas ni a seleccionadas según petición. */
-        #resultados-table tbody tr.has-empresa td { background-color: #c1e9c7 !important; }
+                           No aplicar color de fondo a filas modificadas ni a seleccionadas según petición. */
+        #resultados-table tbody tr.has-empresa td {
+            background-color: #c1e9c7 !important;
+        }
 
         /* small visual hint for sortable headers */
-        #resultados-table thead th.sortable { cursor: pointer; user-select: none; }
-        #resultados-table thead th.sortable:after { content: " ⇅"; font-size: 0.8em; color: #666; margin-left: .25rem; }
-        #resultados-table thead th.sortable.asc:after { content: " ↑"; }
-        #resultados-table thead th.sortable.desc:after { content: " ↓"; }
+        #resultados-table thead th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
 
-        .registrar-btn { margin-left: .5rem; }
-        .registrar-status { margin-left: .5rem; font-size: .9em; }
-        .spinner-border-sm { width: 1rem; height: 1rem; border-width: .12em; }
+            #resultados-table thead th.sortable:after {
+                content: " ⇅";
+                font-size: 0.8em;
+                color: #666;
+                margin-left: .25rem;
+            }
+
+            #resultados-table thead th.sortable.asc:after {
+                content: " ↑";
+            }
+
+            #resultados-table thead th.sortable.desc:after {
+                content: " ↓";
+            }
+
+        .registrar-btn {
+            margin-left: .5rem;
+        }
+
+        .registrar-status {
+            margin-left: .5rem;
+            font-size: .9em;
+        }
+
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: .12em;
+        }
 
         .icon-btn {
             padding: .25rem .4rem;
@@ -180,7 +285,7 @@
         }
 
         .txn-id-cell {
-            font-family: 'Courier New', monospace;
+            font-family: inherit;
             font-size: 0.85rem;
             color: #6c757d;
         }
@@ -190,22 +295,105 @@
             cursor: not-allowed;
         }
 
+        .btn-success {
+            color: #fff;
+            background-color: #28a745;
+            border-color: #28a745
+        }
+
+            .btn-success:hover {
+                color: #fff;
+                background-color: #218838;
+                border-color: #1e7e34
+            }
+
+            .btn-success.focus, .btn-success:focus {
+                box-shadow: 0 0 0 .2rem rgba(72,180,97,.5)
+            }
+
+            .btn-success.disabled, .btn-success:disabled {
+                color: #fff;
+                background-color: #28a745;
+                border-color: #28a745
+            }
+
+            .btn-success:not(:disabled):not(.disabled).active, .btn-success:not(:disabled):not(.disabled):active, .show > .btn-success.dropdown-toggle {
+                color: #fff;
+                background-color: #1e7e34;
+                border-color: #1c7430
+            }
+
+                .btn-success:not(:disabled):not(.disabled).active:focus, .btn-success:not(:disabled):not(.disabled):active:focus, .show > .btn-success.dropdown-toggle:focus {
+                    box-shadow: 0 0 0 .2rem rgba(72,180,97,.5)
+                }
+
+        /* ✅ NUEVO: Badge para tipo de documento */
+        .tipo-documento-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 0.25rem;
+            text-transform: uppercase;
+        }
+
+        .tipo-deposit {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .tipo-check {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .tipo-charge {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .tipo-credit {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
     </style>
 }
 
 <style>
-    #resultados-table { width: 100%; table-layout: fixed; font-family: 'Open Sans Condensed', sans-serif; font-size: 14px; }
-    #resultados-table .descripcion-cell { white-space: normal; overflow: hidden; text-overflow: ellipsis; }
-    /* add data-original-fromtable on inputs so JS can keep only originally-marked rows green */
-    #resultados-table .empresa-input { width: calc(100% - 90px); box-sizing: border-box; font-family: inherit; font-size: inherit; padding: .25rem .5rem; display: inline-block; vertical-align: middle; }
-    /* checkbox column */
-    #resultados-table td.select-col, #resultados-table th.select-col { text-align: center; vertical-align: middle; width: 3%; }
+    #resultados-table {
+        width: 100%;
+        table-layout: fixed;
+        font-family: 'Open Sans Condensed', sans-serif;
+        font-size: 14px;
+    }
+
+        #resultados-table .descripcion-cell {
+            white-space: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        /* add data-original-fromtable on inputs so JS can keep only originally-marked rows green */
+        #resultados-table .empresa-input {
+            width: calc(100% - 90px);
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: inherit;
+            padding: .25rem .5rem;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        /* checkbox column */
+        #resultados-table td.select-col, #resultados-table th.select-col {
+            text-align: center;
+            vertical-align: middle;
+            width: 3%;
+        }
 </style>
 <!--- ESTA ES LA TABLA QUE MUESTRA LAS TRANSACCIONES CONVERTIDAS -------------------------------------------->
-<table class="table" id="resultados-table"> 
+<table class="table" id="resultados-table">
     <colgroup>
-        <col style="width:3%" />    <!-- Checkbox -->
-        <col style="width:10%" />   <!-- Fecha -->
+        <col style="width:2%" />    <!-- Checkbox -->
+        <col style="width:6%" />    <!-- Fecha (reducida al mínimo práctico) -->
         <col style="width:20%" />   <!-- Empresa -->
         <col style="width:30%" />   <!-- Descripción -->
         <col style="width:10%" />   <!-- Débito -->
@@ -216,18 +404,6 @@
         <col style="width:10%" />   <!-- Accion -->
     </colgroup>
 
- @*    <thead>
-        <tr>
-            <th class="select-col"><input type="checkbox" id="select-all" title="Seleccionar todo" /></th>
-            <th class="sortable" data-col="1" data-type="date">Fecha</th>
-            <th class="sortable" data-col="2" data-type="string">Empresa</th>
-            <th class="sortable" data-col="3" data-type="string">Descripción</th>
-            <th class="sortable" data-col="4" data-type="number">Débito</th>
-            <th class="sortable" data-col="5" data-type="number">Crédito</th>
-            <th class="sortable" data-col="6" data-type="string">Cuenta</th>
-            <th class="sortable" data-col="7" data-type="string">Tipo Documento</th>
-        </tr>
-    </thead> *@
 
     <thead>
         <tr>
@@ -251,29 +427,29 @@
             var recognized = (ViewBag.RecognizedCompanies as List<string>) ?? new List<string>();
         }
         @foreach (var mov in Model)
-{
-    var isFromTable = !string.IsNullOrWhiteSpace(mov.Empresa)
-                      && recognized.Any(r => string.Equals(r, mov.Empresa, StringComparison.OrdinalIgnoreCase));
+        {
+            var isFromTable = !string.IsNullOrWhiteSpace(mov.Empresa)
+            && recognized.Any(r => string.Equals(r, mov.Empresa, StringComparison.OrdinalIgnoreCase));
 
-    var combinedOriginal = mov.Empresa ?? (mov.EmpresaExtraida?.ToString()) ?? "";
-    var cssClass = isFromTable ? "has-empresa" : "";
+            var combinedOriginal = mov.Empresa ?? (mov.EmpresaExtraida?.ToString()) ?? "";
+            var cssClass = isFromTable ? "has-empresa" : "";
 
-    // debit if negative, credit if positive (assumes sign on Monto)
-    var debitValue = mov.Monto < 0 ? Math.Abs(mov.Monto) : 0m;
-    var creditValue = mov.Monto > 0 ? mov.Monto : 0m;
+            // debit if negative, credit if positive (assumes sign on Monto)
+            var debitValue = mov.Monto < 0 ? Math.Abs(mov.Monto) : 0m;
+            var creditValue = mov.Monto > 0 ? mov.Monto : 0m;
 
-    // Mostrar la cuenta aplicada (si existe) y si no usar la cuenta predicha.
-    // Además normalizar para quitar prefijo "Expense:" si está presente.
-    var cuentaPred = mov.CuentaPredicha ?? "";
-    var cuentaApplied = mov.CuentaContableAplicada ?? "";
-    string NormalizeCuenta(string s)
-    {
-        if (string.IsNullOrWhiteSpace(s)) return "";
-        return s.StartsWith("Expense:", StringComparison.OrdinalIgnoreCase)
-            ? s.Substring("Expense:".Length).Trim()
-            : s;
-    }
-    var displayCuenta = !string.IsNullOrWhiteSpace(cuentaApplied) ? NormalizeCuenta(cuentaApplied) : NormalizeCuenta(cuentaPred);
+            // Mostrar la cuenta aplicada (si existe) y si no usar la cuenta predicha.
+            // Además normalizar para quitar prefijo "Expense:" si está presente.
+            var cuentaPred = mov.CuentaPredicha ?? "";
+            var cuentaApplied = mov.CuentaContableAplicada ?? "";
+            string NormalizeCuenta(string s)
+            {
+                if (string.IsNullOrWhiteSpace(s)) return "";
+                return s.StartsWith("Expense:", StringComparison.OrdinalIgnoreCase)
+                ? s.Substring("Expense:".Length).Trim()
+                : s;
+            }
+            var displayCuenta = !string.IsNullOrWhiteSpace(cuentaApplied) ? NormalizeCuenta(cuentaApplied) : NormalizeCuenta(cuentaPred);
 
             <tr data-index="@i"
                 data-from-table="@(isFromTable ? "true" : "false")"
@@ -311,14 +487,6 @@
                                 <i class="fas fa-file-invoice-dollar"></i>
                             </button>
 
-                            <!-- Limpiar empresa -->
-                            <button type="button"
-                                    class="btn btn-outline-secondary btn-sm icon-btn limpiar-btn"
-                                    data-index="@i"
-                                    title="Limpiar empresa">
-                                <i class="fas fa-eraser"></i>
-                            </button>
-
                             <span class="registrar-status" data-index="@i"></span>
                         </div>
                     </div>
@@ -335,10 +503,17 @@
                 </td>
 
                 <td data-sort-value="@(mov.CuentaPredicha ?? "")">@displayCuenta</td>
-                <td data-sort-value="@(mov.TipoDocumento ?? "")">@mov.TipoDocumento</td>
+
+                <!-- ✅ MODIFICADO: Celda de Tipo Documento con badge dinámico -->
+                <td data-sort-value="@(mov.TipoDocumento ?? "")"
+                    data-tipo-calculado="">
+                    <span class="tipo-documento-display">@(mov.TipoDocumento ?? "CreditCardCharge")</span>
+                </td>
 
                 <!-- Nueva celda para TxnID -->
-                <td class="txn-id-cell"></td>
+                <td class="txn-id-cell" data-quickbooks-txnid="@(mov.QuickBooksTxnId ?? "")">
+                    @(mov.QuickBooksTxnId ?? "")
+                </td>
 
                 <!-- Botón Ver / Editar -->
                 <td>
@@ -348,8 +523,8 @@
                 </td>
             </tr>
 
-    i++;
-}
+            i++;
+        }
     </tbody>
 </table>
 
@@ -380,13 +555,37 @@
         </div>
     </div>
 </div>
-
+<!-- Menú Contextual -->
+<div id="context-menu" class="context-menu" style="display: none;">
+    <ul>
+        <li data-action="register">
+            <i class="fas fa-file-invoice-Dollar"></i> Registrar en QuickBooks
+        </li>
+        <li data-action="view">
+            <i class="fas fa-eye"></i> Ver detalles
+        </li>
+        <li data-action="edit">
+            <i class="fas fa-pen"></i> Editar empresa
+        </li>
+        <li data-action="copy-description">
+            <i class="fas fa-copy"></i> Copiar descripción
+        </li>
+        <li class="divider"></li>
+        <li data-action="select">
+            <i class="fas fa-check-square"></i> Seleccionar
+        </li>
+        <li data-action="deselect">
+            <i class="fas fa-square"></i> Deseleccionar
+        </li>
+    </ul>
+</div>
 
 @{
     // Build account statistics to drive dropdown suggestions (server-side aggregation)
     var accountStats = Model?
         .GroupBy(m => string.IsNullOrWhiteSpace(m?.CuentaPredicha) ? (m?.CuentaContableAplicada ?? "SIN PREDICCION") : m!.CuentaPredicha!)
-        .Select(g => new {
+        .Select(g => new
+        {
             Account = g.Key ?? "",
             Count = g.Count(),
             AvgScore = g.Any(x => x != null) ? (int)Math.Round(g.Average(x => x?.ScorePrediccion ?? 0)) : 0
@@ -401,17 +600,380 @@
 }
 
 <div id="server-data"
-     data-interest='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.LastInterestCharged))'
-     data-selected-qb='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Convert.ToString(ViewBag.SelectedCuentaQB) ?? ""))'
-     data-account-stats='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(accountStats))'
-     data-batch-id='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.BatchId?.ToString() ?? ""))'
-     data-currency='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(System.Globalization.CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol))'
-     data-bankname='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.BankName ?? ""))'
+     data-interest='@Html.Raw(JsonConvert.SerializeObject(ViewBag.LastInterestCharged))'
+     data-selected-qb='@Html.Raw(JsonConvert.SerializeObject(Convert.ToString(ViewBag.SelectedCuentaQB) ?? ""))'
+     data-account-stats='@Html.Raw(JsonConvert.SerializeObject(accountStats))'
+     data-batch-id='@Html.Raw(JsonConvert.SerializeObject(ViewBag.BatchId?.ToString() ?? ""))'
+     data-currency='@Html.Raw(JsonConvert.SerializeObject(System.Globalization.CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol))'
+     data-bankname='@Html.Raw(JsonConvert.SerializeObject(ViewBag.BankName ?? ""))'
      style="display:none;"></div>
 
 
-
 @section Scripts {
-    <script type="module" src="~/js/main.js"></script>
+    <script src="https://kit.fontawesome.com/06c58f1ccc.js" crossorigin="anonymous"></script>
+
+    <!-- Centralized server data helper must be first -->
+    <script src="~/js/serverData.js"></script>
+
+    <!-- Cargar archivos JS en orden correcto -->
+    <script src="~/js/utils.js"></script>
+    <script src="~/js/selection.js"></script>
+    <script src="~/js/empresa.js"></script>
+    <script src="~/js/sorting.js"></script>
+    <script src="~/js/register.js"></script>
+    <script src="~/js/qbView.js"></script>
+    <script src="~/js/contextMenu.js"></script>
+    <script src="~/js/obtenerNombres.js"></script>
+    <script src="~/js/main.js"></script>
+
+    <!-- ✅ NUEVO: Script para manejar tipos de documento dinámicos -->
+    <script>
+        // ===============================
+        //  LECTURA CENTRALIZADA DE DATOS DEL SERVIDOR
+        // ===============================
+        const _serverDataEl = document.getElementById('server-data');
+        const _serverBankName = _serverDataEl ? JSON.parse(_serverDataEl.getAttribute('data-bankname') || '""') : "";
+        const _serverBatchId = _serverDataEl ? JSON.parse(_serverDataEl.getAttribute('data-batch-id') || '""') : "";
+        const _serverSelectedAccountQB = _serverDataEl ? JSON.parse(_serverDataEl.getAttribute('data-selected-qb') || '""') : "";
+        const _serverInterestCharged = _serverDataEl ? JSON.parse(_serverDataEl.getAttribute('data-interest') || '0') : 0;
+
+        // ===============================
+        //  FUNCIONES PARA TIPOS DE DOCUMENTO DINÁMICOS
+        // ===============================
+
+        function esAmex() {
+            return (typeof _serverSelectedAccountQB === 'string') &&
+                   /amex|american express/i.test(_serverSelectedAccountQB);
+        }
+
+
+        function determinarTipoDocumento(monto, tipoCuenta) {
+            const esDebito = monto < 0;
+            const esCredito = monto > 0;
+            const isAmex = esAmex();
+
+            console.log(`🔍 [Resultados.cshtml] Determinando tipo:`, {
+                monto,
+                tipoCuenta,
+                esDebito,
+                esCredito,
+                isAmex,
+                cuentaQB: _serverSelectedAccountQB
+            });
+
+            // ===================================
+            // CASO 1: CUENTA BANCARIA (atBank)
+            // ===================================
+            if (tipoCuenta === 'atBank') {
+                if (esCredito) {
+                    console.log('✅ Cuenta Bancaria + Crédito → Deposit');
+                    return 'Deposit';  // Créditos → Depósitos
+                } else {
+                    console.log('✅ Cuenta Bancaria + Débito → Check');
+                    return 'Check';    // Débitos → Cheques
+                }
+            }
+
+            // ===================================
+            // CASO 2: TARJETA DE CRÉDITO (atCreditCard)
+            // ===================================
+            if (tipoCuenta === 'atCreditCard') {
+                // ✅ LÓGICA AMEX: INVERTIDA
+                // Para AMEX, los créditos (positivos) son cargos
+                // y los débitos (negativos) son créditos
+                if (isAmex) {
+                    if (esCredito) {
+                        console.log('✅ AMEX + Crédito → CreditCardCharge (invertido)');
+                        return 'CreditCardCharge';  // Créditos → Cargos (AMEX invertido)
+                    } else {
+                        console.log('✅ AMEX + Débito → CreditCardCredit (invertido)');
+                        return 'CreditCardCredit';  // Débitos → Créditos (AMEX invertido)
+                    }
+                }
+
+                // ✅ LÓGICA ESTÁNDAR (otras tarjetas)
+                // Para tarjetas normales, débitos (negativos) son cargos
+                // y créditos (positivos) son créditos
+                if (esDebito) {
+                    console.log('✅ Tarjeta + Débito → CreditCardCharge');
+                    return 'CreditCardCharge';  // Débitos → Cargos
+                } else {
+                    console.log('✅ Tarjeta + Crédito → CreditCardCredit');
+                    return 'CreditCardCredit';  // Créditos → Créditos
+                }
+            }
+
+            // ===================================
+            // FALLBACK (asume tarjeta de crédito)
+            // ===================================
+            console.warn('⚠️ Tipo de cuenta desconocido, usando fallback');
+            return esDebito ? 'CreditCardCharge' : 'Deposit';
+        }
+
+        /**
+         * ✅ Obtiene la clase CSS para el badge según el tipo de documento
+         * ⚠️ COLORES ACTUALIZADOS SEGÚN LA LÓGICA AMEX
+         */
+        function obtenerClaseTipoDocumento(tipoDocumento) {
+            switch(tipoDocumento) {
+                case 'Deposit':
+                    return 'tipo-documento-badge tipo-deposit';      // Verde
+                case 'Check':
+                    return 'tipo-documento-badge tipo-check';        // Amarillo
+                case 'CreditCardCharge':
+                    return 'tipo-documento-badge tipo-charge';       // Rojo (cargos)
+                case 'CreditCardCredit':
+                    return 'tipo-documento-badge tipo-credit';       // Azul (créditos)
+                default:
+                    return 'tipo-documento-badge';
+            }
+        }
+
+        /**
+         * ✅ Actualiza los tipos de documento de todas las filas según el tipo de cuenta
+         */
+        function actualizarTiposDocumento() {
+            const tipoCuenta = sessionStorage.getItem('cuentaQB_Tipo') || 'atCreditCard';
+
+            console.log('📋 [Resultados.cshtml] Actualizando tipos de documento para cuenta tipo:', tipoCuenta);
+            console.log('🏦 Cuenta seleccionada:', _serverSelectedAccountQB);
+            console.log('🎯 Es AMEX:', esAmex());
+
+            let contador = 0;
+            const resumen = {
+                Deposit: 0,
+                Check: 0,
+                CreditCardCharge: 0,
+                CreditCardCredit: 0
+            };
+
+            $('#resultados-table tbody tr').each(function() {
+                const $row = $(this);
+                const monto = parseFloat($row.data('monto')) || 0;
+                const $tipoCell = $row.find('td[data-tipo-calculado]');
+                const $tipoDisplay = $tipoCell.find('.tipo-documento-display');
+
+                // Determinar tipo de documento
+                const tipoCalculado = determinarTipoDocumento(monto, tipoCuenta);
+
+                // Obtener clase CSS para el badge
+                const claseCSS = obtenerClaseTipoDocumento(tipoCalculado);
+
+                // Actualizar visualización con badge
+                $tipoDisplay
+                    .text(tipoCalculado)
+                    .removeClass()
+                    .addClass(claseCSS);
+
+                // Actualizar atributos
+                $tipoCell.attr('data-tipo-calculado', tipoCalculado);
+                $tipoCell.attr('data-sort-value', tipoCalculado);
+
+                // Guardar en el row data para uso posterior
+                $row.data('tipo-documento', tipoCalculado);
+
+                // Contadores para resumen
+                resumen[tipoCalculado] = (resumen[tipoCalculado] || 0) + 1;
+                contador++;
+            });
+
+            console.log(`✅ ${contador} tipos de documento actualizados`);
+            console.log('📊 Resumen por tipo:', resumen);
+        }
+
+        // ===============================
+        //  INICIALIZACIÓN
+        // ===============================
+        $(document).ready(function () {
+            console.log('🚀 Inicializando Resultados.cshtml');
+            console.log('📦 Datos del servidor:', {
+                bankName: _serverBankName,
+                batchId: _serverBatchId,
+                selectedAccountQB: _serverSelectedAccountQB,
+                interestCharged: _serverInterestCharged,
+                esAmex: esAmex()
+            });
+
+            // Actualizar tipos de documento al cargar
+            actualizarTiposDocumento();
+
+            // ✅ Agregar listener para cuando cambie la cuenta QB
+            // (si el usuario cambia de cuenta sin recargar la página)
+            $(document).on('cuentaQBChanged', function() {
+                console.log('🔄 Cuenta QB cambió, actualizando tipos de documento...');
+                actualizarTiposDocumento();
+            });
+
+            // Botón guardar proceso
+            $('#btn-guardar-proceso').on('click', function () {
+                guardarProceso();
+            });
+        });
+
+        // ===============================
+        //  GUARDAR PROCESO
+        // ===============================
+        async function guardarProceso() {
+            const batchId = _serverBatchId || '';
+            const bankName = _serverBankName || '';
+            const selectedAccountQB = _serverSelectedAccountQB || '';
+            const interestCharged = (typeof _serverInterestCharged === 'number') ? _serverInterestCharged : parseFloat(_serverInterestCharged || 0);
+            const empresaNombre = '@ViewBag.EmpresaQBName' || 'Empresa';
+
+            console.log("📋 [GuardarProceso] Datos:", {
+                empresaNombre,
+                batchId,
+                bankName,
+                selectedAccountQB,
+                interestCharged
+            });
+
+            if (!batchId) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se encontró el ID del batch'
+                });
+                return;
+            }
+
+            // ===================================
+            // RECOLECTAR MOVIMIENTOS DE LA TABLA
+            // ===================================
+            const movimientos = [];
+            $('#resultados-table tbody tr').each(function () {
+                const $row = $(this);
+                const index = $row.data('index');
+                const monto = parseFloat($row.data('monto')) || 0;
+                const fecha = $row.find('td:eq(1)').text().trim();
+                const empresa = $row.find('.empresa-input').val() || '';
+                const descripcion = $row.find('.descripcion-cell').text().trim();
+                const cuenta = $row.data('cuenta') || '';
+
+                // ✅ OBTENER EL TIPO DE DOCUMENTO CALCULADO
+                const tipoDocumento = $row.data('tipo-documento') ||
+                                     $row.find('td[data-tipo-calculado]').attr('data-tipo-calculado') ||
+                                     'CreditCardCharge';
+
+                const txnId = $row.find('.txn-id-cell').text().trim();
+
+                // Calcular débito/crédito
+                const debito = monto < 0 ? Math.abs(monto) : 0;
+                const credito = monto > 0 ? monto : 0;
+
+                movimientos.push({
+                    Fecha: fecha,
+                    Empresa: empresa,
+                    Descripcion: descripcion,
+                    Monto: monto,
+                    Debito: debito,
+                    Credito: credito,
+                    CuentaPredicha: cuenta,
+                    CuentaAplicada: $row.data('applied-account') || cuenta,
+                    TipoDocumento: tipoDocumento,  // ✅ USAR EL TIPO CALCULADO
+                    TxnIdQuickBooks: txnId || null,
+                    ScorePrediccion: 0
+                });
+            });
+
+            // ===================================
+            // MOSTRAR CONFIRMACIÓN
+            // ===================================
+            const result = await Swal.fire({
+                title: '💾 Guardar Proceso',
+                html: `
+                    <div style="text-align: left;">
+                        <p><strong>Empresa:</strong> ${empresaNombre}</p>
+                        <p><strong>Banco:</strong> ${bankName || 'N/A'}</p>
+                        <p><strong>Cuenta QB:</strong> ${selectedAccountQB || 'N/A'}</p>
+                        <p><strong>Interest Charged:</strong> $${(Number(interestCharged) || 0).toFixed(2)}</p>
+                        <p><strong>Total movimientos:</strong> ${movimientos.length}</p>
+                    </div>
+                    <hr>
+                    <p>¿Deseas guardar este proceso en la base de datos?</p>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '✅ Sí, guardar',
+                cancelButtonText: '❌ Cancelar',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#dc3545'
+            });
+
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            // ===================================
+            // MOSTRAR LOADING
+            // ===================================
+            Swal.fire({
+                title: 'Guardando...',
+                html: 'Por favor espera mientras se guarda el proceso',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                // Get anti-forgery token
+                const antiForgeryInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                const antiForgeryToken = antiForgeryInput ? antiForgeryInput.value : null;
+
+                const response = await fetch('/PdfNew/GuardarProceso', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        ...(antiForgeryToken ? { 'RequestVerificationToken': antiForgeryToken } : {})
+                    },
+                    body: JSON.stringify({
+                        BatchId: batchId,
+                        Banco: bankName,
+                        CuentaQB: selectedAccountQB,
+                        SaldoInicial: interestCharged,
+                        EmpresaNombre: empresaNombre,
+                        Movimientos: movimientos
+                    })
+                });
+
+                let data = null;
+                try {
+                    data = await response.json();
+                } catch (jsonErr) {
+                    console.error('Respuesta no JSON:', jsonErr);
+                    throw new Error('Respuesta inesperada del servidor');
+                }
+
+                if (response.ok && data && data.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '✅ Proceso Guardado',
+                        html: `
+                            <p>El proceso ha sido guardado exitosamente.</p>
+                            <p><strong>ID:</strong> ${data.procesoId}</p>
+                            <p><strong>${data.updated ? 'Actualizado' : 'Creado'}</strong></p>
+                        `,
+                        confirmButtonText: 'Aceptar'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: (data && data.message) ? data.message : 'Error al guardar el proceso'
+                    });
+                }
+            } catch (error) {
+                console.error('Error guardando proceso:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error de comunicación con el servidor'
+                });
+            }
+        }
+    </script>
 }
+
 

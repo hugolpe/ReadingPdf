@@ -14,11 +14,15 @@ namespace ReadingPdf.Services
             if (dto == null)
                 return QuickBooksResult.Failure("dto is null");
 
+            // Clean account names to remove leading "expenses:" (case-insensitive) before validation/usage
+            var accountFullName = CleanAccountName(dto.AccountFullName);
+            var expenseAccountFullName = CleanAccountName(dto.ExpenseAccountFullName);
+
             // Basic validation up-front so we don't call the SDK with empty required fields
-            if (string.IsNullOrWhiteSpace(dto.AccountFullName))
+            if (string.IsNullOrWhiteSpace(accountFullName))
                 return QuickBooksResult.Failure("Credit card account (AccountFullName) is required.");
 
-            if (string.IsNullOrWhiteSpace(dto.ExpenseAccountFullName))
+            if (string.IsNullOrWhiteSpace(expenseAccountFullName))
                 return QuickBooksResult.Failure("Expense account (ExpenseAccountFullName) is required.");
 
             var tcs = new TaskCompletionSource<QuickBooksResult>();
@@ -50,14 +54,14 @@ namespace ReadingPdf.Services
                         chargeRq.PayeeEntityRef.FullName.SetValue(dto.PayeeFullName);
 
                     // IMPORTANT: use CreditCardAccountRef for the credit card account (not AccountRef)
-                    chargeRq.AccountRef.FullName.SetValue(dto.AccountFullName);
+                    chargeRq.AccountRef.FullName.SetValue(accountFullName);
 
                     if (!string.IsNullOrWhiteSpace(dto.Memo))
                         chargeRq.Memo.SetValue(dto.Memo);
 
                     // Expense line
                     var expenseLine = chargeRq.ExpenseLineAddList.Append();
-                    expenseLine.AccountRef.FullName.SetValue(dto.ExpenseAccountFullName);
+                    expenseLine.AccountRef.FullName.SetValue(expenseAccountFullName);
                     expenseLine.Amount.SetValue(dto.Amount);
                     if (!string.IsNullOrWhiteSpace(dto.Memo))
                         expenseLine.Memo.SetValue(dto.Memo);
@@ -118,6 +122,33 @@ namespace ReadingPdf.Services
             thread.Start();
 
             return await tcs.Task;
+        }
+
+        // Removes a leading "expenses:" / "expense:" (case-insensitive) or "expenses " prefix from an account name.
+        private static string CleanAccountName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return name;
+            var cleaned = name.Trim();
+
+            // remove leading "expenses:" or "expense:" (case-insensitive)
+            if (cleaned.StartsWith("expenses:", StringComparison.OrdinalIgnoreCase) ||
+                cleaned.StartsWith("expense:", StringComparison.OrdinalIgnoreCase))
+            {
+                var idx = cleaned.IndexOf(':');
+                if (idx >= 0 && idx + 1 < cleaned.Length)
+                    cleaned = cleaned.Substring(idx + 1).Trim();
+                else
+                    cleaned = cleaned.Substring(Math.Min(idx + 1, cleaned.Length)).Trim();
+            }
+            // also handle "expenses " or "expense " without colon
+            else if (cleaned.StartsWith("expenses ", StringComparison.OrdinalIgnoreCase) ||
+                     cleaned.StartsWith("expense ", StringComparison.OrdinalIgnoreCase))
+            {
+                var parts = cleaned.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length > 1) cleaned = parts[1].Trim();
+            }
+
+            return cleaned;
         }
     }
 

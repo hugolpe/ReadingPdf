@@ -1,7 +1,17 @@
-﻿// serverData.js
-export function getServerData() {
+﻿// serverData.js - VERSIÓN COMPLETA
+function getServerData() {
     const el = document.getElementById('server-data');
-    if (!el) return { interest: null, currency: '$', selectedQB: '' };
+    if (!el) {
+        console.warn('⚠️ No se encontró #server-data');
+        return {
+            interest: null,
+            selectedQB: '',
+            accountStats: [],
+            batchId: '',
+            currency: '$',
+            bankName: ''
+        };
+    }
 
     function parseAttr(name) {
         try {
@@ -15,7 +25,10 @@ export function getServerData() {
 
     return {
         interest: parseAttr('data-interest'),
+        selectedQB: parseAttr('data-selected-qb') || '',
+        accountStats: parseAttr('data-account-stats') || [],
+        batchId: parseAttr('data-batch-id') || '',
         currency: parseAttr('data-currency') || '$',
-        selectedQB: parseAttr('data-selected-qb') || ''
+        bankName: parseAttr('data-bankname') || ''
     };
 }

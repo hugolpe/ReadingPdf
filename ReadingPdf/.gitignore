@@ -1,0 +1,6 @@
+﻿.vs/
+   *.zip
+   bin/
+   obj/
+   *.suo
+   *.user

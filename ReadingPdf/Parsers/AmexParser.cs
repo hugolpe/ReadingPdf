@@ -14,17 +14,14 @@ namespace ReadingPdf.Parsers
 {
     public static class AmexParser
     {
-        // Public static property to expose the extracted Previous Balance for UI consumption.
-        // After calling `ParsePdf(...)`, read `AmexParser.LastPreviousBalance` to show the value where you display the transaction count.
-        public static decimal? LastPreviousBalance { get; private set; }
+     public static decimal? LastPreviousBalance { get; set; }
 
-        // New: expose Interest Charged when present
-        public static decimal? LastInterestCharged { get; private set; }
-        public static decimal? BalanceAnterior { get; private set; }
+        public static decimal? LastInterestCharged { get; set; }
+        public static decimal? BalanceAnterior { get; set; }
 
-        public static decimal? SaldoAnteriorFees { get; private set; }
+        public static decimal? SaldoAnteriorFees { get; set; }
 
-        public static decimal? PaymentsCredits { get; private set; }
+        public static decimal? PaymentsCredits { get; set; }
 
         // Flag para invertir clasificación cuando el bank detectado es Amex
         private static bool _invertAmexClassification = false;
@@ -37,16 +34,6 @@ namespace ReadingPdf.Parsers
                     return new Regex(
     @"^(?<Transaccion>\d{2}/\d{2}/\d{2}\*?.*?(?:-?\$?[\d,]*\.\d{2}-?)(?:\s*⧫)?)",
     RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.Multiline);
-
-
-
-
-                //case "MM/DD/YY" when banco.BankId != 7:
-                //    return new Regex(
-                //        @"^(?<Transaccion>\d{2}/\d{2}/\d{2}\*?\s+.+?\s+-?\$?\d{1,3}(?:,\d{3})*\.\d{2})(?:\s*⧫)?$",
-                //        RegexOptions.Multiline | RegexOptions.Compiled
-                //    );
-
 
                 case "MM/DD/YY" when banco.BankId == 7:
                     // Same anchoring for BankId == 7 variant
@@ -83,16 +70,6 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
                         @"(?m)(?<Transaccion1>^\d{2}/\d{2}\b[\s\S]*?-?\$?\d{1,3}(?:,\d{3})*\.\d{2})",
                         RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.Multiline);
 
-                //case "MM/DD" when banco.BankId == 4:
-                //    return new Regex(
-                //        @"(?ms)(?<Transaccion1>" +
-                //        @"^\d{2}/\d{2}\s+.*?" +                     // 01/08 ...
-                //        @"(?:\r?\n(?!\d{2}/\d{2}\s).*)*?" +         // líneas internas
-                //        @"\$?-?\d{1,3}(?:,\d{3})*\.\d{2}" +         // monto
-                //        @")(?=(?:\r?\n\s*\r?\n)*\d{2}/\d{2}\s|$)",  // 👈 PERMITE LÍNEAS VACÍAS
-                //        RegexOptions.Compiled
-                //    );
-
                 default:
                     throw new NotSupportedException($"Formato de fecha no soportado: {banco.DateFormat}");
             }
@@ -127,10 +104,16 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
         private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
 
         private static readonly Regex regexPreviousBalance = new Regex(
-            @"Previous\s+Balance[:\s]*\(?\$?(?<PreviousBalance>-?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\)?",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline,
+            @"(?i)Previous\s+Balance[:\s\r\n]*\(?\s*\$?\s*(?<PreviousBalance>-?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*\)?",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Multiline,
             RegexTimeout
         );
+        private static readonly Regex regexPreviousBalance1 = new Regex(
+    @"(?i)Previous\s+balance[:\s\r\n]*\(?\s*\$?\s*(?<PreviousBalance>-?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*\)?",
+    RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Multiline,
+    RegexTimeout
+);
+
 
         // New regex: busca la palabra "Interest Charged" y captura el monto asociado
         private static readonly Regex regexInterestCharged = new Regex(
@@ -139,7 +122,7 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
             RegexTimeout
         );
         private static readonly Regex regexFees = new Regex(
-    @"Fees\s[:\s]*\(?\$?(?<Interest>-?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\)?",
+    @"Fees\s[:\s]*\(?\$?(?<Fees>-?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\)?",
     RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline,
     RegexTimeout
 );
@@ -168,46 +151,152 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
                 RegexOptions.Compiled | RegexOptions.Singleline
             );
 
-
-        // New regex: busca la palabra "Interest Charged" y captura el monto asociado
-        //private static readonly Regex regexBeginningBalance = new Regex(
-        //    @"Beginning\s+balance[:\s]*\(?\$?(?<SaldoAnt>-?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\)?",
-        //    RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline
+        //        private static readonly Regex regexBeginningBalance = new Regex(
+        //    @"Beginning\s+balance(?:\s+on\s+[A-Za-z]+\s+\d{1,2},\s+\d{4})?\s*\(?\$?(?<SaldoAnt>-?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\)?",
+        //    RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline,
+        //    RegexTimeout
         //);
         private static readonly Regex regexBeginningBalance = new Regex(
-    @"Beginning\s+balance(?:\s+on\s+[A-Za-z]+\s+\d{1,2},\s+\d{4})?\s*\(?\$?(?<SaldoAnt>-?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\)?",
-    RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline,
-    RegexTimeout
-);
-
-
+            @"Beginning\s+balance(?:\s+on\s+[A-Za-z]+\s+\d{1,2},\s+\d{4})?\s*\(?\$?\s*(?<SaldoAnt>-?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\)?",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Singleline,
+            RegexTimeout
+        );
         public static List<Movimiento> ParsePdf(string pdfPath, Bank banco)
         {
             string rawText = ExtractText(pdfPath);
 
-            // Extract and expose the Previous Balance for UI
+            // ✅ SOLUCIÓN: Usar funciones lambda para evaluación perezosa real
+            decimal? interest = null;
+
+            // Intentar en orden de prioridad, deteniéndose al primer valor encontrado
+            interest = ExtractInterestCharged(rawText);
+            if (!interest.HasValue)
+                interest = ExtractPaymentsCredits(rawText);
+            if (!interest.HasValue)
+                interest = ExtractPreviousBalance(rawText);
+            if (!interest.HasValue)
+                interest = ExtractBalanceAnterior(rawText);
+            if (!interest.HasValue)
+                interest = ExtractSaldoAnteriorFees(rawText);
+
+
+            // Extraer todos los valores individuales para asignar a propiedades estáticas
             LastPreviousBalance = ExtractPreviousBalance(rawText);
-            // Extract and expose Interest Charged when present
-            LastInterestCharged = ExtractInterestCharged(rawText);
+            LastInterestCharged = interest;
             BalanceAnterior = ExtractBalanceAnterior(rawText);
             SaldoAnteriorFees = ExtractSaldoAnteriorFees(rawText);
             PaymentsCredits = ExtractPaymentsCredits(rawText);
-
 
             Console.WriteLine("Entidad detectada: " + DetectarEntidad(rawText, banco.BankIdentifier));
             Console.WriteLine("Previous Balance detected: " + (LastPreviousBalance?.ToString("F2") ?? "null"));
             Console.WriteLine("Interest Charged detected: " + (LastInterestCharged?.ToString("F2") ?? "null"));
             Console.WriteLine("Beginning Balance detected: " + (BalanceAnterior?.ToString("F2") ?? "null"));
-            Console.WriteLine("Beginning Balance detected: " + (PaymentsCredits?.ToString("F2") ?? "null"));
+            Console.WriteLine("Payments/Credits detected: " + (PaymentsCredits?.ToString("F2") ?? "null"));
+            Console.WriteLine("Fees detected: " + (SaldoAnteriorFees?.ToString("F2") ?? "null"));
 
-            // Obtener regex adecuado según la entidad
             Regex regexSeleccionado = GetRegexForEntidad(banco);
-
-            // Determinar si debemos invertir clasificación para Amex
             _invertAmexClassification = IsAmex(banco);
 
             return ParseText(rawText, regexSeleccionado);
         }
+
+        //public static List<Movimiento> ParsePdf(string pdfPath, Bank banco)
+
+        //public static List<Movimiento> ParsePdf(string pdfPath, Bank banco)
+        //{
+        //    string rawText = ExtractText(pdfPath);
+
+        //    // ✅ OPTIMIZADO: Evaluación con cortocircuito
+        //    // Solo se ejecuta la siguiente extracción si la anterior retorna null
+        //    decimal? interest =
+        //        ExtractInterestCharged(rawText) ??      // Prioridad 1
+        //        ExtractPaymentsCredits(rawText) ??       // Prioridad 2
+        //        ExtractSaldoAnteriorFees(rawText) ??     // Prioridad 3
+        //        ExtractPreviousBalance(rawText);         // Prioridad 4 (fallback)
+
+        //    // Extraer todos los valores individuales para asignar a propiedades estáticas
+        //    LastPreviousBalance = ExtractPreviousBalance(rawText);
+        //    LastInterestCharged = interest;
+        //    BalanceAnterior = ExtractBalanceAnterior(rawText);
+        //    SaldoAnteriorFees = ExtractSaldoAnteriorFees(rawText);
+        //    PaymentsCredits = ExtractPaymentsCredits(rawText);
+
+        //    Console.WriteLine("Entidad detectada: " + DetectarEntidad(rawText, banco.BankIdentifier));
+        //    Console.WriteLine("Previous Balance detected: " + (LastPreviousBalance?.ToString("F2") ?? "null"));
+        //    Console.WriteLine("Interest Charged detected: " + (LastInterestCharged?.ToString("F2") ?? "null"));
+        //    Console.WriteLine("Beginning Balance detected: " + (BalanceAnterior?.ToString("F2") ?? "null"));
+        //    Console.WriteLine("Payments/Credits detected: " + (PaymentsCredits?.ToString("F2") ?? "null"));
+        //    Console.WriteLine("Fees detected: " + (SaldoAnteriorFees?.ToString("F2") ?? "null"));
+
+        //    Regex regexSeleccionado = GetRegexForEntidad(banco);
+        //    _invertAmexClassification = IsAmex(banco);
+
+        //    return ParseText(rawText, regexSeleccionado);
+        //}
+        //{
+        //    string rawText = ExtractText(pdfPath);
+
+        //    // Extract all possible values
+        //    var prev = ExtractPreviousBalance(rawText);
+        //    var amex1 = ExtractSaldoAnteriorFees(rawText);    // Fees
+        //    var amex2 = ExtractInterestCharged(rawText);      // Interest Charged
+        //    var amex3 = ExtractPaymentsCredits(rawText);      // Payments/Credits
+
+        //    // ✅ APLICAR LA MISMA LÓGICA DE PRIORIZACIÓN
+        //    // Prioridad: amex2 (InterestCharged) > amex3 (PaymentsCredits) > amex1 (Fees) > prev
+        //    decimal? interest = amex2 ?? amex3 ?? amex1 ?? prev;
+
+        //    // Assign to static properties
+        //    LastPreviousBalance = prev;
+        //    LastInterestCharged = interest;  // ✅ Ahora incluye Fees si no hay Interest Charged
+        //    BalanceAnterior = ExtractBalanceAnterior(rawText);
+        //    SaldoAnteriorFees = amex1;
+        //    PaymentsCredits = amex3;
+
+        //    Console.WriteLine("Entidad detectada: " + DetectarEntidad(rawText, banco.BankIdentifier));
+        //    Console.WriteLine("Previous Balance detected: " + (LastPreviousBalance?.ToString("F2") ?? "null"));
+        //    Console.WriteLine("Interest Charged detected: " + (LastInterestCharged?.ToString("F2") ?? "null"));
+        //    Console.WriteLine("Beginning Balance detected: " + (BalanceAnterior?.ToString("F2") ?? "null"));
+        //    Console.WriteLine("Payments/Credits detected: " + (PaymentsCredits?.ToString("F2") ?? "null"));
+        //    Console.WriteLine("Fees detected: " + (SaldoAnteriorFees?.ToString("F2") ?? "null"));
+
+        //    // Obtener regex adecuado según la entidad
+        //    Regex regexSeleccionado = GetRegexForEntidad(banco);
+
+        //    // Determinar si debemos invertir clasificación para Amex
+        //    _invertAmexClassification = IsAmex(banco);
+
+        //    return ParseText(rawText, regexSeleccionado);
+        //}
+
+        //Elimina esta parte despues de aqui *****************************************************************************
+        //public static List<Movimiento> ParsePdf(string pdfPath, Bank banco)
+        //{
+        //    string rawText = ExtractText(pdfPath);
+
+        //    // Extract and expose the Previous Balance for UI
+        //    LastPreviousBalance = ExtractPreviousBalance(rawText);
+        //    // Extract and expose Interest Charged when present
+        //    LastInterestCharged = ExtractInterestCharged(rawText);
+        //    BalanceAnterior = ExtractBalanceAnterior(rawText);
+        //    SaldoAnteriorFees = ExtractSaldoAnteriorFees(rawText);
+        //    PaymentsCredits = ExtractPaymentsCredits(rawText);
+
+
+        //    Console.WriteLine("Entidad detectada: " + DetectarEntidad(rawText, banco.BankIdentifier));
+        //    Console.WriteLine("Previous Balance detected: " + (LastPreviousBalance?.ToString("F2") ?? "null"));
+        //    Console.WriteLine("Interest Charged detected: " + (LastInterestCharged?.ToString("F2") ?? "null"));
+        //    Console.WriteLine("Beginning Balance detected: " + (BalanceAnterior?.ToString("F2") ?? "null"));
+        //    Console.WriteLine("Beginning Balance detected: " + (PaymentsCredits?.ToString("F2") ?? "null"));
+
+        //    // Obtener regex adecuado según la entidad
+        //    Regex regexSeleccionado = GetRegexForEntidad(banco);
+
+        //    // Determinar si debemos invertir clasificación para Amex
+        //    _invertAmexClassification = IsAmex(banco);
+
+        //    return ParseText(rawText, regexSeleccionado);
+        //}
 
         // New helper that returns both movements and previous balance in a simple DTO.
         // Added PaymentsCredits field to return the extracted amex3 value.
@@ -235,7 +324,7 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
 
             // Elegir el valor válido para 'interest'
             // Prioridad: amex2 (InterestCharged) si existe, sino amex3 (PaymentsCredits), sino amex1 (SaldoAnteriorFees)
-            decimal? interest = amex2 ?? amex3 ?? amex1;
+            decimal? interest = amex2 ?? amex3 ?? amex1 ?? prev;
 
             var regexSeleccionado = GetRegexForEntidad(banco);
 
@@ -395,13 +484,6 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
 
                     // === CLASIFICACIÓN CRÉDITO / DÉBITO (AMEX/GENERAL) ===
                     mov.Tipo = DetectarTipoMovimiento(mov.Notas, mov.Descripcion);
-
-                    //// Normalize sign according to detected type
-                    //if (mov.Tipo == TipoMovimiento.Debito && mov.Monto > 0)
-                    //{
-                    //    mov.Monto *= -1;
-                    //}
-
                 }
 
                 if (m.Groups["Transaccion1"].Success)
@@ -431,8 +513,6 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
                         }
                     }
 
-
-
                     string desc = block;
                     desc = regexFecha1.Replace(desc, "").Trim();
                     desc = regexMonto.Replace(desc, "").Trim();
@@ -442,14 +522,6 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
 
                     // === CLASIFICACIÓN CRÉDITO / DÉBITO (CHASE) ===
                     mov.Tipo = DetectarTipoMovimiento(mov.Notas, mov.Descripcion);
-
-                    //// Normalizar signo según tipo
-                    //if (mov.Tipo == TipoMovimiento.Debito && mov.Monto > 0)
-                    //{
-                    //    mov.Monto *= -1;
-                    //}
-
-
                 }
 
                 if (m.Groups["Transaccion2"].Success)
@@ -516,24 +588,13 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
                         }
                     }
 
-                    // === CLASIFICACIÓN CRÉDITO / DÉBITO (CHASE) ===
-
                     string desc = block;
                     desc = regexFecha2.Replace(desc, "").Trim();
                     desc = regexMonto2.Replace(desc, "").Trim();
                     desc = desc.Replace("⧫", "").Trim();
                     mov.Descripcion = desc;
                     mov.Empresa = ExtraerEmpresa(desc);
-                    // === CLASIFICACIÓN CRÉDITO / DÉBITO (CHASE) ===
                     mov.Tipo = DetectarTipoMovimiento(mov.Notas, mov.Descripcion);
-
-                    //// Normalizar signo según tipo
-                    //if (mov.Tipo == TipoMovimiento.Debito && mov.Monto > 0)
-                    //{
-                    //    mov.Monto *= -1;
-                    //}
-
-
                 }
 
                 if (!string.IsNullOrEmpty(mov.Descripcion))
@@ -571,14 +632,31 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
             if (string.IsNullOrWhiteSpace(text))
                 return null;
 
+
             var m = regexPreviousBalance.Match(text);
-            if (!m.Success)
+
+            string raw = null;
+
+            if (m.Success)
+            {
+                raw = m.Groups["PreviousBalance"].Value.Trim();
+            }
+            else
+            {
+                // Fallback: buscar cualquier línea que contenga "previous" y extraer la primera cantidad encontrada.
+                var line = Regex.Match(text, @"(?im)^.*previous.*$");
+                if (line.Success)
+                {
+                    var amt = regexMonto2.Match(line.Value);
+                    if (amt.Success)
+                        raw = amt.Groups["Monto2"].Value.Trim();
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(raw))
                 return null;
 
-            var raw = m.Groups["PreviousBalance"].Value.Trim();
-
-            // Normalizar: remover símbolo de dólar y comas.
-            // Convertir paréntesis negativos en signo menos si fuera necesario.
+            // Normalizar: convertir paréntesis negativos en signo menos si fuera necesario.
             if (raw.StartsWith("(") && raw.EndsWith(")"))
             {
                 raw = "-" + raw.Substring(1, raw.Length - 2);
@@ -597,10 +675,80 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
             return null;
         }
 
-        /// <summary>
-        /// Extrae el valor de "Interest Charged" del texto proporcionado.
-        /// Retorna null si no se encuentra o no se puede parsear.
-        /// </summary>
+        public static decimal? ExtractPreviousBalance1(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return null;
+
+            var m = regexPreviousBalance1.Match(text);
+
+            string raw = null;
+
+            if (m.Success)
+            {
+                raw = m.Groups["PreviousBalance1"].Value.Trim();
+            }
+            else
+            {
+                // Fallback: buscar cualquier línea que contenga "previous" y extraer la primera cantidad encontrada.
+                var line = Regex.Match(text, @"(?im)^.*previous.*$");
+                if (line.Success)
+                {
+                    var amt = regexMonto2.Match(line.Value);
+                    if (amt.Success)
+                        raw = amt.Groups["Monto2"].Value.Trim();
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(raw))
+                return null;
+
+            // Normalizar: convertir paréntesis negativos en signo menos si fuera necesario.
+            if (raw.StartsWith("(") && raw.EndsWith(")"))
+            {
+                raw = "-" + raw.Substring(1, raw.Length - 2);
+            }
+
+            raw = raw.Replace("$", "").Replace(",", "").Trim();
+
+            // Intentar parsear con InvariantCulture (punto decimal).
+            if (decimal.TryParse(raw, NumberStyles.AllowLeadingSign | NumberStyles.Number | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var value))
+                return value;
+
+            // Fallback: intentar con la cultura actual.
+            if (decimal.TryParse(raw, NumberStyles.Any, CultureInfo.CurrentCulture, out value))
+                return value;
+
+            return null;
+        }
+
+        public static decimal? ExtractBalanceAnterior(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return null;
+
+            var m = regexBeginningBalance.Match(text); if (!m.Success)
+                if (!m.Success)
+                    return null;
+
+            var raw = m.Groups["SaldoAnt"].Value.Trim();
+
+            // Normalizar paréntesis negativos
+            if (raw.StartsWith("(") && raw.EndsWith(")"))
+            {
+                raw = "-" + raw.Substring(1, raw.Length - 2);
+            }
+
+            raw = raw.Replace("$", "").Replace(",", "").Trim();
+
+            if (decimal.TryParse(raw, NumberStyles.AllowLeadingSign | NumberStyles.Number | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var value))
+                return value;
+
+            if (decimal.TryParse(raw, NumberStyles.Any, CultureInfo.CurrentCulture, out value))
+                return value;
+
+            return null;
+        }
         public static decimal? ExtractInterestCharged(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
@@ -609,8 +757,6 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
             var m = regexInterestCharged.Match(text); if (!m.Success)
                 if (!m.Success)
                     return null;
-
-
 
             var raw = m.Groups["Interest"].Value.Trim();
 
@@ -640,8 +786,7 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
                 if (!m.Success)
                     return null;
 
-
-            var raw = m.Groups["Interest"].Value.Trim();
+            var raw = m.Groups["Fees"].Value.Trim();
 
             // Normalizar paréntesis negativos
             if (raw.StartsWith("(") && raw.EndsWith(")"))
@@ -688,33 +833,7 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
 
             return null;
         }
-        public static decimal? ExtractBalanceAnterior(string text)
-        {
-            if (string.IsNullOrWhiteSpace(text))
-                return null;
-
-            var m = regexBeginningBalance.Match(text); if (!m.Success)
-                if (!m.Success)
-                    return null;
-
-            var raw = m.Groups["SaldoAnt"].Value.Trim();
-
-            // Normalizar paréntesis negativos
-            if (raw.StartsWith("(") && raw.EndsWith(")"))
-            {
-                raw = "-" + raw.Substring(1, raw.Length - 2);
-            }
-
-            raw = raw.Replace("$", "").Replace(",", "").Trim();
-
-            if (decimal.TryParse(raw, NumberStyles.AllowLeadingSign | NumberStyles.Number | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var value))
-                return value;
-
-            if (decimal.TryParse(raw, NumberStyles.Any, CultureInfo.CurrentCulture, out value))
-                return value;
-
-            return null;
-        }
+       
 
         /// <summary>
         /// Extract the most relevant amount from a transaction block.
@@ -730,9 +849,6 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
             // Normalize simple OCR artifacts
             block = block.Replace("﹩", "$").Replace("S$", "$");
 
-            //// 1) Buscar la ÚLTIMA ocurrencia explícita de $ seguida de número (permite espacios o ':' entre ellos)
-            //var explicitDollarRegex = new Regex(@"\$\s*[:\-]?\s*([0-9]{1,3}(?:,[0-9]{3})*\.[0-9]{2})", RegexOptions.RightToLeft);
-            //var explicitDollarRegex = new Regex(@"\$\s*[:\-]?\s*([0-9]{1,3}(?:,[0-9]{3})*\.[0-9]{2})", RegexOptions.RightToLeft);
             var explicitDollarRegex = new Regex(
     @"(?<!\w)(-?\$?\s*[0-9]{1,3}(?:,[0-9]{3})*\.[0-9]{2})",
     RegexOptions.RightToLeft
@@ -747,15 +863,10 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
                     return v;
             }
 
-            // 1b) Caso OCR donde $ y número están separados y regex anterior falla:
-            // buscar un '$' cercano antes de un monto (hasta 6 caracteres entre $ y cifra)
             var looseDollarRegex = new Regex(@"\$\s{0,6}([0-9]{1,3}(?:,[0-9]{3})*\.[0-9]{2})", RegexOptions.RightToLeft);
             var mLoose = looseDollarRegex.Match(block);
             if (mLoose.Success)
             {
-                //var raw = mLoose.Groups[1].Value;
-                //if (decimal.TryParse(raw.Replace(",", ""), NumberStyles.Number | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var v))
-                //    return v;
                 var raw = mDollar.Groups[1].Value
     .Replace("$", "")
     .Replace(",", "")
@@ -772,7 +883,6 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
 
             }
 
-            // 2) Si no hay $ (o no se pudo parsear), preferir monto seguido de palabra moneda (Mexican / Pesos)
             var monedaRegex = new Regex(@"([0-9]{1,3}(?:,[0-9]{3})*\.[0-9]{2})\s*(?i:(Mexican|Pesos|MXN|USD|Dollars|dólares|pesos))");
             var mMon = monedaRegex.Match(block);
             if (mMon.Success)
@@ -782,21 +892,10 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
                     return v;
             }
 
-            //// 3) Fallback: devolver el último monto numérico en el bloque
-            //var anyAmountRegex = new Regex(@"([0-9]{1,3}(?:,[0-9]{3})*\.[0-9]{2})", RegexOptions.RightToLeft);
-            //var mAny = anyAmountRegex.Match(block);
-            //if (mAny.Success)
-            //{
-            //    var raw = mAny.Groups[1].Value;
-            //    if (decimal.TryParse(raw.Replace(",", ""), NumberStyles.Number | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var v))
-            //        return v;
-            //}
-
             var anyAmountRegex = new Regex(@"[0-9]{1,3}(?:,[0-9]{3})*.[0-9]{2}");
             var matchesAmounts = anyAmountRegex.Matches(block);
             if (matchesAmounts.Count > 0)
             {
-                // Buscar desde la derecha la primera que tenga '$' en un rango cercano
                 for (int i = matchesAmounts.Count - 1; i >= 0; i--)
                 {
                     var mm = matchesAmounts[i];
@@ -812,12 +911,9 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
                             return v;
                     }
                 }
-                // Si ninguna cantidad cercana a '$', devolver la última cantidad encontrada
                 var lastMatch = matchesAmounts[matchesAmounts.Count - 1].Value;
                 if (decimal.TryParse(lastMatch.Replace(",", ""), NumberStyles.Number | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var lastV))
                     return lastV;
-
-
             }
             return null;
         }
@@ -884,59 +980,7 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
 
             return (positives, negativesAbs);
         }
-        //private static TipoMovimiento DetectarTipoMovimiento(string notas, string descripcion)
-        //{
-        //    string contexto = $"{notas} {descripcion}".ToLowerInvariant();
 
-        //    // First try keyword heuristics (covers Amex, Chase and general patterns)
-        //    if (regexCreditoContexto.IsMatch(contexto))
-        //        return _invertAmexClassification ? TipoMovimiento.Debito : TipoMovimiento.Credito;
-
-        //    if (regexDebitoContexto.IsMatch(contexto))
-        //        return _invertAmexClassification ? TipoMovimiento.Credito : TipoMovimiento.Debito;
-
-        //    // If parentheses around amounts are present in the notes, many statements use parentheses to show negative amounts (debits)
-        //    if (Regex.IsMatch(notas + " " + descripcion, @"\(\$?\d"))
-        //        return _invertAmexClassification ? TipoMovimiento.Credito : TipoMovimiento.Debito;
-
-        //    // If there's an explicit leading '-' before an amount in the raw text, treat as debit
-        //    if (Regex.IsMatch(notas + " " + descripcion, @"-\s*\$?\d"))
-        //        return _invertAmexClassification ? TipoMovimiento.Credito : TipoMovimiento.Debito;
-
-        //    // Fallback safe default
-        //    return _invertAmexClassification ? TipoMovimiento.Credito : TipoMovimiento.Debito;
-        //}
-        //private static TipoMovimiento DetectarTipoMovimiento(string notas, string descripcion)
-        //{
-        //    string texto = $"{notas} {descripcion}";
-
-        //    // 1️⃣ REGLA ABSOLUTA: signo negativo o paréntesis = DÉBITO
-        //    if (Regex.IsMatch(texto, @"\(\s*\$?\d") ||   // ($5.35)
-        //        Regex.IsMatch(texto, @"-\s*\$?\d"))      // -$5.35
-        //    {
-        //        return _invertAmexClassification
-        //            ? TipoMovimiento.Credito
-        //            : TipoMovimiento.Debito;
-        //    }
-
-        //    string contexto = texto.ToLowerInvariant();
-
-        //    // 2️⃣ Heurísticas semánticas
-        //    if (regexCreditoContexto.IsMatch(contexto))
-        //        return _invertAmexClassification
-        //            ? TipoMovimiento.Debito
-        //            : TipoMovimiento.Credito;
-
-        //    if (regexDebitoContexto.IsMatch(contexto))
-        //        return _invertAmexClassification
-        //            ? TipoMovimiento.Credito
-        //            : TipoMovimiento.Debito;
-
-        //    // 3️⃣ Fallback seguro
-        //    return _invertAmexClassification
-        //        ? TipoMovimiento.Credito
-        //        : TipoMovimiento.Debito;
-        //}
         private static TipoMovimiento DetectarTipoMovimiento(string notas, string descripcion)
         {
             string texto = $"{notas} {descripcion}";
@@ -971,12 +1015,5 @@ RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhit
             // No forzar por BankId aquí; si necesitan un id específico, se puede añadir.
             return false;
         }
-
-
-
-
-
-
     }
-
 }
